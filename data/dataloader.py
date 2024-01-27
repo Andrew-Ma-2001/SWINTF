@@ -125,14 +125,14 @@ class SuperResolutionDataset(Dataset):
 
 class SuperResolutionYadaptDataset(Dataset):
     def __init__(self, config):
-        super(SuperResolutionDataset, self).__init__()
+        super(SuperResolutionYadaptDataset, self).__init__()
         self.config = config if isinstance(config, dict) else None
         self.mode = config['mode'] if self.config is not None else 'train'
         self.scale = config['scale'] if self.config is not None else 4
         self.patch_size = config['patch_size'] if self.config is not None else 96
         self.LR_size = self.patch_size // self.scale 
         
-        self.model = extract_sam_model(model_path=config['pretrained_sam'])
+        self.model = extract_sam_model(model_path=config['pretrained_sam'], image_size = config['pretrained_sam_img_size'])
 
         if self.mode == 'train':
             self.HR_path = config['train_HR'] if self.config is not None else 'dataset/trainsets/trainH/DIV2K'
@@ -174,7 +174,18 @@ class SuperResolutionYadaptDataset(Dataset):
             rnd_w = random.randint(0, max(0, W - self.LR_size))
             LR_image = LR_image[rnd_h:rnd_h + self.LR_size, rnd_w:rnd_w + self.LR_size, :]
 
-            yadapt_feature = self.model(LR_image)
+
+            # XXX Future Fix Move out of the function
+            # LR_image to Batch LR image
+            batch_img = torch.from_numpy(LR_image).permute(2, 0, 1).unsqueeze(0).float()
+            _, y1, y2, y3 = self.model(batch_img)
+            # Concatenate the features
+            yadapt_features = np.concatenate((y1.squeeze(0).detach().cpu().numpy(), y2.squeeze(0).detach().cpu().numpy(), y3.squeeze(0).detach().cpu().numpy()), axis=0)
+            # Print the size of yadapt_features
+            # print(yadapt_features.shape) # 3480x3x3 
+            yadapt_features = torch.from_numpy(yadapt_features).float()
+            
+ 
             # --------------------------------
             # crop corresponding H patch
             # --------------------------------
@@ -184,6 +195,18 @@ class SuperResolutionYadaptDataset(Dataset):
             mode = random.randint(0, 7)
             LR_image, HR_image = augment_img(LR_image, mode=mode), augment_img(HR_image, mode=mode)
 
+        if self.mode == "test":
+            # XXX 对于一个固定写死的图像大小输入，这里的 yadapt_features 怎么计算？
+            # LR_image to Batch LR image
+            batch_img = torch.from_numpy(LR_image).permute(2, 0, 1).unsqueeze(0).float()
+            _, y1, y2, y3 = self.model(batch_img)
+            # Concatenate the features
+            yadapt_features = np.concatenate((y1.squeeze(0).detach().cpu().numpy(), y2.squeeze(0).detach().cpu().numpy(), y3.squeeze(0).detach().cpu().numpy()), axis=0)
+            # Print the size of yadapt_features
+            # print(yadapt_features.shape) # 3480x3x3 
+            yadapt_features = torch.from_numpy(yadapt_features).float()
+
+
         # To numpy
         HR_image = np.array(HR_image) / 255.0
         LR_image = np.array(LR_image) / 255.0
@@ -192,7 +215,9 @@ class SuperResolutionYadaptDataset(Dataset):
         HR_image = torch.from_numpy(HR_image).permute(2, 0, 1).float()
         LR_image = torch.from_numpy(LR_image).permute(2, 0, 1).float()
 
-        return LR_image, HR_image
+        return LR_image, HR_image, yadapt_features
+
+
 if __name__ == "__main__":
     # dataset class 要有 __init__ 和 __len__ 和 __getitem__ 三个函数
     # __init__ 中的参数：config（最终），最终是需要 config 来整体设计，一个 config 走天下
@@ -202,10 +227,18 @@ if __name__ == "__main__":
         config = yaml.safe_load(file)
 
     print(config)
-    DIV2K = SuperResolutionDataset(config=config['train'])
-    LR_image, HR_image = DIV2K.__getitem__(0)
-    print(LR_image.shape, HR_image.shape)
+    # DIV2K = SuperResolutionDataset(config=config['train'])
+    # LR_image, HR_image = DIV2K.__getitem__(0)
+    # print(LR_image.shape, HR_image.shape)
 
-    test_set = SuperResolutionDataset(config=config['test'])
-    LR_image, HR_image = test_set.__getitem__(0)
-    print(LR_image.shape, HR_image.shape)
+    # test_set = SuperResolutionDataset(config=config['test'])
+    # LR_image, HR_image = test_set.__getitem__(0)
+    # print(LR_image.shape, HR_image.shape)
+
+    DIV2K = SuperResolutionYadaptDataset(config=config['train'])
+    LR_image, HR_image, yadapt = DIV2K.__getitem__(0)
+    print(LR_image.shape, HR_image.shape, yadapt.shape)
+
+    test_set = SuperResolutionYadaptDataset(config=config['test'])
+    LR_image, HR_image, yadapt= test_set.__getitem__(0)
+    print(LR_image.shape, HR_image.shape, yadapt.shape)

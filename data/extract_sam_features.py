@@ -18,7 +18,7 @@ import cv2
 from PIL import Image
 from tqdm import tqdm
 
-def extract_sam_model(model_path = '/home/mayanze/PycharmProjects/SwinTF/sam_vit_h_4b8939.pth'):
+def extract_sam_model(model_path = '/home/mayanze/PycharmProjects/SwinTF/sam_vit_h_4b8939.pth', image_size = 48):
 # Using ViT-h
     encoder_embed_dim=1280
     encoder_depth=32
@@ -26,7 +26,7 @@ def extract_sam_model(model_path = '/home/mayanze/PycharmProjects/SwinTF/sam_vit
     encoder_global_attn_indexes=[7, 15, 23, 31]
     # checkpoint=checkpoint
     prompt_embed_dim = 256
-    image_size = 1024
+    image_size = image_size
     vit_patch_size = 16
     image_embedding_size = image_size // vit_patch_size
 
