@@ -5,8 +5,8 @@ train:
   # ==================
   type: 'SwinIR'
   mode: 'train'
-  scale: 4
-  patch_size: 256 # 32*2 
+  scale: 2
+  patch_size: 96 # 32*2 
 
   train_HR: 'dataset/trainsets/trainH/DIV2K'
   train_LR: 'dataset/trainsets/trainL/DIV2K/DIV2K_train_LR_bicubic'
@@ -39,8 +39,8 @@ train:
 
 test:
   mode: 'test'
-  scale: 4
-  patch_size: 256 # 32*2
+  scale: 2
+  patch_size: 96 # 32*2
 
   test_HR: 'dataset/testsets/Set5/GTmod12'
   test_LR: 'dataset/testsets/Set5/LRbicx4' # 这里要注意在数据读入的时候要有＋号，不然不知道是放大多少倍
@@ -50,9 +50,9 @@ test:
   num_workers: 1
 
 network:
-  upsacle: 4
+  upsacle: 2
   in_channels: 3
-  image_size: 64  # 照抄的，不知道是什么意思  1024 // 4 //  8 = 32
+  image_size: 48  # 照抄的，不知道是什么意思  1024 // 4 //  8 = 32
   window_size: 8
   image_range: 1.0 # 图像是 0-1 还是 0-255
   depths: [8,8,8,8,8,8] # depth 必须为 2 的倍数

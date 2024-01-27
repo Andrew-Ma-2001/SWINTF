@@ -91,7 +91,7 @@ if __name__ == "__main__":
     encoder_global_attn_indexes=[7, 15, 23, 31]
     # checkpoint=checkpoint
     prompt_embed_dim = 256
-    image_size = 64
+    image_size = 48
     vit_patch_size = 16
     image_embedding_size = image_size // vit_patch_size
 
@@ -110,7 +110,7 @@ if __name__ == "__main__":
         out_chans=prompt_embed_dim,
     )
     # Create Fake Image
-    fake_image = torch.randn(1, 3, 64, 64)
+    fake_image = torch.randn(1, 3, 48, 48)
     output = image_encoder(fake_image)
     print(output[0].shape)
     print(output[1].shape)
@@ -142,8 +142,8 @@ if __name__ == "__main__":
     print(output[2].shape)
 
 
-    sam_model = build_sam_vit_h(model_path)
-    fake_image = torch.randn(64, 64, 3)
-    output = sam_model(fake_image, multimask_output=False)
+    # sam_model = build_sam_vit_h(model_path)
+    # fake_image = torch.randn(48, 48, 3)
+    # output = sam_model(fake_image, multimask_output=False)
 
     a = 1
