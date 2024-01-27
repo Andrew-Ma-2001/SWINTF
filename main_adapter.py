@@ -139,6 +139,7 @@ model = SwinIRAdapter(upscale=config['network']['upsacle'],
                 mlp_ratio=config['network']['mlp_ratio'],
                 upsampler=config['network']['upsampler'],
                 resi_connection=config['network']['resi_connection'],
+                y_adapt_feature=torch.randn(1, 1, 1, 1)
                 )
 
 # 3.2 设计断点续训的机制
@@ -258,11 +259,12 @@ for epoch in range(10000000000):
             model.eval()
             with torch.no_grad():
                 for _, test_data in enumerate(test_loader):
-                    test_LR, test_HR = test_data
+                    test_LR, test_HR, y_adapt_feature = test_data
                     test_HR = test_HR.cuda(device=device)
                     test_LR = test_LR.cuda(device=device)
+                    y_adapt_feature = y_adapt_feature.cuda(device=device)
 
-                    output = model.forward(test_LR)
+                    output = model.forward(test_LR, y_adapt_feature)
                     loss = criterion(output, test_HR)
 
                     total_loss += loss.item()
