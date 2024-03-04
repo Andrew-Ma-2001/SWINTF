@@ -946,7 +946,7 @@ class SwinIRAdapter(nn.Module):
                  norm_layer=nn.LayerNorm, ape=False, patch_norm=True,
                  use_checkpoint=False, upscale=2, img_range=1., upsampler='', resi_connection='1conv', y_adapt_feature=None,
                  **kwargs):
-        super(SwinIR, self).__init__()
+        super(SwinIRAdapter, self).__init__()
         num_in_ch = in_chans
         num_out_ch = in_chans
         num_feat = 64
@@ -1022,7 +1022,7 @@ class SwinIRAdapter(nn.Module):
         # XXX 这里把 self_attention 的大小写死了
         self.y_adapt_feature_size = y_adapt_feature
         self.self_attention = SelfAttention(180)  
-        self.adapt_conv = nn.Conv2d(3480, 180*256, kernel_size=1) # ViT 用的是 1280x64x64 需要降维到 64x64x64
+        self.adapt_conv = nn.Conv2d(3840, 180*256, kernel_size=1) # ViT 用的是 1280x64x64 需要降维到 64x64x64
 
         # build the last conv layer in deep feature extraction
         if resi_connection == '1conv':
@@ -1101,12 +1101,23 @@ class SwinIRAdapter(nn.Module):
             # ===========================================================================
             # ========================  加入 adapter 机制  ===============================
             # ===========================================================================
-            if self.y_adapt_feature is not None:
-                y_adapt = self.adapt_conv(y_adapt_feature)
-                # XXX 重构 y_adapt 成 180 48 48 
-                y_adapt = y_adapt.view(1, 180, 48, 48)
+            if y_adapt_feature is not None:
+                if self.training:
+                    y_adapt = self.adapt_conv(y_adapt_feature)
+                    y_adapt = y_adapt.view(-1, 180, 48, 48)
 
-                x = self.self_attention(y_adapt, x)
+                    x = self.self_attention(y_adapt, x)
+
+                else:
+                    y_adapt = self.adapt_conv(y_adapt_feature)
+                    # XXX 根据 y_adapt_feature 来调整
+                    y_adapt = y_adapt.view(-1, 180, 48, 48)
+
+                    # Reshape 回去
+                    # y_adapt1 = y_adapt.view(1, 10, 10, 180, 48, 48)
+                    # y_adapt2 = y_adapt1.permute(0, 3, 1, 4, 2, 5).contiguous().view(1, 180, 10*48, 10*48)
+
+                    x = self.self_attention(y_adapt, x)
 
             x = self.patch_embed(x)
 
@@ -1115,7 +1126,7 @@ class SwinIRAdapter(nn.Module):
 
         return x
 
-    def forward(self, x):
+    def forward(self, x, y_adapt_feature):
         H, W = x.shape[2:]
         x = self.check_image_size(x)
 
@@ -1125,18 +1136,18 @@ class SwinIRAdapter(nn.Module):
         if self.upsampler == 'pixelshuffle':
             # for classical SR
             x = self.conv_first(x)
-            x = self.conv_after_body(self.forward_features(x)) + x
+            x = self.conv_after_body(self.forward_features(x, y_adapt_feature)) + x
             x = self.conv_before_upsample(x)
             x = self.conv_last(self.upsample(x))
         elif self.upsampler == 'pixelshuffledirect':
             # for lightweight SR
             x = self.conv_first(x)
-            x = self.conv_after_body(self.forward_features(x)) + x
+            x = self.conv_after_body(self.forward_features(x, y_adapt_feature)) + x
             x = self.upsample(x)
         elif self.upsampler == 'nearest+conv':
             # for real-world SR
             x = self.conv_first(x)
-            x = self.conv_after_body(self.forward_features(x)) + x
+            x = self.conv_after_body(self.forward_features(x, y_adapt_feature)) + x
             x = self.conv_before_upsample(x)
             x = self.lrelu(self.conv_up1(torch.nn.functional.interpolate(x, scale_factor=2, mode='nearest')))
             x = self.lrelu(self.conv_up2(torch.nn.functional.interpolate(x, scale_factor=2, mode='nearest')))
@@ -1144,7 +1155,7 @@ class SwinIRAdapter(nn.Module):
         else:
             # for image denoising and JPEG compression artifact reduction
             x_first = self.conv_first(x)
-            res = self.conv_after_body(self.forward_features(x_first)) + x_first
+            res = self.conv_after_body(self.forward_features(x_first, y_adapt_feature)) + x_first
             x = x + self.conv_last(res)
 
         x = x / self.img_range + self.mean
@@ -1180,14 +1191,14 @@ if __name__ == '__main__':
 
     height = 48
     width = 48
-    model = SwinIR(upscale=4, img_size=(height, width),
-                   window_size=window_size, img_range=1., depths=[6,6,6,6,6,6],
-                   embed_dim=180, num_heads=[6,6,6,6,6,6], mlp_ratio=2, upsampler='pixelshuffledirect', y_adapt_feature=torch.randn(1, 3480, 3, 3))
+    # model = SwinIR(upscale=4, img_size=(height, width),
+    #                window_size=window_size, img_range=1., depths=[6,6,6,6,6,6],
+    #                embed_dim=180, num_heads=[6,6,6,6,6,6], mlp_ratio=2, upsampler='pixelshuffledirect', y_adapt_feature=torch.randn(1, 3480, 3, 3))
 
-    x = torch.randn((1, 3, height, width))
-    x = model(x)
-    print(x.shape)
-    print(height, width)
+    # x = torch.randn((1, 3, height, width))
+    # x = model(x)
+    # print(x.shape)
+    # print(height, width)
 
 
     # attention_model = SelfAttention(1024)
@@ -1196,3 +1207,12 @@ if __name__ == '__main__':
     # x = torch.randn((1, 1024, 64, 64))
     # x = attention_model(y_adapt_conv(y_adapt), x)
     # print(x.shape)
+
+    model = SwinIRAdapter(upscale=2, img_size=(48, 48), window_size=8, 
+                          img_range=1., depths=[6,6,6,6,6,6], embed_dim=180, 
+                          num_heads=[6,6,6,6,6,6], mlp_ratio=2, upsampler='pixelshuffledirect')
+    
+    input_test_image = torch.randn(1, 3, 48, 48)
+    y_adapt_feature = torch.randn(1, 3840, 3, 3)
+
+    output = model(input_test_image, y_adapt_feature)

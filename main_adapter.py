@@ -229,13 +229,14 @@ if step > 0:
 for epoch in range(10000000000):
     for _, train_data in enumerate(train_loader):
         # 5.3.1 数据准备
-        train_LR, train_HR = train_data
+        train_LR, train_HR, y_adapt = train_data
         train_HR = train_HR.cuda()
         train_LR = train_LR.cuda()
+        y_adapt = y_adapt.cuda()
 
         # 5.3.2 训练模型
         optimizer.zero_grad()
-        output = model.forward(train_LR)
+        output = model.forward(train_LR, y_adapt)
         loss = criterion(output, train_HR)
         loss.backward()
         optimizer.step()
@@ -253,30 +254,30 @@ for epoch in range(10000000000):
             torch.save(optimizer.state_dict(), os.path.join(config['train']['save_path'], '{:d}_optimizer.pth'.format(step)))
         
         # 5.3.5 测试模型
-        if step % config['train']['step_test'] == 0:
-            total_psnr = 0
-            total_loss = 0
-            model.eval()
-            with torch.no_grad():
-                for _, test_data in enumerate(test_loader):
-                    test_LR, test_HR, y_adapt_feature = test_data
-                    test_HR = test_HR.cuda(device=device)
-                    test_LR = test_LR.cuda(device=device)
-                    y_adapt_feature = y_adapt_feature.cuda(device=device)
+        # if step % config['train']['step_test'] == 0:
+        #     total_psnr = 0
+        #     total_loss = 0
+        #     model.eval()
+        #     with torch.no_grad():
+        #         for _, test_data in enumerate(test_loader):
+        #             test_LR, test_HR, y_adapt_feature = test_data
+        #             test_HR = test_HR.cuda(device=device)
+        #             test_LR = test_LR.cuda(device=device)
+        #             y_adapt_feature = y_adapt_feature.cuda(device=device)
 
-                    output = model.forward(test_LR, y_adapt_feature)
-                    loss = criterion(output, test_HR)
+        #             output = model.forward(test_LR, y_adapt_feature)
+        #             loss = criterion(output, test_HR)
 
-                    total_loss += loss.item()
+        #             total_loss += loss.item()
 
-                    # 改变维度，计算 PSNR
-                    output = permute_squeeze(output)
-                    test_HR = permute_squeeze(test_HR)
+        #             # 改变维度，计算 PSNR
+        #             output = permute_squeeze(output)
+        #             test_HR = permute_squeeze(test_HR)
 
-                    current_psnr = calculate_psnr(output, test_HR, border=config['test']['scale'], max_val=1)
-                    total_psnr += current_psnr
-                avg_psnr = total_psnr / len(test_loader)
-                avg_loss = total_loss / len(test_loader)
-                print('Epoch: {:d}, Step: {:d}, Avg PSNR: {:.4f}, Avg Loss: {:.4f}'.format(epoch, step, avg_psnr, avg_loss))
-                wandb.log({"Epoch": epoch, "Step": step, "Avg PSNR": avg_psnr, "Avg Loss": avg_loss})
-            model.train()
+        #             current_psnr = calculate_psnr(output, test_HR, border=config['test']['scale'], max_val=1)
+        #             total_psnr += current_psnr
+        #         avg_psnr = total_psnr / len(test_loader)
+        #         avg_loss = total_loss / len(test_loader)
+        #         print('Epoch: {:d}, Step: {:d}, Avg PSNR: {:.4f}, Avg Loss: {:.4f}'.format(epoch, step, avg_psnr, avg_loss))
+        #         wandb.log({"Epoch": epoch, "Step": step, "Avg PSNR": avg_psnr, "Avg Loss": avg_loss})
+        #     model.train()

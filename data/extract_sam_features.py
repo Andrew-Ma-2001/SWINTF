@@ -53,7 +53,7 @@ def extract_sam_model(model_path = '/home/mayanze/PycharmProjects/SwinTF/sam_vit
     before_state = {name: param.clone() for name, param in model.named_parameters()}
 
     # Load the state dict
-    model.load_state_dict(torch.load(model_path), strict=False)
+    model.load_state_dict(torch.load(model_path), strict=True)
 
     # Get the state of the model after loading the new state dict
     after_state = {name: param.clone() for name, param in model.named_parameters()}
@@ -68,81 +68,83 @@ def extract_sam_model(model_path = '/home/mayanze/PycharmProjects/SwinTF/sam_vit
 
 
 if __name__ == "__main__":
-    config_path = '/home/mayanze/PycharmProjects/SwinTF/config/example copy.yaml'  
+    # config_path = '/home/mayanze/PycharmProjects/SwinTF/config/example copy.yaml'  
 
-    # Load in the yaml file
-    with open(config_path, 'r') as file:
-        config = yaml.safe_load(file)
+    # # Load in the yaml file
+    # with open(config_path, 'r') as file:
+    #     config = yaml.safe_load(file)
 
-    # Load in the model
-    model = extract_sam_model()
-    # Move to GPU
-    model = model.cuda()
-
-
-    train_config = config['train']
-    test_config = config['test']
-
-    # Get the train and test images
-    train_images = get_all_images(train_config['train_LR'])
-    test_images = get_all_images(test_config['test_LR'])
-
-    # Get the train and test features
-    train_features = []
-    test_features = []
-
-    # Go through each image
-    for i in tqdm(range(len(train_images))):
-        # Load in the image
-        image = np.array(Image.open(train_images[i]))
-        # Reszie the image to 1024x1024 using cv2 BICUBIC
-        # XXX Using 这里假如用了 Resize 原则上在数据读入的时候就需要？Dataloader？
-        image = cv2.resize(image, (1024, 1024), interpolation=cv2.INTER_CUBIC)
-
-        image = torch.from_numpy(image).permute(2, 0, 1).unsqueeze(0).float()
-        # Move to GPU
-        image = image.cuda()
-
-        with torch.no_grad():
-            # Get the feature
-            _, x10, x20, x30 = model(image)
-            feature = [x10.squeeze(0).cpu().numpy(), x20.squeeze(0).cpu().numpy(), x30.squeeze(0).cpu().numpy()]
-
-        # Make feature a numpy array
-        feature = np.array(feature)
-        # Print the shape
-        print(feature.shape)
-        # Save the feature
-        train_features.append(feature)
-
-    # Save the train features
-    np.save('trained_sam_features.npy', train_features)
+    # # Load in the model
+    # model = extract_sam_model()
+    # # Move to GPU
+    # model = model.cuda()
 
 
-    # Go through each image
-    for i in tqdm(range(len(test_images))):
-        # Load in the image
-        image = np.array(Image.open(test_images[i]))
-        # Reszie the image to 1024x1024 using cv2 BICUBIC
-        # XXX Using 这里假如用了 Resize 原则上在数据读入的时候就需要？Dataloader？
-        image = cv2.resize(image, (1024, 1024), interpolation=cv2.INTER_CUBIC)
+    # train_config = config['train']
+    # test_config = config['test']
 
-        image = torch.from_numpy(image).permute(2, 0, 1).unsqueeze(0).float()
-        # Move to GPU
-        image = image.cuda()
+    # # Get the train and test images
+    # train_images = get_all_images(train_config['train_LR'])
+    # test_images = get_all_images(test_config['test_LR'])
 
-        with torch.no_grad():
-            # Get the feature
-            _, x10, x20, x30 = model(image)
-            feature = [x10.squeeze(0).cpu().numpy(), x20.squeeze(0).cpu().numpy(), x30.squeeze(0).cpu().numpy()]
+    # # Get the train and test features
+    # train_features = []
+    # test_features = []
 
-        # Make feature a numpy array
-        feature = np.array(feature)
-        # Print the shape
-        print(feature.shape)
-        # Save the feature
-        test_features.append(feature)
+    # # Go through each image
+    # for i in tqdm(range(len(train_images))):
+    #     # Load in the image
+    #     image = np.array(Image.open(train_images[i]))
+    #     # Reszie the image to 1024x1024 using cv2 BICUBIC
+    #     # XXX Using 这里假如用了 Resize 原则上在数据读入的时候就需要？Dataloader？
+    #     image = cv2.resize(image, (1024, 1024), interpolation=cv2.INTER_CUBIC)
 
-    # Save the train features
-    np.save('tested_sam_features.npy', test_features)
+    #     image = torch.from_numpy(image).permute(2, 0, 1).unsqueeze(0).float()
+    #     # Move to GPU
+    #     image = image.cuda()
+
+    #     with torch.no_grad():
+    #         # Get the feature
+    #         _, x10, x20, x30 = model(image)
+    #         feature = [x10.squeeze(0).cpu().numpy(), x20.squeeze(0).cpu().numpy(), x30.squeeze(0).cpu().numpy()]
+
+    #     # Make feature a numpy array
+    #     feature = np.array(feature)
+    #     # Print the shape
+    #     print(feature.shape)
+    #     # Save the feature
+    #     train_features.append(feature)
+
+    # # Save the train features
+    # np.save('trained_sam_features.npy', train_features)
+
+
+    # # Go through each image
+    # for i in tqdm(range(len(test_images))):
+    #     # Load in the image
+    #     image = np.array(Image.open(test_images[i]))
+    #     # Reszie the image to 1024x1024 using cv2 BICUBIC
+    #     # XXX Using 这里假如用了 Resize 原则上在数据读入的时候就需要？Dataloader？
+    #     image = cv2.resize(image, (1024, 1024), interpolation=cv2.INTER_CUBIC)
+
+    #     image = torch.from_numpy(image).permute(2, 0, 1).unsqueeze(0).float()
+    #     # Move to GPU
+    #     image = image.cuda()
+
+    #     with torch.no_grad():
+    #         # Get the feature
+    #         _, x10, x20, x30 = model(image)
+    #         feature = [x10.squeeze(0).cpu().numpy(), x20.squeeze(0).cpu().numpy(), x30.squeeze(0).cpu().numpy()]
+
+    #     # Make feature a numpy array
+    #     feature = np.array(feature)
+    #     # Print the shape
+    #     print(feature.shape)
+    #     # Save the feature
+    #     test_features.append(feature)
+
+    # # Save the train features
+    # np.save('tested_sam_features.npy', test_features)
+
+    model = extract_sam_model(image_size=1024)
 

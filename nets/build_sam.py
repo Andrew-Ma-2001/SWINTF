@@ -91,7 +91,10 @@ if __name__ == "__main__":
     encoder_global_attn_indexes=[7, 15, 23, 31]
     # checkpoint=checkpoint
     prompt_embed_dim = 256
-    image_size = 48
+
+    # test_image [200, 200, 3]
+    # 
+    image_size = 500
     vit_patch_size = 16
     image_embedding_size = image_size // vit_patch_size
 
@@ -110,7 +113,7 @@ if __name__ == "__main__":
         out_chans=prompt_embed_dim,
     )
     # Create Fake Image
-    fake_image = torch.randn(1, 3, 48, 48)
+    fake_image = torch.randn(1, 3, 500, 500)
     output = image_encoder(fake_image)
     print(output[0].shape)
     print(output[1].shape)
@@ -147,3 +150,20 @@ if __name__ == "__main__":
     # output = sam_model(fake_image, multimask_output=False)
 
     a = 1
+
+    import torch 
+    image = torch.randn(1, 3, 480, 480)
+    
+    image2 = image.view(1, 3, 10, 48, 10, 48)
+    
+    image3 = image2.permute(0, 2, 4, 1, 3, 5).reshape(-1, 3, 48, 48)
+    print(image3.shape)
+
+    # 100xCx48x48 -> SwinIR -> 1xCx480x480
+    # SwinIRAdapt (x, y) x 1xC*480*480 , y 100xCx3x3
+    # SwinIRAdapt (x, y) x 1xC*480*480 , 
+    
+    # Reshape 回去
+
+
+

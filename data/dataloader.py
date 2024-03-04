@@ -195,27 +195,64 @@ class SuperResolutionYadaptDataset(Dataset):
             mode = random.randint(0, 7)
             LR_image, HR_image = augment_img(LR_image, mode=mode), augment_img(HR_image, mode=mode)
 
+            # To numpy
+            HR_image = np.array(HR_image) / 255.0
+            LR_image = np.array(LR_image) / 255.0
+    
+            # To tensor
+            HR_image = torch.from_numpy(HR_image).permute(2, 0, 1).float()
+            LR_image = torch.from_numpy(LR_image).permute(2, 0, 1).float()
+    
+            return LR_image, HR_image, yadapt_features
+
         if self.mode == "test":
-            # XXX 对于一个固定写死的图像大小输入，这里的 yadapt_features 怎么计算？
             # LR_image to Batch LR image
-            batch_img = torch.from_numpy(LR_image).permute(2, 0, 1).unsqueeze(0).float()
-            _, y1, y2, y3 = self.model(batch_img)
+            # TODO 这里修改一下 LR HR 的mod方式，应该是 LR 先算，然后对应到 HR
+            # HR = [:LR_imageshape0*self.scale, :LR_imageshape1*self.scale]
+            # 首先对 LR 图像进行 mod_crop 必须能被 48 整除
+            LR_image = modcrop(LR_image, 48) 
+            # 然后对应的 HR 图像也要变换 
+            HR_image = modcrop(HR_image, 48) / 255.0
+
+
+
+
+            # 设置一个 assert 保证 HR 和 LR 放大后的大小是一样的
+            assert HR_image.shape[0] == LR_image.shape[0] * self.scale and HR_image.shape[1] == LR_image.shape[1] * self.scale, "HR and LR should have the same size after modcrop"
+
+            # 参考下面的精神，将 LR_image 转换成 batch 形式
+            # LR_image 的形状 [48*x, 48*y, 3] -> [x, y, 3, 48, 48] -> [x*y, 3, 48, 48]
+            x, y, _ = LR_image.shape
+            batch_LR_image = LR_image.reshape(x//48, 48, y//48, 48, 3).transpose(0, 2, 1, 3, 4).reshape(-1, 48, 48, 3).transpose(0, 3, 1, 2)
+            # 然后将 batch_LR_image 转换成 tensor
+            batch_LR_image_sam = torch.from_numpy(batch_LR_image).float()
+            # 然后将 batch_LR_image 输入到模型中
+            _, y1, y2, y3 = self.model(batch_LR_image_sam)
+            
+            # import matplotlib.pyplot as plt
+            # plt.imshow(batch_LR_image[0,0,:,:])
+            # plt.savefig('test.png')
+            
+            
+            
             # Concatenate the features
-            yadapt_features = np.concatenate((y1.squeeze(0).detach().cpu().numpy(), y2.squeeze(0).detach().cpu().numpy(), y3.squeeze(0).detach().cpu().numpy()), axis=0)
+            yadapt_features = np.concatenate((y1.squeeze(0).detach().cpu().numpy(), y2.squeeze(0).detach().cpu().numpy(), y3.squeeze(0).detach().cpu().numpy()), axis=1)
             # Print the size of yadapt_features
-            # print(yadapt_features.shape) # 3480x3x3 
-            yadapt_features = torch.from_numpy(yadapt_features).float()
+            # print(yadapt_features.shape) # 3480x3x3
+            batch_yadapt_features = torch.from_numpy(yadapt_features).float()
+            # 这里由于 vit 会把 B 和 C 合成一个维度，所以这里要把 batch_yadapt_features 的维度转换一下，变成 [xy/3, 1280*3, 3, 3]
+            # batch_yadapt_features = batch_yadapt_features.reshape(yadapt_features.shape[0]//3, 1280*3, 3, 3)
+            # assert 到这里 batch_yadapt_features 和 batch_LR_image 的 batch_size 是一样的
+            assert batch_yadapt_features.shape[0] == batch_LR_image.shape[0], "batch_yadapt_features and batch_LR_image should have the same batch_size"
+
+            batch_LR_image = batch_LR_image / 255.0
+            batch_LR_image = torch.from_numpy(batch_LR_image).float()
+
+            return batch_LR_image, HR_image, batch_yadapt_features,(x,y)
 
 
-        # To numpy
-        HR_image = np.array(HR_image) / 255.0
-        LR_image = np.array(LR_image) / 255.0
 
-        # To tensor
-        HR_image = torch.from_numpy(HR_image).permute(2, 0, 1).float()
-        LR_image = torch.from_numpy(LR_image).permute(2, 0, 1).float()
 
-        return LR_image, HR_image, yadapt_features
 
 
 if __name__ == "__main__":
@@ -235,10 +272,25 @@ if __name__ == "__main__":
     # LR_image, HR_image = test_set.__getitem__(0)
     # print(LR_image.shape, HR_image.shape)
 
-    DIV2K = SuperResolutionYadaptDataset(config=config['train'])
-    LR_image, HR_image, yadapt = DIV2K.__getitem__(0)
-    print(LR_image.shape, HR_image.shape, yadapt.shape)
+    # DIV2K = SuperResolutionYadaptDataset(config=config['train'])
+    # LR_image, HR_image, yadapt = DIV2K.__getitem__(0)
+    # print(LR_image.shape, HR_image.shape, yadapt.shape)
 
+    # test_set = SuperResolutionYadaptDataset(config=config['test'])
+    # LR_image, HR_image, yadapt, (x,y)= test_set.__getitem__(0)
+    # print(LR_image.shape, HR_image.shape, yadapt.shape)
+
+    # 对yadapt_features进行测试, 对同一个位置跑两次，结果应该是一样的
     test_set = SuperResolutionYadaptDataset(config=config['test'])
-    LR_image, HR_image, yadapt= test_set.__getitem__(0)
-    print(LR_image.shape, HR_image.shape, yadapt.shape)
+    r0_LR_image, r0_HR_image, r0_yadapt, (x,y)= test_set.__getitem__(0)
+    test_set2 = SuperResolutionYadaptDataset(config=config['test'])
+    r1_LR_image, r1_HR_image, r1_yadapt, (x,y)= test_set2.__getitem__(0)
+
+    # 检查是否完全一样
+    print(np.allclose(r0_LR_image, r1_LR_image))
+    print(np.allclose(r0_HR_image, r1_HR_image))
+    print(np.allclose(r0_yadapt, r1_yadapt))
+
+    #=========================================================================
+    ### 检查出来确实是不一样，yadapt_features 为什么不一样，继续检查
+    #=========================================================================

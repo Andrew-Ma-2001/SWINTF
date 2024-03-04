@@ -15,7 +15,7 @@ train:
   shuffle: True
   num_workers: 16
 
-  gpu_ids: [0,1]
+  gpu_ids: [0,1,2,3]
 
   # ==================
   # Training parameters
@@ -46,7 +46,7 @@ test:
   patch_size: 96 # 32*2
 
   test_HR: 'dataset/testsets/Set5/GTmod12'
-  test_LR: 'dataset/testsets/Set5/LRbicx4' # 这里要注意在数据读入的时候要有＋号，不然不知道是放大多少倍
+  test_LR: 'dataset/testsets/Set5/LRbicx2' # 这里要注意在数据读入的时候要有＋号，不然不知道是放大多少倍
 
   batch_size: 1
   shuffle: False
