@@ -8,12 +8,9 @@ import torch
 import numpy as np
 from utils.utils_image import permute_squeeze, calculate_psnr, imresize_np
 from nets.swinir import SwinIRAdapter
-from data.dataloader import SuperResolutionYadaptDataset
+from data.dataloader import SuperResolutionYadaptDataset, SuperResolutionPrecomputeYadaptDataset
 import yaml
 import matplotlib.pyplot as plt
-
-
-SAVE_NPY = False
 
 
 
@@ -108,8 +105,6 @@ if __name__ == '__main__':
     gpu_ids = config['train']['gpu_ids']
     os.environ['CUDA_VISIBLE_DEVICES'] = ','.join(str(x) for x in gpu_ids)
 
-    # Use one GPU to predict
-    os.environ['CUDA_VISIBLE_DEVICES'] = '2,3'
 
     # SwinIR+SAM
     model_path = '/home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20240204_022316/295000_model.pth'
@@ -138,28 +133,24 @@ if __name__ == '__main__':
     model.load_state_dict(checkpoint)
     print('Resume from checkpoint from {}'.format(model_path))
 
-    test_set = SuperResolutionYadaptDataset(config=config['test'])
+    if config['test']['precomputed']:
+        test_set = SuperResolutionPrecomputeYadaptDataset(config=config['test'])
+    else:
+        test_set = SuperResolutionYadaptDataset(config=config['test'])
 
     i = 0 
     total_psnr = 0
     for iter, test_data in enumerate(test_set):
         batch_LR_image, HR_image, batch_yadapt_features, (x, y) = test_data[0], test_data[1], test_data[2], test_data[3]
         
-
-
-        batch_Pre_image = model(batch_LR_image, batch_yadapt_features)
+        with torch.no_grad():
+            batch_Pre_image = model(batch_LR_image, batch_yadapt_features)
 
         # Save the batch_Pre_image in numpy
-        if SAVE_NPY:
-            save_data(batch_Pre_image, 'batch_Pre_image_{}.npy'.format(i))
-            save_data(batch_LR_image, 'batch_LR_image_{}.npy'.format(i))
-            save_data(batch_yadapt_features, 'batch_yadapt_features_{}.npy'.format(i))
-
-        #=====================================================================
-        ### 1 这里PSNR每次运行的结果不一样，因为yadapt_features每次不一样，下面检查为什么不一样
-        ### 2 
-        # ====================================================================
-
+        # if SAVE_NPY:
+        #     save_data(batch_Pre_image, 'batch_Pre_image_{}.npy'.format(i))
+        #     save_data(batch_LR_image, 'batch_LR_image_{}.npy'.format(i))
+        #     save_data(batch_yadapt_features, 'batch_yadapt_features_{}.npy'.format(i))
 
         # batch_Pre_image 的形状  [x*y, 3, 48*scale, 48*scale] -> [x, y, 3,  48*scale, 48*scale] -> [48*x*scale, 48*y*scale, 3] 
         # batch_LR_image = LR_image.reshape(x//48, 48, y//48, 48, 3).transpose(0, 2, 1, 3, 4).reshape(-1, 3, 48, 48)
@@ -179,8 +170,6 @@ if __name__ == '__main__':
         psnr = calculate_psnr(batch_Pre_image, HR_image, border=scale)
         total_psnr += psnr
         print('PSNR: {:.2f}'.format(psnr))
-
-        break
     print('Avg PSNR: {:.2f}'.format(total_psnr / len(test_set)))
 
 

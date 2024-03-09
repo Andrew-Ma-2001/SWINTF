@@ -27,10 +27,11 @@ def extract_sam_model(model_path = '/home/mayanze/PycharmProjects/SwinTF/sam_vit
     # checkpoint=checkpoint
     prompt_embed_dim = 256
     image_size = image_size
-    vit_patch_size = 16
+    vit_patch_size = 16 
     image_embedding_size = image_size // vit_patch_size
 
-    image_encoder = ImageEncoderViT_FeatureExtract(
+    model = torch.nn.Module()
+    model.image_encoder = ImageEncoderViT_FeatureExtract(
         depth=encoder_depth,
         embed_dim=encoder_embed_dim,
         img_size=image_size,
@@ -47,22 +48,22 @@ def extract_sam_model(model_path = '/home/mayanze/PycharmProjects/SwinTF/sam_vit
     model_path = model_path
     # image_encoder.load_state_dict(torch.load(model_path), strict=False)
 
-    # Assume `model` is your model and `partial_state_dict` is the state dict you want to load
-    model = image_encoder
+
     # Get the state of the model before loading the new state dict
-    before_state = {name: param.clone() for name, param in model.named_parameters()}
+    # before_state = {name: param.clone() for name, param in model.named_parameters()}
 
-    # Load the state dict
-    model.load_state_dict(torch.load(model_path), strict=True)
+    if model_path:
+        # Load the state dict
+        model.load_state_dict(torch.load(model_path), strict=False)
 
-    # Get the state of the model after loading the new state dict
-    after_state = {name: param.clone() for name, param in model.named_parameters()}
+    # # Get the state of the model after loading the new state dict
+    # after_state = {name: param.clone() for name, param in model.named_parameters()}
 
-    # Compare the parameters before and after loading the state dict
-    for name, param_before in before_state.items():
-        param_after = after_state[name]
-        if not torch.all(param_before.eq(param_after)):
-            print(f"Parameter {name} was updated.")
+    # # Compare the parameters before and after loading the state dict
+    # for name, param_before in before_state.items():
+    #     param_after = after_state[name]
+    #     if not torch.all(param_before.eq(param_after)):
+    #         print(f"Parameter {name} was updated.")
 
     return model
 
@@ -146,5 +147,31 @@ if __name__ == "__main__":
     # # Save the train features
     # np.save('tested_sam_features.npy', test_features)
 
-    model = extract_sam_model(image_size=1024)
+    # 原本的model是这样
+    # model = extract_sam_model(image_size=1024)
+
+    # 我把model改成这样
+    model = extract_sam_model(model_path="", image_size=48)
+    model = model.cuda()
+
+    # 结果有 size mismatch
+    # size mismatch for image_encoder.pos_embed: copying a param with shape torch.Size([1, 64, 64, 1280]) from checkpoint, the shape in current model is torch.Size([1, 3, 3, 1280]).
+    # size mismatch for image_encoder.blocks.7.attn.rel_pos_h: copying a param with shape torch.Size([127, 80]) from checkpoint, the shape in current model is torch.Size([5, 80]).
+    # size mismatch for image_encoder.blocks.7.attn.rel_pos_w: copying a param with shape torch.Size([127, 80]) from checkpoint, the shape in current model is torch.Size([5, 80]).
+    # size mismatch for image_encoder.blocks.15.attn.rel_pos_h: copying a param with shape torch.Size([127, 80]) from checkpoint, the shape in current model is torch.Size([5, 80]).
+    # size mismatch for image_encoder.blocks.15.attn.rel_pos_w: copying a param with shape torch.Size([127, 80]) from checkpoint, the shape in current model is torch.Size([5, 80]).
+    # size mismatch for image_encoder.blocks.23.attn.rel_pos_h: copying a param with shape torch.Size([127, 80]) from checkpoint, the shape in current model is torch.Size([5, 80]).
+    # size mismatch for image_encoder.blocks.23.attn.rel_pos_w: copying a param with shape torch.Size([127, 80]) from checkpoint, the shape in current model is torch.Size([5, 80]).
+    # size mismatch for image_encoder.blocks.31.attn.rel_pos_h: copying a param with shape torch.Size([127, 80]) from checkpoint, the shape in current model is torch.Size([5, 80]).
+    # size mismatch for image_encoder.blocks.31.attn.rel_pos_w: copying a param with shape torch.Size([127, 80]) from checkpoint, the shape in current model is torch.Size([5, 80]).
+
+
+    img = np.random.rand(1, 3, 48, 48).astype(np.float32)
+    img = torch.from_numpy(img).cuda()
+    with torch.no_grad():
+        _, x10, x20, x30 = model.image_encoder(img)
+        feature = [x10.squeeze(0).cpu().numpy(), x20.squeeze(0).cpu().numpy(), x30.squeeze(0).cpu().numpy()]
+        x10 = x10.squeeze(0).cpu().numpy()
+
+        print(x10.shape)
 
