@@ -770,7 +770,7 @@ class SwinIR(nn.Module):
         # XXX 这里把 self_attention 的大小写死了
         self.y_adapt_feature = y_adapt_feature
         self.self_attention = SelfAttention(180)  
-        self.adapt_conv = nn.Conv2d(3480, 180*256, kernel_size=1) # ViT 用的是 1280x64x64 需要降维到 64x64x64
+        self.adapt_conv = nn.Conv2d(3840, 180*256, kernel_size=1) # ViT 用的是 1280x64x64 需要降维到 64x64x64
 
         # build the last conv layer in deep feature extraction
         if resi_connection == '1conv':
@@ -851,7 +851,6 @@ class SwinIR(nn.Module):
             # ===========================================================================
             if self.y_adapt_feature is not None:
                 y_adapt = self.adapt_conv(self.y_adapt_feature)
-                # XXX 重构 y_adapt 成 180 48 48 
                 y_adapt = y_adapt.view(1, 180, 48, 48)
 
                 x = self.self_attention(y_adapt, x)
@@ -1110,7 +1109,6 @@ class SwinIRAdapter(nn.Module):
 
                 else:
                     y_adapt = self.adapt_conv(y_adapt_feature)
-                    # XXX 根据 y_adapt_feature 来调整
                     y_adapt = y_adapt.view(-1, 180, 48, 48)
 
                     # Reshape 回去

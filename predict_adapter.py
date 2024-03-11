@@ -138,19 +138,19 @@ if __name__ == '__main__':
     else:
         test_set = SuperResolutionYadaptDataset(config=config['test'])
 
-    i = 0 
+
     total_psnr = 0
     for iter, test_data in enumerate(test_set):
         batch_LR_image, HR_image, batch_yadapt_features, (x, y) = test_data[0], test_data[1], test_data[2], test_data[3]
         
+
+        # # FIXME
+        # 在这里直接把 batch_yadapt_features 变成 0
+        # batch_yadapt_features = torch.zeros_like(batch_yadapt_features)
+
+
         with torch.no_grad():
             batch_Pre_image = model(batch_LR_image, batch_yadapt_features)
-
-        # Save the batch_Pre_image in numpy
-        # if SAVE_NPY:
-        #     save_data(batch_Pre_image, 'batch_Pre_image_{}.npy'.format(i))
-        #     save_data(batch_LR_image, 'batch_LR_image_{}.npy'.format(i))
-        #     save_data(batch_yadapt_features, 'batch_yadapt_features_{}.npy'.format(i))
 
         # batch_Pre_image 的形状  [x*y, 3, 48*scale, 48*scale] -> [x, y, 3,  48*scale, 48*scale] -> [48*x*scale, 48*y*scale, 3] 
         # batch_LR_image = LR_image.reshape(x//48, 48, y//48, 48, 3).transpose(0, 2, 1, 3, 4).reshape(-1, 3, 48, 48)
@@ -160,11 +160,10 @@ if __name__ == '__main__':
         # Change to numpy 
         batch_Pre_image = batch_Pre_image.cpu().detach().numpy()
         batch_Pre_image = batch_Pre_image * 255
-        HR_image = HR_image * 255
+        # HR_image = HR_image * 255
 
-        plt.imsave('{}.png'.format(i), batch_Pre_image.astype(np.uint8))
-        print('Save {}.png'.format(i))
-        i += 1
+        plt.imsave('{}.png'.format(iter), batch_Pre_image.astype(np.uint8))
+        print('Save {}.png'.format(iter))
 
 
         psnr = calculate_psnr(batch_Pre_image, HR_image, border=scale)

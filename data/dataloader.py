@@ -222,7 +222,6 @@ class SuperResolutionYadaptDataset(Dataset):
 
         if self.mode == "test":
             # LR_image to Batch LR image
-            # TODO 这里修改一下 LR HR 的mod方式，应该是 LR 先算，然后对应到 HR
             # HR = [:LR_imageshape0*self.scale, :LR_imageshape1*self.scale]
             # 首先对 LR 图像进行 mod_crop 必须能被 48 整除
             LR_image = modcrop(LR_image, 48)
@@ -393,7 +392,6 @@ class SuperResolutionPrecomputeYadaptDataset(Dataset):
 
         if self.mode == "test":
             # LR_image to Batch LR image
-            # TODO 这里修改一下 LR HR 的mod方式，应该是 LR 先算，然后对应到 HR
             # HR = [:LR_imageshape0*self.scale, :LR_imageshape1*self.scale]
             # 首先对 LR 图像进行 mod_crop 必须能被 48 整除
             LR_image = modcrop(LR_image, 48)
@@ -429,8 +427,6 @@ class SuperResolutionPrecomputeYadaptDataset(Dataset):
 
 def precompute(dataset, config):
     test_set = dataset
-    LR_image, HR_image, yadapt, (x,y)= test_set.__getitem__(0)
-    print(LR_image.shape, HR_image.shape, yadapt.shape)
     save_path = config['test']['test_LR'] + '_yadapt'
     if not os.path.exists(save_path):
         os.makedirs(save_path)
@@ -450,7 +446,7 @@ if __name__ == "__main__":
     # dataset class 要有 __init__ 和 __len__ 和 __getitem__ 三个函数
     # __init__ 中的参数：config（最终），最终是需要 config 来整体设计，一个 config 走天下
     import yaml
-    config_path = '/home/mayanze/PycharmProjects/SwinTF/config/example copy.yaml'
+    config_path = '/home/mayanze/PycharmProjects/SwinTF/config/Set14test.yaml'
     with open(config_path, 'r') as file:
         config = yaml.safe_load(file)
 
@@ -468,13 +464,15 @@ if __name__ == "__main__":
     # print(LR_image.shape, HR_image.shape, yadapt.shape)
 
 
-    test_set = SuperResolutionPrecomputeYadaptDataset(config=config['test'])
-    LR_image, HR_image, yadapt, (x,y)= test_set.__getitem__(0)
-    print(LR_image.shape, HR_image.shape, yadapt.shape)
+    # test_set = SuperResolutionPrecomputeYadaptDataset(config=config['test'])
+    # LR_image, HR_image, yadapt, (x,y)= test_set.__getitem__(0)
+    # print(LR_image.shape, HR_image.shape, yadapt.shape)
 
+    test_set = SuperResolutionYadaptDataset(config=config['test'])
+    # LR_image, HR_image, yadapt, (x,y)= test_set.__getitem__(0)
+    # print(LR_image.shape, HR_image.shape, yadapt.shape)
     
-    
-
+    precompute(test_set, config)
     
 
     # # 对yadapt_features进行测试, 对同一个位置跑两次，结果应该是一样的

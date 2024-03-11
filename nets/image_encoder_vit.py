@@ -157,9 +157,13 @@ class ImageEncoderViT_FeatureExtract(nn.Module):
             global_attn_indexes (list): Indexes for blocks using global attention.
         """
         super().__init__()
-        self.img_size = img_size
+        self.img_size = img_size # 1024
 
         self.patch_embed = PatchEmbed(
+            # kernel_size=(16, 16),
+            # stride=(16, 16),
+            # in_chans=3,
+            # embed_dim=1280,
             kernel_size=(patch_size, patch_size),
             stride=(patch_size, patch_size),
             in_chans=in_chans,
@@ -167,8 +171,9 @@ class ImageEncoderViT_FeatureExtract(nn.Module):
         )
 
         self.pos_embed: Optional[nn.Parameter] = None
-        if use_abs_pos:
+        if use_abs_pos: # True
             # Initialize absolute positional embedding with pretrain image size.
+            # self.pos_embed = nn.Parameter(torch.zeros(1, 1024 // 16 = 64, 1024 // 16, 1280))
             self.pos_embed = nn.Parameter(
                 torch.zeros(1, img_size // patch_size, img_size // patch_size, embed_dim)
             )
@@ -176,30 +181,30 @@ class ImageEncoderViT_FeatureExtract(nn.Module):
         self.blocks = nn.ModuleList()
         for i in range(depth):
             block = Block(
-                dim=embed_dim,
-                num_heads=num_heads,
-                mlp_ratio=mlp_ratio,
-                qkv_bias=qkv_bias,
-                norm_layer=norm_layer,
-                act_layer=act_layer,
-                use_rel_pos=use_rel_pos,
-                rel_pos_zero_init=rel_pos_zero_init,
-                window_size=window_size if i not in global_attn_indexes else 0,
-                input_size=(img_size // patch_size, img_size // patch_size),
+                dim=embed_dim, # 1280
+                num_heads=num_heads, # 16
+                mlp_ratio=mlp_ratio, # 4
+                qkv_bias=qkv_bias, # True
+                norm_layer=norm_layer, # nn.LayerNorm
+                act_layer=act_layer, # nn.GELU
+                use_rel_pos=use_rel_pos, # True
+                rel_pos_zero_init=rel_pos_zero_init, # True
+                window_size=window_size if i not in global_attn_indexes else 0, # [7, 15, 23 ,31] is 14 else 0
+                input_size=(img_size // patch_size, img_size // patch_size), # (64, 64)
             )
             self.blocks.append(block)
 
         self.neck = nn.Sequential(
             nn.Conv2d(
-                embed_dim,
-                out_chans,
+                embed_dim, # 1280
+                out_chans, # 256
                 kernel_size=1,
                 bias=False,
             ),
             LayerNorm2d(out_chans),
             nn.Conv2d(
-                out_chans,
-                out_chans,
+                out_chans, # 256
+                out_chans, # 256
                 kernel_size=3,
                 padding=1,
                 bias=False,
@@ -505,6 +510,7 @@ class PatchEmbed(nn.Module):
         super().__init__()
 
         self.proj = nn.Conv2d(
+            # 3, 1280, (16, 16), (16, 16), (0, 0)
             in_chans, embed_dim, kernel_size=kernel_size, stride=stride, padding=padding
         )
 
@@ -512,6 +518,9 @@ class PatchEmbed(nn.Module):
         x = self.proj(x)
         # B C H W -> B H W C
         x = x.permute(0, 2, 3, 1)
+        # 输入进来是 3x1024x1024 -> 1280x64x64
+        # Patch 大小为 16x16, 每张图像 1024x1024/16x16 = 64x64 个 Patch
+        # 输入序列
         return x
 
 

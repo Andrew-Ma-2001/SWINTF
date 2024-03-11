@@ -1,6 +1,8 @@
 import numpy as np
 import math
 import torch
+import cv2
+
 
 def permute_squeeze(img: torch.Tensor) -> np.ndarray:
     # img (B, C, H, W) -> (H, W, C)
@@ -11,6 +13,12 @@ def permute_squeeze(img: torch.Tensor) -> np.ndarray:
     else:
         img = img.numpy()
     return img
+
+
+def compare_two_image(gt_path, sr_path):
+    gt = cv2.imread(gt_path)
+    sr = cv2.imread(sr_path)
+    return calculate_psnr(gt, sr)
 
 
 def calculate_psnr(img1, img2, border=0, max_val=255):
@@ -25,6 +33,7 @@ def calculate_psnr(img1, img2, border=0, max_val=255):
 
     img1 = img1.astype(np.float64)
     img2 = img2.astype(np.float64)
+
     mse = np.mean((img1 - img2)**2)
     if mse == 0:
         return float('inf')
