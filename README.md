@@ -24,7 +24,20 @@ DINO 论文层面理解理解
 3. Urban 100
 
 实验结果记录
+不带 Overlap
+Model：'/home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20240204_022316/295000_model.pth'
             With Yadapt   Without Yadapt  (Average PSNR)
 1. Set 5      32.03           31.89
 2. Set 14     29.15           29.19*
-3. 
+3. Urban 100  26.35           26.62*
+4. Manga 109  29.33           29.91*
+5. BSDS100    28.38           29.00*
+
+带 Overlap
+Model：'/home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20240204_022316/100000_model.pth'
+            With Yadapt   Without Yadapt  (Average PSNR)
+1. Set 5      30.80           29.62
+2. Set 14     28.45           27.51
+3. Urban 100
+4. Manga 109
+5. BSDS100    27.81           27.35

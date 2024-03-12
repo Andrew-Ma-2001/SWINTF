@@ -8,7 +8,7 @@ import torch
 import numpy as np
 from utils.utils_image import permute_squeeze, calculate_psnr, imresize_np
 from nets.swinir import SwinIRAdapter
-from data.dataloader import SuperResolutionYadaptDataset, SuperResolutionPrecomputeYadaptDataset
+from data.dataloader import SuperResolutionYadaptDataset
 import yaml
 import matplotlib.pyplot as plt
 
@@ -98,7 +98,7 @@ def save_data(data, path):
     np.save(path, data)
 
 if __name__ == '__main__':
-    config_path = 'config/Set14test.yaml'
+    config_path = '/home/mayanze/PycharmProjects/SwinTF/config/Set14test.yaml'
     with open(config_path, 'r') as file:
         config = yaml.safe_load(file)
 
@@ -107,7 +107,7 @@ if __name__ == '__main__':
 
 
     # SwinIR+SAM
-    model_path = '/home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20240204_022316/295000_model.pth'
+    model_path = '/home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20240204_022316/100000_model.pth'
 
     scale = config['train']['scale']
     # 3.1 SwinIR
@@ -133,10 +133,12 @@ if __name__ == '__main__':
     model.load_state_dict(checkpoint)
     print('Resume from checkpoint from {}'.format(model_path))
 
-    if config['test']['precomputed']:
-        test_set = SuperResolutionPrecomputeYadaptDataset(config=config['test'])
-    else:
-        test_set = SuperResolutionYadaptDataset(config=config['test'])
+    # if config['test']['precomputed']:
+    #     test_set = SuperResolutionPrecomputeYadaptDataset(config=config['test'])
+    # else:
+    #     test_set = SuperResolutionYadaptDataset(config=config['test'])
+    
+    test_set = SuperResolutionYadaptDataset(config=config['test'])
 
 
     total_psnr = 0
