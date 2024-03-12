@@ -98,7 +98,7 @@ def save_data(data, path):
     np.save(path, data)
 
 if __name__ == '__main__':
-    config_path = 'config/example copy.yaml'
+    config_path = 'config/Set14test.yaml'
     with open(config_path, 'r') as file:
         config = yaml.safe_load(file)
 
@@ -144,9 +144,9 @@ if __name__ == '__main__':
         batch_LR_image, HR_image, batch_yadapt_features, (x, y) = test_data[0], test_data[1], test_data[2], test_data[3]
         
 
-        # # FIXME
+        # FIXME
         # 在这里直接把 batch_yadapt_features 变成 0
-        # batch_yadapt_features = torch.zeros_like(batch_yadapt_features)
+        batch_yadapt_features = torch.zeros_like(batch_yadapt_features)
 
 
         with torch.no_grad():

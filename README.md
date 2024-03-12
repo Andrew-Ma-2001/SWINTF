@@ -22,3 +22,9 @@ DINO 论文层面理解理解
 1. PSNR 计算
 2. 数据集增添 Set14
 3. Urban 100
+
+实验结果记录
+            With Yadapt   Without Yadapt  (Average PSNR)
+1. Set 5      32.03           31.89
+2. Set 14     29.15           29.19*
+3. 

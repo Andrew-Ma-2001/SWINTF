@@ -248,13 +248,19 @@ class SuperResolutionYadaptDataset(Dataset):
             # 然后将 batch_LR_image 转换成 tensor
             batch_LR_image_sam = torch.from_numpy(large_img).float()
             # 然后将 batch_LR_image 输入到模型中
-            if self.use_cuda:
-                batch_LR_image_sam = batch_LR_image_sam.cuda()
-      
-            with torch.no_grad():
-                _, y1, y2, y3 = self.model.image_encoder(batch_LR_image_sam)
+
+            if batch_LR_image_sam.shape[0] <= 5:
+                if self.use_cuda:
+                    batch_LR_image_sam = batch_LR_image_sam.cuda()
+
+                with torch.no_grad():
+                    _, y1, y2, y3 = self.model.image_encoder(batch_LR_image_sam)
+                    y1, y2, y3 = y1.cpu().numpy(), y2.cpu().numpy(), y3.cpu().numpy()
+            else:
+                if self.use_cuda:
+                    y1, y2, y3 = process_batch(batch_LR_image_sam, self.model.image_encoder, 5)
             
-            y1, y2, y3 = y1.detach().cpu().numpy(), y2.detach().cpu().numpy(), y3.detach().cpu().numpy()
+            
             y1, y2, y3 = y1[:, :, :3, :3], y2[:, :, :3, :3], y3[:, :, :3, :3]
             # import matplotlib.pyplot as plt
             # plt.imshow(batch_LR_image[0,0,:,:])
@@ -273,25 +279,6 @@ class SuperResolutionYadaptDataset(Dataset):
             batch_LR_image = torch.from_numpy(batch_LR_image).float()
 
             return batch_LR_image, HR_image, batch_yadapt_features,(x,y)
-
-
-def precompute(dataset):
-    if dataset.mode == 'test':
-        save_path = dataset.LR_path + '_yadapt'
-        if not os.path.exists(save_path):
-            os.makedirs(save_path)
-        # 检查文件夹目录下面有没有文件
-        assert len(os.listdir(save_path)) == 0, "The save_path should be empty"
-        for idx in range(len(dataset.LR_images)):
-            _, _, batch_yadapt_features,  = dataset.__getitem__(idx)
-            if dataset.use_cuda:
-                batch_yadapt_features = batch_yadapt_features.cpu()
-            
-            batch_yadapt_features = batch_yadapt_features.numpy()
-            # 主要是为了计算 batch_yadapt_features
-            save_name = os.path.join(save_path, os.path.basename(dataset.LR_images[idx])+'_yadapt.npy')
-            np.save(save_name, batch_yadapt_features)
-            print('Save {}'.format(save_name))
 
 
 class SuperResolutionPrecomputeYadaptDataset(Dataset):
@@ -423,7 +410,38 @@ class SuperResolutionPrecomputeYadaptDataset(Dataset):
 
             return batch_LR_image, HR_image, batch_yadapt_features,(x,y)
 
+# Function to split a batch into smaller sub-batches
+def split_batch(batch, max_sub_batch_size):
+    sub_batches = []
+    for start in range(0, batch.size(0), max_sub_batch_size):
+        end = min(start + max_sub_batch_size, batch.size(0))
+        sub_batches.append(batch[start:end])
+    return sub_batches
 
+# Process the batch across multiple GPUs with DataParallel
+def process_batch(batch, model, max_sub_batch_size):
+    # Split the batch into sub-batches that fit into GPU memory
+    sub_batches = split_batch(batch, max_sub_batch_size)
+
+    # Process each sub-batch using DataParallel and collect the results
+    output_batches = []
+    y1_ = []
+    y2_ = []
+    y3_ = []
+    for sub_batch in sub_batches:
+        sub_batch = sub_batch.cuda() # Move sub-batch to default GPU device before using DataParallel
+        with torch.no_grad():
+            _, y1, y2, y3 = model(sub_batch)
+        # Move output to CPU to avoid GPU memory accumulation
+        y1_.append(y1.cpu())
+        y2_.append(y2.cpu())
+        y3_.append(y3.cpu())
+    
+    y1 = torch.cat(y1_, dim=0)
+    y2 = torch.cat(y2_, dim=0)
+    y3 = torch.cat(y3_, dim=0)
+
+    return y1, y2, y3
 
 def precompute(dataset, config):
     test_set = dataset
