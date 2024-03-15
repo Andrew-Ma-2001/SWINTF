@@ -2,18 +2,6 @@ import os
 
 
 
-def get_all_images(path):
-    paths = None
-    if isinstance(path, str):
-        paths = _get_all_images(path)
-    elif isinstance(path, list):
-        paths = []
-        for p in path:
-            paths += _get_all_images(p)
-    else:
-        raise ValueError('Wrong path type: [{:s}].'.format(type(path)))
-    return paths
-
 def _get_all_images(path):
     """
     Get all images from a path.
@@ -31,3 +19,15 @@ def _get_all_images(path):
     # Sort the images
     images = sorted(images)
     return images
+
+def get_all_images(path):
+    paths = None
+    if isinstance(path, str):
+        paths = _get_all_images(path)
+    elif isinstance(path, list):
+        paths = []
+        for p in path:
+            paths += _get_all_images(p)
+    else:
+        raise ValueError('Wrong path type: [{:s}].'.format(type(path)))
+    return paths

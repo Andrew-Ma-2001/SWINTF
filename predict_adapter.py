@@ -97,8 +97,18 @@ def save_data(data, path):
     data = data.cpu().detach().numpy()
     np.save(path, data)
 
+
+
+
 if __name__ == '__main__':
-    config_path = '/home/mayanze/PycharmProjects/SwinTF/config/Set14test.yaml'
+    import sys
+    sys.path.append("/home/mayanze/PycharmProjects/SwinTF/")
+    config_path, model_path = sys.argv[1], sys.argv[2]
+
+
+    print('Config path: {}'.format(config_path))
+    # print('Using zero yadapt')
+    # config_path = '/home/mayanze/PycharmProjects/SwinTF/config/Set14test.yaml'
     with open(config_path, 'r') as file:
         config = yaml.safe_load(file)
 
@@ -107,7 +117,7 @@ if __name__ == '__main__':
 
 
     # SwinIR+SAM
-    model_path = '/home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20240204_022316/100000_model.pth'
+    # model_path = '/home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20240204_022316/290000_model.pth'
 
     scale = config['train']['scale']
     # 3.1 SwinIR
@@ -140,37 +150,62 @@ if __name__ == '__main__':
     
     test_set = SuperResolutionYadaptDataset(config=config['test'])
 
+    # super_res_image = np.zeros((stride * (padded_height // stride) * scale_factor, stride * (padded_width // stride) * scale_factor), dtype=np.uint8)
+    # for (patch, x, y) in patches:
+    #     # x_pos = x * scale_factor
+    #     # y_pos = y * scale_factor
+    #     # 这样写的代价是还要裁掉周围一圈的overlap，等于在HR图像上丢失了一圈像素，但是这样我不会写了，所以还是分成三种情况
+    #     num_y = y // stride
+    #     num_x = x // stride
+
 
     total_psnr = 0
-    for iter, test_data in enumerate(test_set):
-        batch_LR_image, HR_image, batch_yadapt_features, (x, y) = test_data[0], test_data[1], test_data[2], test_data[3]
-        
+    stride = test_set.pretrained_sam_img_size - test_set.overlap
+    scale_factor = test_set.scale
 
+    for iter, test_data in enumerate(test_set):
+        batch_LR_image, HR_image, batch_yadapt_features = test_data[0], test_data[1], test_data[2]
+        patches, (img_height, img_width), (padded_height, padded_width) = test_data[3], test_data[4], test_data[5]
+        
         # FIXME
         # 在这里直接把 batch_yadapt_features 变成 0
-        batch_yadapt_features = torch.zeros_like(batch_yadapt_features)
-
+        # batch_yadapt_features = torch.zeros_like(batch_yadapt_features)
+        
 
         with torch.no_grad():
             batch_Pre_image = model(batch_LR_image, batch_yadapt_features)
 
         # batch_Pre_image 的形状  [x*y, 3, 48*scale, 48*scale] -> [x, y, 3,  48*scale, 48*scale] -> [48*x*scale, 48*y*scale, 3] 
         # batch_LR_image = LR_image.reshape(x//48, 48, y//48, 48, 3).transpose(0, 2, 1, 3, 4).reshape(-1, 3, 48, 48)
-        batch_Pre_image = batch_Pre_image.view(x//48, y//48, 3, 48*scale, 48*scale)
-        batch_Pre_image = batch_Pre_image.permute(0, 3, 1, 4, 2).contiguous().view(x*scale, y*scale, 3)
-        batch_Pre_image = batch_Pre_image.clamp(0, 1)
-        # Change to numpy 
-        batch_Pre_image = batch_Pre_image.cpu().detach().numpy()
-        batch_Pre_image = batch_Pre_image * 255
+        # batch_Pre_image = batch_Pre_image.view(x//48, y//48, 3, 48*scale, 48*scale)
+        # batch_Pre_image = batch_Pre_image.permute(0, 3, 1, 4, 2).contiguous().view(x*scale, y*scale, 3)
+        # batch_Pre_image = batch_Pre_image.clamp(0, 1)
+        # # Change to numpy 
+        # batch_Pre_image = batch_Pre_image.cpu().detach().numpy()
+        # batch_Pre_image = batch_Pre_image * 255
         # HR_image = HR_image * 255
 
-        plt.imsave('{}.png'.format(iter), batch_Pre_image.astype(np.uint8))
-        print('Save {}.png'.format(iter))
+        batch_Pre_image = batch_Pre_image.clamp(0, 1).cpu().detach().permute(0,2,3,1).numpy()
+        batch_Pre_image = batch_Pre_image * 255
+        batch_Pre_image = batch_Pre_image.astype(np.uint8)
+        super_res_image = np.zeros((stride * (padded_height // stride) * scale_factor, stride * (padded_width // stride) * scale_factor, 3), dtype=np.uint8)
 
+        for (patch, x, y), pre_image in zip(patches, batch_Pre_image):
+            num_y = y // stride
+            num_x = x // stride
+            patch = pre_image[(test_set.overlap//2)*scale_factor:(test_set.pretrained_sam_img_size-test_set.overlap//2)*scale_factor, (test_set.overlap//2)*scale_factor:(test_set.pretrained_sam_img_size-test_set.overlap//2)*scale_factor, :]
+            super_res_image[num_y*stride*scale_factor:(num_y+1)*stride*scale_factor, num_x*stride*scale_factor:(num_x+1)*stride*scale_factor,:] = patch
 
-        psnr = calculate_psnr(batch_Pre_image, HR_image, border=scale)
+        super_res_image = super_res_image[:img_height*2-test_set.overlap*2, :img_width*2 - test_set.overlap*2]
+
+        plt.imsave('{}.png'.format(iter), super_res_image.astype(np.uint8))
+        # print('Save {}.png'.format(iter))
+        plt.imsave('{}_HR.png'.format(iter), HR_image.astype(np.uint8))
+
+        psnr = calculate_psnr(super_res_image, HR_image, border=scale)
         total_psnr += psnr
-        print('PSNR: {:.2f}'.format(psnr))
+        # print('PSNR: {:.2f}'.format(psnr))
+
     print('Avg PSNR: {:.2f}'.format(total_psnr / len(test_set)))
 
 
