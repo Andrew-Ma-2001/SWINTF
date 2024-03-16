@@ -138,9 +138,17 @@ class SuperResolutionYadaptDataset(Dataset):
             if self.config['precomputed']:
                 self.check_test_precompute()
                 if not self.precompute:
-                    self.precompute_yadapt()
+                    self.precompute_test()
+        
+        if self.mode == 'train':
+            # self.check_train_precompute()
+            # if self.config['precomputed']:
+            #     self.check_train_precompute()
+            #     if not self.precompute:
+            #         self.precompute_train()
+            self.precompute = True
 
-    def precompute_yadapt(self):
+    def precompute_test(self):
         if self.LR_path == 'BIC':
             save_path = self.HR_path + '_yadapt'
         else:
@@ -162,6 +170,18 @@ class SuperResolutionYadaptDataset(Dataset):
         self.precompute = True
     
     def check_test_precompute(self):
+        if self.LR_path == 'BIC':
+            save_path = self.HR_path + '_yadapt'
+        else:
+            save_path = self.LR_path + '_yadapt'
+        
+        if os.path.exists(save_path):
+            assert len(os.listdir(save_path)) == len(self.HR_images), "The save_path stored files should have the same length as HR_images"
+            self.precompute = True
+        else:
+            self.precompute = False
+
+    def check_train_precompute(self):
         if self.LR_path == 'BIC':
             save_path = self.HR_path + '_yadapt'
         else:
@@ -222,13 +242,10 @@ class SuperResolutionYadaptDataset(Dataset):
             y1, y2, y3 = y1[:, :, :3, :3], y2[:, :, :3, :3], y3[:, :, :3, :3]
             yadapt_features = np.concatenate((y1, y2, y3), axis=1)
 
-            save_name = os.path.join(save_path, os.path.basename(self.LR_images[i]).split(".")[0]+'_yadapt.npy')
+            save_name = os.path.join(save_path, os.path.basename(self.LR_images[idx]).split(".")[0]+'_yadapt.npy')
             np.save(save_name, yadapt_features)
             print('Save {}'.format(save_name))
             
-
-
-
 
     def __len__(self):
         return len(self.HR_images)
@@ -253,8 +270,11 @@ class SuperResolutionYadaptDataset(Dataset):
             # --------------------------------
             # randomly crop the L patch
             # --------------------------------
-            rnd_h = random.randint(0, max(0, H - self.LR_size))
-            rnd_w = random.randint(0, max(0, W - self.LR_size))
+            # rnd_h = random.randint(0, max(0, H - self.LR_size))
+            # rnd_w = random.randint(0, max(0, W - self.LR_size))
+
+            rnd_h = random.choice(np.arange(0, LR_image.shape[0] - self.LR_size + 1, self.LR_size))
+            rnd_w = random.choice(np.arange(0, LR_image.shape[1] - self.LR_size + 1, self.LR_size))
             LR_image = LR_image[rnd_h:rnd_h + self.LR_size, rnd_w:rnd_w + self.LR_size, :]
 
 
@@ -278,7 +298,49 @@ class SuperResolutionYadaptDataset(Dataset):
             # # print(yadapt_features.shape) # 3480x3x3 
             # yadapt_features = torch.from_numpy(yadapt_features).float()
             
- 
+            # 然后将 batch_LR_image 输入到模型中
+            if self.precompute is False:
+                large_img = np.zeros((1024, 1024, 3), dtype=np.float32)
+                large_img[:self.LR_size, :self.LR_size, :] = LR_image
+                batch_img = torch.from_numpy(large_img).permute(2, 0, 1).unsqueeze(0).float()
+                # Send batch_img to cuda
+                if self.use_cuda:
+                    batch_img = batch_img.cuda()
+                with torch.no_grad():
+                    _, y1, y2, y3 = self.model.image_encoder(batch_img)
+                # Concatenate the features
+                y1, y2, y3 = y1.squeeze(0).cpu().numpy(), y2.squeeze(0).cpu().numpy(), y3.squeeze(0).cpu().numpy()
+                y1, y2, y3 = y1[:, :3, :3], y2[:, :3, :3], y3[:, :3, :3]
+                yadapt_features = np.concatenate((y1, y2, y3), axis=0)
+                # Print the size of yadapt_features
+                # print(yadapt_features.shape) # 3480x3x3 
+                yadapt_features = torch.from_numpy(yadapt_features).float()
+
+                # if batch_LR_image_sam.shape[0] <= 5:
+                #     if self.use_cuda:
+                #         batch_LR_image_sam = batch_LR_image_sam.cuda()
+                #     with torch.no_grad():
+                #         _, y1, y2, y3 = self.model.image_encoder(batch_LR_image_sam)
+                #         y1, y2, y3 = y1.cpu().numpy(), y2.cpu().numpy(), y3.cpu().numpy()
+                # else:
+                #     if self.use_cuda:
+                #         y1, y2, y3 = process_batch(batch_LR_image_sam, self.model.image_encoder, 5)
+                # # import matplotlib.pyplot as plt
+                # # plt.imshow(batch_LR_image[0,0,:,:])
+                # # plt.savefig('test.png')
+                # # Concatenate the features
+                # y1, y2, y3 = y1[:, :, :3, :3], y2[:, :, :3, :3], y3[:, :, :3, :3]
+                # yadapt_features = np.concatenate((y1, y2, y3), axis=1)
+            else:
+                if self.LR_path == 'BIC':
+                    save_path = self.HR_path + '_yadapt'
+                else:
+                    save_path = self.LR_path + '_yadapt'
+                yadapt_feature_path = os.path.join(save_path, os.path.basename(self.LR_images[idx]).split(".")[0]+'_yadapt.npy')
+                yadapt_features = np.load(yadapt_feature_path)
+                # 这里因为 yadapt_features 是整个图像的特征，所以要把 yadapt_features 裁剪一下
+                yadapt_features = yadapt_features[int((rnd_h/self.LR_size)*(rnd_w/self.LR_size))]
+
             # --------------------------------
             # crop corresponding H patch
             # --------------------------------
@@ -296,7 +358,7 @@ class SuperResolutionYadaptDataset(Dataset):
             HR_image = torch.from_numpy(HR_image).permute(2, 0, 1).float()
             LR_image = torch.from_numpy(LR_image).permute(2, 0, 1).float()
     
-            return LR_image, HR_image, None
+            return LR_image, HR_image, yadapt_features
 
         # if self.mode == "test":
         #     # LR_image to Batch LR image
@@ -589,6 +651,7 @@ if __name__ == "__main__":
     # print(LR_image.shape, HR_image.shape, yadapt.shape)
     # print(test_set.precompute) 
     # precompute(test_set, config)
+
     train_set = SuperResolutionYadaptDataset(config=config['train'])
     train_set.precompute_train()
 

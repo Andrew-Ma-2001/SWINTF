@@ -180,8 +180,8 @@ if config['train']['optimizer'] == 'adam':
 # 4.3 Scheduler 定义
 if config['train']['scheduler'] == 'MultiStepLR':
     scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer,
-                                                    milestones=config['train']['milestones'],
-                                                    gamma=config['train']['gamma'])
+                                                    milestones=config['train']['milestones'], # milestones: [250000, 400000, 450000, 475000, 500000]
+                                                    gamma=config['train']['gamma']) # gamma: 0.5
 
 
 # ==================================================

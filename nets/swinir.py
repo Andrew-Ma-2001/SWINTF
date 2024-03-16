@@ -768,9 +768,9 @@ class SwinIR(nn.Module):
         self.norm = norm_layer(self.num_features)
 
         # XXX 这里把 self_attention 的大小写死了
-        self.y_adapt_feature = y_adapt_feature
-        self.self_attention = SelfAttention(180)  
-        self.adapt_conv = nn.Conv2d(3840, 180*256, kernel_size=1) # ViT 用的是 1280x64x64 需要降维到 64x64x64
+        # self.y_adapt_feature = y_adapt_feature
+        # self.self_attention = SelfAttention(180)  
+        # self.adapt_conv = nn.Conv2d(3840, 180*256, kernel_size=1) # ViT 用的是 1280x64x64 需要降维到 64x64x64
 
         # build the last conv layer in deep feature extraction
         if resi_connection == '1conv':
@@ -844,18 +844,18 @@ class SwinIR(nn.Module):
 
         for layer in self.layers:
             x = layer(x, x_size) # torch.Size([1, 4096, 256])
-            x = self.patch_unembed(x, x_size) # torch.Size([1, 180, 48, 48])
+            # x = self.patch_unembed(x, x_size) # torch.Size([1, 180, 48, 48])
 
-            # ===========================================================================
-            # ========================  加入 adapter 机制  ===============================
-            # ===========================================================================
-            if self.y_adapt_feature is not None:
-                y_adapt = self.adapt_conv(self.y_adapt_feature)
-                y_adapt = y_adapt.view(1, 180, 48, 48)
+            # # ===========================================================================
+            # # ========================  加入 adapter 机制  ===============================
+            # # ===========================================================================
+            # if self.y_adapt_feature is not None:
+            #     y_adapt = self.adapt_conv(self.y_adapt_feature)
+            #     y_adapt = y_adapt.view(1, 180, 48, 48)
 
-                x = self.self_attention(y_adapt, x)
+            #     x = self.self_attention(y_adapt, x)
 
-            x = self.patch_embed(x)
+            # x = self.patch_embed(x)
 
         x = self.norm(x)  # B L C
         x = self.patch_unembed(x, x_size)
