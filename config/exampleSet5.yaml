@@ -26,13 +26,13 @@ train:
   weight_decay: 0.0
   resume_optimizer: null
   step_save: 5000
-  step_test: 5000
+  step_test: 5000 #TODO 等会改回来
   step_print: 200
   # ==================
   # Training scheduler
   # ==================
   scheduler: 'MultiStepLR'
-  milestones: [250000, 400000, 450000, 475000, 500000]
+  milestones: [100, 160, 180, 190, 200]
   gamma: 0.5
 
   save_path: 'experiments/'

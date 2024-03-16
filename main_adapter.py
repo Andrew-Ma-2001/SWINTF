@@ -69,13 +69,11 @@ def check_config_consistency(config):
 
     print("Config is consistent.")
 
-# TODO Matlab 的降采样这里用
-# TODO 用 Urban100 的数据集来测试 - basic SR 应该有
 
 # =================================================
 # 0 Config，Global Parameters 部分
 # =================================================
-config_path = 'config/example copy.yaml'
+config_path = '/home/mayanze/PycharmProjects/SwinTF/config/exampleSet5.yaml'
 with open(config_path, 'r') as file:
     config = yaml.safe_load(file)
 
@@ -122,7 +120,8 @@ test_loader = DataLoader(test_set,
                           drop_last=False,
                           pin_memory=True)
 
-
+stride = test_set.pretrained_sam_img_size - test_set.overlap
+scale_factor = test_set.scale
 # ==================================================
 # 3 Network 部分
 # ==================================================
@@ -148,6 +147,13 @@ if config['network']['resume_network']:
     model.load_state_dict(checkpoint['state_dict'])
     print('Resume from checkpoint from {}'.format(config['network']['resume_network']))
 
+
+# 加载预训练 SwinIR 模型
+model_path = '/home/mayanze/PycharmProjects/SwinTF/001_classicalSR_DIV2K_s48w8_SwinIR-M_x2.pth'
+# Use strict = True to check the model
+pretrained_model = torch.load(model_path)
+param_key_g = 'params'
+model.load_state_dict(pretrained_model[param_key_g] if param_key_g in pretrained_model.keys() else pretrained_model, strict=False)
 # ================================================
 # 4 Loss, Optimizer 和 Scheduler 部分
 # ================================================
@@ -195,6 +201,7 @@ model.cuda()
 model = torch.nn.DataParallel(model) # 4，5 visable 变成 0，1
 
 
+
 date_time = time.strftime('%Y%m%d_%H%M%S', time.localtime())
 # 保存现在的时间，创建一个文件夹
 config['train']['save_path'] = os.path.join(config['train']['save_path'], config['train']['type'] + '_' + date_time)
@@ -226,6 +233,8 @@ if step > 0:
         scheduler.step()
 
 # 5.3 开始训练
+smooth_loss = []
+running_loss = 0.0
 for epoch in range(10000000000):
     for _, train_data in enumerate(train_loader):
         # 5.3.1 数据准备
@@ -242,11 +251,16 @@ for epoch in range(10000000000):
         optimizer.step()
         scheduler.step()
         step += 1
+        running_loss += loss.item()
+        smooth_loss.append(loss.item())
+        if len(smooth_loss) > 100:
+            smooth_loss.pop(0)
+        loss_smooth = sum(smooth_loss) / len(smooth_loss)
 
         # 5.3.3 打印训练信息
         if step % config['train']['step_print'] == 0:
-            print('Epoch: {:d}, Step: {:d}, Loss: {:.4f}, LR: {:.8f}'.format(epoch, step, loss.item(), scheduler.get_last_lr()[0]))
-            wandb.log({"Epoch": epoch, "Step": step, "Loss": loss.item(), "Learning Rate": scheduler.get_last_lr()[0]})
+            print('Epoch: {:d}, Step: {:d}, Loss: {:.4f}, Smoothed Loss: {:.4f}, LR: {:.8f}'.format(epoch, step, loss.item(), loss_smooth, scheduler.get_last_lr()[0]))
+            wandb.log({"Epoch": epoch, "Step": step, "Loss": loss.item(), "Smoothed Loss": loss_smooth, "Learning Rate": scheduler.get_last_lr()[0]})
 
         # 5.3.4 保存模型
         if step % config['train']['step_save'] == 0:
@@ -258,26 +272,37 @@ for epoch in range(10000000000):
         #     total_psnr = 0
         #     total_loss = 0
         #     model.eval()
-        #     with torch.no_grad():
-        #         for _, test_data in enumerate(test_loader):
-        #             test_LR, test_HR, y_adapt_feature = test_data
-        #             test_HR = test_HR.cuda(device=device)
-        #             test_LR = test_LR.cuda(device=device)
-        #             y_adapt_feature = y_adapt_feature.cuda(device=device)
 
-        #             output = model.forward(test_LR, y_adapt_feature)
-        #             loss = criterion(output, test_HR)
+        #     for iter, test_data in enumerate(test_set):
+        #         batch_LR_image, HR_image, batch_yadapt_features = test_data[0], test_data[1], test_data[2]
+        #         patches, (img_height, img_width), (padded_height, padded_width) = test_data[3], test_data[4], test_data[5]
+        #         test_HR = HR_image.astype(np.float32) / 255.0
+        #         test_HR = torch.from_numpy(test_HR).permute(2, 0, 1).float()
 
+        #         test_HR = test_HR.cuda()
+        #         batch_LR_image = batch_LR_image.cuda()
+        #         batch_yadapt_features = batch_yadapt_features.cuda()
+        #         with torch.no_grad():
+        #             batch_Pre_image = model.forward(batch_LR_image, batch_yadapt_features)
+        #             batch_Pre_image = batch_Pre_image.clamp(0, 1).cpu().permute(0,2,3,1).numpy()
+                    
+        #             batch_Pre_image = batch_Pre_image.astype(np.uint8)
+        #             super_res_image = np.zeros((stride * (padded_height // stride) * scale_factor, stride * (padded_width // stride) * scale_factor, 3), dtype=np.uint8)
+
+        #             for (patch, x, y), pre_image in zip(patches, batch_Pre_image):
+        #                 num_y = y // stride
+        #                 num_x = x // stride
+        #                 patch = pre_image[(test_set.overlap//2)*scale_factor:(test_set.pretrained_sam_img_size-test_set.overlap//2)*scale_factor, (test_set.overlap//2)*scale_factor:(test_set.pretrained_sam_img_size-test_set.overlap//2)*scale_factor, :]
+        #                 super_res_image[num_y*stride*scale_factor:(num_y+1)*stride*scale_factor, num_x*stride*scale_factor:(num_x+1)*stride*scale_factor,:] = patch
+
+        #             super_res_image = super_res_image[:img_height*scale_factor-test_set.overlap*scale_factor, :img_width*scale_factor - test_set.overlap*scale_factor]
+        #             loss = criterion(super_res_image, test_HR)
         #             total_loss += loss.item()
 
-        #             # 改变维度，计算 PSNR
-        #             output = permute_squeeze(output)
-        #             test_HR = permute_squeeze(test_HR)
-
-        #             current_psnr = calculate_psnr(output, test_HR, border=config['test']['scale'], max_val=1)
-        #             total_psnr += current_psnr
+        #             total_psnr += calculate_psnr(output, test_HR, border=config['test']['scale'], max_val=1)
         #         avg_psnr = total_psnr / len(test_loader)
         #         avg_loss = total_loss / len(test_loader)
         #         print('Epoch: {:d}, Step: {:d}, Avg PSNR: {:.4f}, Avg Loss: {:.4f}'.format(epoch, step, avg_psnr, avg_loss))
         #         wandb.log({"Epoch": epoch, "Step": step, "Avg PSNR": avg_psnr, "Avg Loss": avg_loss})
         #     model.train()
+        

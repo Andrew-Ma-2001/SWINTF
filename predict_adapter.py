@@ -103,7 +103,9 @@ def save_data(data, path):
 if __name__ == '__main__':
     import sys
     sys.path.append("/home/mayanze/PycharmProjects/SwinTF/")
-    config_path, model_path = sys.argv[1], sys.argv[2]
+    # config_path, model_path = sys.argv[1], sys.argv[2]
+    config_path = '/home/mayanze/PycharmProjects/SwinTF/config/exampleSet5.yaml'
+
 
 
     print('Config path: {}'.format(config_path))
@@ -113,11 +115,11 @@ if __name__ == '__main__':
         config = yaml.safe_load(file)
 
     gpu_ids = config['train']['gpu_ids']
-    os.environ['CUDA_VISIBLE_DEVICES'] = ','.join(str(x) for x in gpu_ids)
-
+    # os.environ['CUDA_VISIBLE_DEVICES'] = ','.join(str(x) for x in gpu_ids)
+    os.environ['CUDA_VISIBLE_DEVICES'] = '6,7'
 
     # SwinIR+SAM
-    # model_path = '/home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20240204_022316/290000_model.pth'
+    model_path = '/home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20240204_022316/290000_model.pth'
 
     scale = config['train']['scale']
     # 3.1 SwinIR
@@ -196,7 +198,7 @@ if __name__ == '__main__':
             patch = pre_image[(test_set.overlap//2)*scale_factor:(test_set.pretrained_sam_img_size-test_set.overlap//2)*scale_factor, (test_set.overlap//2)*scale_factor:(test_set.pretrained_sam_img_size-test_set.overlap//2)*scale_factor, :]
             super_res_image[num_y*stride*scale_factor:(num_y+1)*stride*scale_factor, num_x*stride*scale_factor:(num_x+1)*stride*scale_factor,:] = patch
 
-        super_res_image = super_res_image[:img_height*2-test_set.overlap*2, :img_width*2 - test_set.overlap*2]
+        super_res_image = super_res_image[:img_height*scale_factor-test_set.overlap*scale_factor, :img_width*scale_factor - test_set.overlap*scale_factor]
 
         plt.imsave('{}.png'.format(iter), super_res_image.astype(np.uint8))
         # print('Save {}.png'.format(iter))
