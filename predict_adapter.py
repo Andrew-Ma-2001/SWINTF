@@ -227,7 +227,7 @@ if __name__ == '__main__':
         
         # FIXME
         # 在这里直接把 batch_yadapt_features 变成 0
-        batch_yadapt_features = torch.zeros_like(batch_yadapt_features)
+        # batch_yadapt_features = torch.zeros_like(batch_yadapt_features)
         with torch.no_grad():
             batch_Pre_image = model(batch_LR_image, batch_yadapt_features)
 

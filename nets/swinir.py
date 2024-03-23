@@ -643,12 +643,15 @@ class UpsampleOneStep(nn.Sequential):
 class SelfAttention(nn.Module):
     def __init__(self, in_channels):
         super().__init__()
-        self.query_conv = nn.Conv2d(in_channels, in_channels//8, kernel_size=1)
-        self.key_conv = nn.Conv2d(in_channels, in_channels//8, kernel_size=1)
+        self.query_conv = nn.Conv2d(in_channels, in_channels, kernel_size=1)
+        self.key_conv = nn.Conv2d(in_channels, in_channels, kernel_size=1)
         self.value_conv = nn.Conv2d(in_channels, in_channels, kernel_size=1)
         self.softmax = nn.Softmax(dim=-1)
+        self.proj = nn.Conv2d(in_channels * 2, in_channels, kernel_size=1)
 
     def forward(self, y_adapt, x):
+        ################### 2024-03-23 ##########################
+        # mode 1
         batch_size, C, width, height = x.size()
         query = self.query_conv(y_adapt).view(batch_size, -1, width*height).permute(0, 2, 1)
         key = self.key_conv(x).view(batch_size, -1, width*height)
@@ -657,7 +660,18 @@ class SelfAttention(nn.Module):
         value = self.value_conv(x).view(batch_size, -1, width*height)
         out = torch.bmm(value, attention.permute(0, 2, 1))
         out = out.view(batch_size, C, width, height)
-        return out + y_adapt
+
+        # mode 2
+        # batch_size, C, width, height = x.size()
+        # query = self.query_conv(x).view(batch_size, -1, width * height).permute(0, 2, 1)
+        # key = self.key_conv(y_adapt).view(batch_size, -1, width * height)
+        # energy = torch.bmm(query, key) / math.sqrt(C)
+        # attention = self.softmax(energy)
+        # value = self.value_conv(y_adapt).view(batch_size, -1, width * height)
+        # out = torch.bmm(value, attention.permute(0, 2, 1))
+        # out = out.view(batch_size, C, width, height)
+
+        return self.proj(torch.cat([out, x], 1))
 
 class SwinIR(nn.Module):
     r""" SwinIR
@@ -1095,12 +1109,13 @@ class SwinIRAdapter(nn.Module):
 
         for layer in self.layers:
             x = layer(x, x_size) # torch.Size([1, 4096, 256])
-            x = self.patch_unembed(x, x_size) # torch.Size([1, 180, 48, 48])
 
             # ===========================================================================
             # ========================  加入 adapter 机制  ===============================
             # ===========================================================================
             if y_adapt_feature is not None:
+                x = self.patch_unembed(x, x_size)  # torch.Size([1, 180, 48, 48])
+
                 if self.training:
                     y_adapt = self.adapt_conv(y_adapt_feature)
                     y_adapt = y_adapt.view(-1, 180, 48, 48)
@@ -1117,7 +1132,9 @@ class SwinIRAdapter(nn.Module):
 
                     x = self.self_attention(y_adapt, x)
 
-            x = self.patch_embed(x)
+                ############### 2024-03-23 ####################
+                # x = self.patch_embed(x)
+                x = x.flatten(2).transpose(1, 2)  # B Ph*Pw C
 
         x = self.norm(x)  # B L C
         x = self.patch_unembed(x, x_size)
