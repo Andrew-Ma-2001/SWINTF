@@ -69,3 +69,40 @@ Model：'/home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20240204_022316
 # 4.数据集，Flick2k，DIV2k，找一个 AIM2019 特殊退化，拿 bicubic 训练，用 AIM2019 测试；或者 AIM2019 
 # 5.先用 SwinIR 测 AIM2019，然后用 SwinIR+Yadapt 测 AIM2019 | 或者我们的方法拿 AIM2019 重新训练
 # 6.等于0和不等于0这样测是否有意义？
+
+带 Overlap
+Model：'/home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20240204_022316/100000_model.pth'
+            With Yadapt   Without Yadapt  (Average PSNR)
+1. Set 5        34.19              
+2. Set 14                     
+3. Urban 100                  
+4. Manga 109    32.75                 
+5. BSDS100                    
+
+带 Overlap
+Yadapt 置于 0 训练
+Model: 'experiments/SwinIR_20240317_192139/60000_model.pth'
+
+1. Set 5        36.45 // 38.11(预训练模型 predict_adapter.py)
+1. Set 5        38.32(predict.py)
+
+
+
+# ===============
+# 带 Overlap， Yadapt 置于 0 训练
+Config path: /home/mayanze/PycharmProjects/SwinTF/config/exampleSet5.yaml
+Resume from checkpoint from experiments/SwinIR_20240319_012910/245000_model.pth
+Avg PSNR: 36.48
+Config path: /home/mayanze/PycharmProjects/SwinTF/config/Set14test.yaml
+Resume from checkpoint from experiments/SwinIR_20240319_012910/245000_model.pth
+Avg PSNR: 32.42
+Config path: /home/mayanze/PycharmProjects/SwinTF/config/BSDS100.yaml
+Resume from checkpoint from experiments/SwinIR_20240319_012910/245000_model.pth
+Avg PSNR: 31.13
+Config path: /home/mayanze/PycharmProjects/SwinTF/config/manga109test.yaml
+Resume from checkpoint from experiments/SwinIR_20240319_012910/245000_model.pth
+Avg PSNR: 35.25
+Config path: /home/mayanze/PycharmProjects/SwinTF/config/urban100test.yaml
+Resume from checkpoint from experiments/SwinIR_20240319_012910/245000_model.pth
+Avg PSNR: 29.19
+

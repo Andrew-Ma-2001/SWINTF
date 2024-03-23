@@ -15,7 +15,7 @@ train:
   shuffle: True
   num_workers: 16
 
-  gpu_ids: [0,2,4,6]
+  gpu_ids: [6,7]
 
   # ==================
   # Training parameters

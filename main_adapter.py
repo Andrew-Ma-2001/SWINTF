@@ -11,6 +11,12 @@ from torch.utils.data import DataLoader
 from nets.swinir import SwinIRAdapter
 from utils.utils_image import calculate_psnr, permute_squeeze
 
+
+import warnings
+
+# Filter out the specific warning
+warnings.filterwarnings("ignore", message="Leaking Caffe2 thread-pool after fork. \(function pthreadpool\)")
+
 def check_config_consistency(config):
     # Define the expected keys and their types
     expected_keys = {
@@ -141,12 +147,6 @@ model = SwinIRAdapter(upscale=config['network']['upsacle'],
                 y_adapt_feature=torch.randn(1, 1, 1, 1)
                 )
 
-# 3.2 设计断点续训的机制
-if config['network']['resume_network']:
-    checkpoint = torch.load(config['network']['resume_network'])
-    model.load_state_dict(checkpoint['state_dict'])
-    print('Resume from checkpoint from {}'.format(config['network']['resume_network']))
-
 
 # 加载预训练 SwinIR 模型
 model_path = '/home/mayanze/PycharmProjects/SwinTF/001_classicalSR_DIV2K_s48w8_SwinIR-M_x2.pth'
@@ -176,7 +176,7 @@ if config['train']['optimizer'] == 'adam':
                                     lr=config['train']['lr'],
                                     weight_decay=config['train']['weight_decay'])
         checkpoint = torch.load(config['train']['resume_optimizer'])
-        optimizer.load_state_dict(checkpoint['optimizer'])
+        optimizer.load_state_dict(checkpoint)
         print('Resume from optimizer from {}'.format(config['train']['resume_optimizer']))
     else:
         optimizer = torch.optim.Adam(optim_params,
@@ -198,9 +198,13 @@ device = torch.device('cuda' if gpu_ids is not None else 'cpu')
 
 model.train()
 model.cuda()
-model = torch.nn.DataParallel(model) # 4，5 visable 变成 0，1
+model = torch.nn.DataParallel(model)
 
-
+# 3.2 设计断点续训的机制
+if config['network']['resume_network']:
+    checkpoint = torch.load(config['network']['resume_network'])
+    model.load_state_dict(checkpoint)
+    print('Resume from checkpoint from {}'.format(config['network']['resume_network']))
 
 date_time = time.strftime('%Y%m%d_%H%M%S', time.localtime())
 # 保存现在的时间，创建一个文件夹
@@ -218,10 +222,10 @@ with open(os.path.join(config['train']['save_path'], 'config.yaml'), 'w') as fil
 # 用 Step 来记录训练的次数
 if config['network']['resume_network'] and config['train']['resume_optimizer']:
     # 步长保存为模型的名字 {step}_{model_name}.pth
-    step_network = config['train']['resume_network'].split('/')[-1].split('.')[0].split('_')[0]
+    step_network = config['network']['resume_network'].split('/')[-1].split('.')[0].split('_')[0]
     # 步长保存为优化器的名字 {step}_{optimizer_name}.pth
     step_optimizer = config['train']['resume_optimizer'].split('/')[-1].split('.')[0].split('_')[0]
-    assert step_network == step_optimizer, 'Network and Optimizer should have the same step.'
+    # assert step_network == step_optimizer, 'Network and Optimizer should have the same step.'
     step = int(step_network)
 
 else:
@@ -241,8 +245,11 @@ for epoch in range(10000000000):
         train_LR, train_HR, y_adapt = train_data
         train_HR = train_HR.cuda()
         train_LR = train_LR.cuda()
-        y_adapt = y_adapt.cuda()
 
+        # Make all the y_adapt be zero
+        y_adapt = torch.zeros_like(y_adapt)
+
+        y_adapt = y_adapt.cuda()
         # 5.3.2 训练模型
         optimizer.zero_grad()
         output = model.forward(train_LR, y_adapt)

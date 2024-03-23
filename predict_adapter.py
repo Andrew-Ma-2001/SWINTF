@@ -7,7 +7,7 @@ from PIL import Image
 import torch
 import numpy as np
 from utils.utils_image import permute_squeeze, calculate_psnr, imresize_np
-from nets.swinir import SwinIRAdapter
+from nets.swinir import SwinIRAdapter, SwinIR
 from data.dataloader import SuperResolutionYadaptDataset
 import yaml
 import matplotlib.pyplot as plt
@@ -97,14 +97,34 @@ def save_data(data, path):
     data = data.cpu().detach().numpy()
     np.save(path, data)
 
-
-
+def rgb2ycbcr(img, only_y=True):
+    '''same as matlab rgb2ycbcr
+    only_y: only return Y channel
+    Input:
+        uint8, [0, 255]
+        float, [0, 1]
+    '''
+    in_img_type = img.dtype
+    img.astype(np.float32)
+    if in_img_type != np.uint8:
+        img *= 255.
+    # convert
+    if only_y:
+        rlt = np.dot(img, [65.481, 128.553, 24.966]) / 255.0 + 16.0
+    else:
+        rlt = np.matmul(img, [[65.481, -37.797, 112.0], [128.553, -74.203, -93.786],
+                              [24.966, 112.0, -18.214]]) / 255.0 + [16, 128, 128]
+    if in_img_type == np.uint8:
+        rlt = rlt.round()
+    else:
+        rlt /= 255.
+    return rlt.astype(in_img_type)
 
 if __name__ == '__main__':
     import sys
     sys.path.append("/home/mayanze/PycharmProjects/SwinTF/")
-    # config_path, model_path = sys.argv[1], sys.argv[2]
-    config_path = '/home/mayanze/PycharmProjects/SwinTF/config/exampleSet5.yaml'
+    config_path, model_path = sys.argv[1], sys.argv[2]
+    # config_path = '/home/mayanze/PycharmProjects/SwinTF/config/exampleSet5.yaml'
 
 
 
@@ -119,7 +139,7 @@ if __name__ == '__main__':
     os.environ['CUDA_VISIBLE_DEVICES'] = '6,7'
 
     # SwinIR+SAM
-    model_path = '/home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20240204_022316/290000_model.pth'
+    # model_path = 'experiments/SwinIR_20240317_192139/60000_model.pth'
 
     scale = config['train']['scale']
     # 3.1 SwinIR
@@ -137,12 +157,48 @@ if __name__ == '__main__':
                     y_adapt_feature=torch.randn(1, 1, 1, 1)
                     )
 
+    # model = SwinIR(upscale=config['network']['upsacle'], 
+    #                 in_chans=config['network']['in_channels'],
+    #                 img_size=config['network']['image_size'],
+    #                 window_size=config['network']['window_size'],
+    #                 img_range=config['network']['image_range'],
+    #                 depths=config['network']['depths'],
+    #                 embed_dim=config['network']['embed_dim'],
+    #                 num_heads=config['network']['num_heads'],
+    #                 mlp_ratio=config['network']['mlp_ratio'],
+    #                 upsampler=config['network']['upsampler'],
+    #                 resi_connection=config['network']['resi_connection'],
+    #                 # y_adapt_feature=torch.randn(1, 1, 1, 1)
+    #                 )
+
+
+    # 加载预训练 SwinIR 模型
+    # model_path = '/home/mayanze/PycharmProjects/SwinTF/001_classicalSR_DIV2K_s48w8_SwinIR-M_x2.pth'
+    # # Use strict = True to check the model
+    # pretrained_model = torch.load(model_path)
+    # param_key_g = 'params'
+    # model.load_state_dict(pretrained_model[param_key_g] if param_key_g in pretrained_model.keys() else pretrained_model, strict=True)
+    
+    checkpoint = torch.load(model_path)
+    # model.load_state_dict(checkpoint)
+
+
+
 
     model.eval()
     model.cuda()
     model = torch.nn.DataParallel(model) 
-    checkpoint = torch.load(model_path)
+
+
+    
+    
+    
+    
+    
+    
+    
     model.load_state_dict(checkpoint)
+
     print('Resume from checkpoint from {}'.format(model_path))
 
     # if config['test']['precomputed']:
@@ -171,11 +227,12 @@ if __name__ == '__main__':
         
         # FIXME
         # 在这里直接把 batch_yadapt_features 变成 0
-        # batch_yadapt_features = torch.zeros_like(batch_yadapt_features)
-        
-
+        batch_yadapt_features = torch.zeros_like(batch_yadapt_features)
         with torch.no_grad():
             batch_Pre_image = model(batch_LR_image, batch_yadapt_features)
+
+        # with torch.no_grad():
+        #     batch_Pre_image = model(batch_LR_image)
 
         # batch_Pre_image 的形状  [x*y, 3, 48*scale, 48*scale] -> [x, y, 3,  48*scale, 48*scale] -> [48*x*scale, 48*y*scale, 3] 
         # batch_LR_image = LR_image.reshape(x//48, 48, y//48, 48, 3).transpose(0, 2, 1, 3, 4).reshape(-1, 3, 48, 48)
@@ -200,9 +257,13 @@ if __name__ == '__main__':
 
         super_res_image = super_res_image[:img_height*scale_factor-test_set.overlap*scale_factor, :img_width*scale_factor - test_set.overlap*scale_factor]
 
+
         plt.imsave('{}.png'.format(iter), super_res_image.astype(np.uint8))
         # print('Save {}.png'.format(iter))
         plt.imsave('{}_HR.png'.format(iter), HR_image.astype(np.uint8))
+
+        super_res_image = rgb2ycbcr(super_res_image, only_y=True)
+        HR_image = rgb2ycbcr(HR_image, only_y=True)
 
         psnr = calculate_psnr(super_res_image, HR_image, border=scale)
         total_psnr += psnr

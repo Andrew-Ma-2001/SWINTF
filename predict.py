@@ -10,6 +10,28 @@ from utils.utils_image import permute_squeeze, calculate_psnr, imresize_np
 from nets.swinir import SwinIR
 import yaml
 
+def rgb2ycbcr(img, only_y=True):
+    '''same as matlab rgb2ycbcr
+    only_y: only return Y channel
+    Input:
+        uint8, [0, 255]
+        float, [0, 1]
+    '''
+    in_img_type = img.dtype
+    img.astype(np.float32)
+    if in_img_type != np.uint8:
+        img *= 255.
+    # convert
+    if only_y:
+        rlt = np.dot(img, [65.481, 128.553, 24.966]) / 255.0 + 16.0
+    else:
+        rlt = np.matmul(img, [[65.481, -37.797, 112.0], [128.553, -74.203, -93.786],
+                              [24.966, 112.0, -18.214]]) / 255.0 + [16, 128, 128]
+    if in_img_type == np.uint8:
+        rlt = rlt.round()
+    else:
+        rlt /= 255.
+    return rlt.astype(in_img_type)
 
 def evaluate_with_lrhr_pair(gt_path, lr_path, model):
     # 载入测试图片，以及高清原图
@@ -46,6 +68,9 @@ def evaluate_with_lrhr_pair(gt_path, lr_path, model):
         # 计算PSNR
         sr = permute_squeeze(sr)
         gt = permute_squeeze(gt)
+        
+        sr = rgb2ycbcr(sr, only_y=True)
+        gt = rgb2ycbcr(gt, only_y=True)
 
         psnr = calculate_psnr(sr * 255, gt * 255, border=scale)
         avg_psnr.append(psnr)
@@ -92,17 +117,17 @@ def evaluate_with_hr(gt_path, model):
 
 
 if __name__ == '__main__':
-    config_path = 'config/example.yaml'
+    config_path = '/home/mayanze/PycharmProjects/SwinTF/config/manga109test.yaml'
     with open(config_path, 'r') as file:
         config = yaml.safe_load(file)
 
     gpu_ids = config['train']['gpu_ids']
-    os.environ['CUDA_VISIBLE_DEVICES'] = ','.join(str(x) for x in gpu_ids)
+    os.environ['CUDA_VISIBLE_DEVICES'] = '6,7'
 
     # 载入模型
-    # model_path = 'experiments/SwinIR_20231221_161712/95000_model.pth'
+    model_path = '/home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20231221_161712/120000_model.pth'
     # SwinIR+SAM
-    model_path = '/home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20240204_022316/295000_model.pth'
+    # model_path = '/home/mayanze/PycharmProjects/SwinTF/001_classicalSR_DIV2K_s48w8_SwinIR-M_x2.pth'
 
     scale = config['train']['scale']
     model = SwinIR(upscale=config['network']['upsacle'], 
@@ -120,16 +145,25 @@ if __name__ == '__main__':
 
     model.eval()
     model.cuda()
+
+    # pretrained_model = torch.load(model_path)
+    # param_key_g = 'params'
+    # model.load_state_dict(pretrained_model[param_key_g] if param_key_g in pretrained_model.keys() else pretrained_model, strict=True)
+   
     model = torch.nn.DataParallel(model) 
     checkpoint = torch.load(model_path)
     model.load_state_dict(checkpoint)
     print('Resume from checkpoint from {}'.format(model_path))
 
+    
+    
+    
 
-    # gt_path = 'dataset/testsets/Set14/GTmod12'
-    # lr_path = 'dataset/testsets/Set14/LRbicx4'
-    # # scale = 4
-    # evaluate_with_lrhr_pair(gt_path, lr_path, model)
 
-    gt_path = 'dataset/testsets/urban100'
-    evaluate_with_hr(gt_path, model)
+    gt_path = 'dataset/testsets/Set5/GTmod12'
+    lr_path = 'dataset/testsets/Set5/LRbicx2'
+    # scale = 4
+    evaluate_with_lrhr_pair(gt_path, lr_path, model)
+
+    # gt_path = 'dataset/testsets/urban100'
+    # evaluate_with_hr(gt_path, model)

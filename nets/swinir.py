@@ -997,7 +997,7 @@ class SwinIRAdapter(nn.Module):
 
         # build Residual Swin Transformer blocks (RSTB)
         self.layers = nn.ModuleList()
-        for i_layer in range(self.num_layers):
+        for i_layer in range(self.num_layers): # i_layer in range 6 
             layer = RSTB(dim=embed_dim,
                          input_resolution=(patches_resolution[0],
                                            patches_resolution[1]),

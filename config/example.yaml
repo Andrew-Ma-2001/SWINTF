@@ -5,7 +5,7 @@ train:
   # ==================
   type: 'SwinIR'
   mode: 'train'
-  scale: 4
+  scale: 2
   patch_size: 96
 
   train_HR: 'dataset/trainsets/trainH/DIV2K'
@@ -18,7 +18,7 @@ train:
   shuffle: True
   num_workers: 16
 
-  gpu_ids: [0,1]
+  gpu_ids: [0,1,2,3]
 
   # ==================
   # Training parameters
@@ -35,14 +35,14 @@ train:
   # Training scheduler
   # ==================
   scheduler: 'MultiStepLR'
-  milestones: [250000, 400000, 450000, 475000, 500000]
+  milestones: [250000, 400000, 450000, 475000, 500000] #最终要到 10000000 step
   gamma: 0.5
 
   save_path: 'experiments/'
 
 test:
   mode: 'test'
-  scale: 4
+  scale: 2
   patch_size: 96
 
   test_HR: 'dataset/testsets/Set5/GTmod12'
@@ -54,7 +54,7 @@ test:
   num_workers: 1
 
 network:
-  upsacle: 4
+  upsacle: 2
   in_channels: 3
   image_size: 48  # 照抄的，不知道是什么意思
   window_size: 8
