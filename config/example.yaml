@@ -68,3 +68,5 @@ network:
 
   # 断点续训练
   resume_network: null
+  # 冻结网络训练
+  freeze_network: False

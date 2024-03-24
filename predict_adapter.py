@@ -136,7 +136,7 @@ if __name__ == '__main__':
 
     gpu_ids = config['train']['gpu_ids']
     # os.environ['CUDA_VISIBLE_DEVICES'] = ','.join(str(x) for x in gpu_ids)
-    os.environ['CUDA_VISIBLE_DEVICES'] = '6,7'
+    os.environ['CUDA_VISIBLE_DEVICES'] = '4,5'
 
     # SwinIR+SAM
     # model_path = 'experiments/SwinIR_20240317_192139/60000_model.pth'
@@ -270,12 +270,3 @@ if __name__ == '__main__':
         # print('PSNR: {:.2f}'.format(psnr))
 
     print('Avg PSNR: {:.2f}'.format(total_psnr / len(test_set)))
-
-
-    # gt_path = 'dataset/testsets/Set14/GTmod12'
-    # lr_path = 'dataset/testsets/Set14/LRbicx4'
-    # # scale = 4
-    # evaluate_with_lrhr_pair(gt_path, lr_path, model)
-
-    # gt_path = 'dataset/testsets/urban100'
-    # evaluate_with_hr(gt_path, model)

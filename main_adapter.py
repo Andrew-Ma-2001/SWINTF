@@ -15,7 +15,7 @@ from utils.utils_image import calculate_psnr, permute_squeeze
 import warnings
 
 # Filter out the specific warning
-warnings.filterwarnings("ignore", message="Leaking Caffe2 thread-pool after fork. \(function pthreadpool\)")
+warnings.filterwarnings("ignore")
 
 def check_config_consistency(config):
     # Define the expected keys and their types
@@ -158,6 +158,17 @@ model.load_state_dict(pretrained_model[param_key_g] if param_key_g in pretrained
 # 4 Loss, Optimizer 和 Scheduler 部分
 # ================================================
 
+if config['network']['freeze_network']:
+    for param in model.parameters():
+        param.requires_grad = False
+    
+    for param in model.self_attention.parameters():
+        param.requires_grad = True
+    
+    for param in model.adapt_conv.parameters():
+        param.requires_grad = True
+    
+
 # 4.1 Loss 定义
 if config['train']['loss'] == 'l1':
     criterion = torch.nn.L1Loss()
@@ -247,7 +258,7 @@ for epoch in range(10000000000):
         train_LR = train_LR.cuda()
 
         # Make all the y_adapt be zero
-        y_adapt = torch.zeros_like(y_adapt)
+        # y_adapt = torch.zeros_like(y_adapt)
 
         y_adapt = y_adapt.cuda()
         # 5.3.2 训练模型
