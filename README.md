@@ -106,3 +106,114 @@ Config path: /home/mayanze/PycharmProjects/SwinTF/config/urban100test.yaml
 Resume from checkpoint from experiments/SwinIR_20240319_012910/245000_model.pth
 Avg PSNR: 29.19
 
+
+
+
+---
+
+| Dataset  | Config Path                                                  | Average PSNR |
+| -------- | ------------------------------------------------------------ | ------------ |
+| Set 5    | `/home/mayanze/PycharmProjects/SwinTF/config/exampleSet5.yaml` | 36.44        |
+| Set14    | `/home/mayanze/PycharmProjects/SwinTF/config/Set14test.yaml` | 32.36        |
+| BSDS100  | `/home/mayanze/PycharmProjects/SwinTF/config/BSDS100.yaml`   | 31.09        |
+| Manga109 | `/home/mayanze/PycharmProjects/SwinTF/config/manga109test.yaml` | 35.18        |
+| Urban100 | `/home/mayanze/PycharmProjects/SwinTF/config/urban100test.yaml` | 29.11        |
+
+
+
+
+
+yadapt 不为 0 7 万步
+
+| Dataset       | Average PSNR |
+| ------------- | ------------ |
+| Example Set 5 | 36.44        |
+| Set14         | 32.36        |
+| BSDS100       | 31.09        |
+| Manga109      | 35.18        |
+| Urban100      | 29.11        |
+
+
+
+逻辑上这里应该是相同万步比较？
+
+yadapt不为0，2万步
+
+Config path: /home/mayanze/PycharmProjects/SwinTF/config/exampleSet5.yaml
+Resume from checkpoint from /home/mayanze/PycharmProjects/SwinTF/20000_model.pth
+Avg PSNR: 36.03
+Config path: /home/mayanze/PycharmProjects/SwinTF/config/Set14test.yaml
+Resume from checkpoint from /home/mayanze/PycharmProjects/SwinTF/20000_model.pth
+Avg PSNR: 32.17
+Config path: /home/mayanze/PycharmProjects/SwinTF/config/BSDS100.yaml
+Resume from checkpoint from /home/mayanze/PycharmProjects/SwinTF/20000_model.pth
+Avg PSNR: 30.91
+Config path: /home/mayanze/PycharmProjects/SwinTF/config/manga109test.yaml
+Resume from checkpoint from /home/mayanze/PycharmProjects/SwinTF/20000_model.pth
+Avg PSNR: 34.51
+Config path: /home/mayanze/PycharmProjects/SwinTF/config/urban100test.yaml
+Resume from checkpoint from /home/mayanze/PycharmProjects/SwinTF/20000_model.pth
+Avg PSNR: 28.83
+
+
+
+
+
+
+
+SwinIR，2万步
+
+| Dataset       | Average PSNR |
+| ------------- | ------------ |
+| Example Set 5 | 37.58        |
+| Set14         | 33.47        |
+| BSDS100       | 31.95        |
+| Manga109      | 37.90        |
+| Urban100      | 31.76        |
+
+
+SwinIR 6万步
+
+| Dataset  | Avg PSNR |
+|----------|----------|
+| Set5     | 37.78    |
+| Set14    | 33.70    |
+| BSDS100  | 32.05    |
+| Manga109 | 38.41    |
+| Urban100 | 32.43    |
+
+
+SwinIRAdapter 2万步
+| Dataset   | Avg PSNR |
+|-----------|----------|
+| Set5      | 36.03    |
+| Set14     | 32.17    |
+| BSDS100   | 30.91    |
+| Manga109  | 34.51    |
+| Urban100  | 28.83    |
+
+SwinIR Adapter 7万步
+
+| Dataset       | Average PSNR |
+| ------------- | ------------ |
+| Example Set 5 | 36.46        |
+| Set14         | 32.37        |
+| BSDS100       | 31.10        |
+| Manga109      | 35.19        |
+| Urban100      | 29.11        |
+
+SwinIR Adapter 16万步
+
+| Dataset  | Avg PSNR |
+|----------|----------|
+| Set5     | 36.42    |
+| Set14    | 32.37    |
+| BSDS100  | 31.09    |
+| Manga109 | 35.18    |
+| Urban100 | 29.14    |
+
+
+SwinIRAdapter 19万步 loss为nan
+
+
+

@@ -13,6 +13,10 @@ from typing import Optional, Tuple, Type
 from functools import partial
 import numpy as np
 
+
+import sys
+sys.path.append('/home/mayanze/PycharmProjects/SwinTF')
+
 from nets.common import LayerNorm2d, MLPBlock
 
 # This class and its supporting functions below lightly adapted from the ViTDet backbone available at: https://github.com/facebookresearch/detectron2/blob/main/detectron2/modeling/backbone/vit.py # noqa

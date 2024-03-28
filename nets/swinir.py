@@ -639,27 +639,29 @@ class UpsampleOneStep(nn.Sequential):
         flops = H * W * self.num_feat * 3 * 9
         return flops
 
-
+######################## modified 2024/03/28，简化了写法，提高了效率
 class SelfAttention(nn.Module):
     def __init__(self, in_channels):
         super().__init__()
-        self.query_conv = nn.Conv2d(in_channels, in_channels, kernel_size=1)
-        self.key_conv = nn.Conv2d(in_channels, in_channels, kernel_size=1)
-        self.value_conv = nn.Conv2d(in_channels, in_channels, kernel_size=1)
-        self.softmax = nn.Softmax(dim=-1)
-        self.proj = nn.Conv2d(in_channels * 2, in_channels, kernel_size=1)
+        self.q = nn.Linear(in_channels, in_channels)
+        self.kv = nn.Linear(in_channels, in_channels*2)
+        self.proj = nn.Linear(in_channels, in_channels)
 
     def forward(self, y_adapt, x):
         ################### 2024-03-23 ##########################
-        # mode 1
         batch_size, C, width, height = x.size()
-        query = self.query_conv(y_adapt).view(batch_size, -1, width*height).permute(0, 2, 1)
-        key = self.key_conv(x).view(batch_size, -1, width*height)
-        energy = torch.bmm(query, key) / math.sqrt(C)
-        attention = self.softmax(energy)
-        value = self.value_conv(x).view(batch_size, -1, width*height)
-        out = torch.bmm(value, attention.permute(0, 2, 1))
-        out = out.view(batch_size, C, width, height)
+        y_adapt_flatten = y_adapt.flatten(2).transpose(1, 2)    # B, HW, C
+        x_flatten = x.flatten(2).transpose(1, 2)    # B, HW, C
+
+        q = self.q(y_adapt_flatten)    # B, HW, C
+        kv = self.kv(x_flatten).view(batch_size, -1, 2, C)
+        k, v = kv.unbind(2)  # B, HW, C
+
+        attn = (q @ k.transpose(-2, -1)) / math.sqrt(C)
+        attn = attn.softmax(dim=-1)
+
+        out = (attn @ v).transpose(1, 2).reshape(batch_size, -1, C)
+        out = self.proj(out) + x
 
         # mode 2
         # batch_size, C, width, height = x.size()
@@ -671,7 +673,7 @@ class SelfAttention(nn.Module):
         # out = torch.bmm(value, attention.permute(0, 2, 1))
         # out = out.view(batch_size, C, width, height)
 
-        return self.proj(torch.cat([out, x], 1))
+        return out
 
 class SwinIR(nn.Module):
     r""" SwinIR
@@ -1035,7 +1037,11 @@ class SwinIRAdapter(nn.Module):
         # XXX 这里把 self_attention 的大小写死了
         self.y_adapt_feature_size = y_adapt_feature
         self.self_attention = SelfAttention(180)  
-        self.adapt_conv = nn.Conv2d(3840, 180*256, kernel_size=1) # ViT 用的是 1280x64x64 需要降维到 64x64x64
+        #################### modified 2024/03/28  原view有问题（不能跟原图pixel level对齐），改用pixelshuffle，
+        self.adapt_conv = nn.Sequential(
+            nn.Conv2d(3840, 180*16*16, kernel_size=1),
+            nn.PixelShuffle(16)
+        ) # ViT 用的是 1280x64x64 需要降维到 64x64x64
 
         # build the last conv layer in deep feature extraction
         if resi_connection == '1conv':
@@ -1101,6 +1107,9 @@ class SwinIRAdapter(nn.Module):
         return x
 
     def forward_features(self, x, y_adapt_feature):
+        '''
+        y_adapt_feature: B, 2840, 3, 3
+        '''
         x_size = (x.shape[2], x.shape[3])
         x = self.patch_embed(x)
         if self.ape:
@@ -1117,8 +1126,8 @@ class SwinIRAdapter(nn.Module):
                 x = self.patch_unembed(x, x_size)  # torch.Size([1, 180, 48, 48])
 
                 if self.training:
-                    y_adapt = self.adapt_conv(y_adapt_feature)
-                    y_adapt = y_adapt.view(-1, 180, 48, 48)
+                    y_adapt = self.adapt_conv(y_adapt_feature) # B, 180, 48, 48
+                    # y_adapt = y_adapt.view(-1, 180, 48, 48)
 
                     x = self.self_attention(y_adapt, x)
 

@@ -123,25 +123,26 @@ def rgb2ycbcr(img, only_y=True):
 if __name__ == '__main__':
     import sys
     sys.path.append("/home/mayanze/PycharmProjects/SwinTF/")
-    config_path, model_path = sys.argv[1], sys.argv[2]
+    config_path, model_path, gpu_ids, yadapt = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]
     # config_path = '/home/mayanze/PycharmProjects/SwinTF/config/exampleSet5.yaml'
 
-
+    if yadapt == 'True':
+        print('Yadapt is True SwinIRAdapter')
+    else:
+        print('Yadapt is False Using zero yadapt as training SwinIR')
 
     print('Config path: {}'.format(config_path))
-    # print('Using zero yadapt')
-    # config_path = '/home/mayanze/PycharmProjects/SwinTF/config/Set14test.yaml'
+
     with open(config_path, 'r') as file:
         config = yaml.safe_load(file)
 
-    gpu_ids = config['train']['gpu_ids']
-    # os.environ['CUDA_VISIBLE_DEVICES'] = ','.join(str(x) for x in gpu_ids)
-    os.environ['CUDA_VISIBLE_DEVICES'] = '4,5'
+    os.environ['CUDA_VISIBLE_DEVICES'] = ','.join(str(x) for x in gpu_ids)
+
 
     # SwinIR+SAM
     # model_path = 'experiments/SwinIR_20240317_192139/60000_model.pth'
 
-    scale = config['train']['scale']
+    scale = config['test']['scale']
     # 3.1 SwinIR
     model = SwinIRAdapter(upscale=config['network']['upsacle'], 
                     in_chans=config['network']['in_channels'],
@@ -225,9 +226,10 @@ if __name__ == '__main__':
         batch_LR_image, HR_image, batch_yadapt_features = test_data[0], test_data[1], test_data[2]
         patches, (img_height, img_width), (padded_height, padded_width) = test_data[3], test_data[4], test_data[5]
         
-        # FIXME
-        # 在这里直接把 batch_yadapt_features 变成 0
-        # batch_yadapt_features = torch.zeros_like(batch_yadapt_features)
+
+        if yadapt == 'False':
+            batch_yadapt_features = torch.zeros_like(batch_yadapt_features)
+
         with torch.no_grad():
             batch_Pre_image = model(batch_LR_image, batch_yadapt_features)
 
