@@ -192,13 +192,16 @@ if __name__ == '__main__':
 
 
     
+    if yadapt == 'False':
+        # 纯SwinIR模型
+        # 把checkpoint里面有关module.self_attention全部删除
+        checkpoint = {k: v for k, v in checkpoint.items() if 'module.self_attention' not in k}
     
     
     
     
     
-    
-    model.load_state_dict(checkpoint)
+    model.load_state_dict(checkpoint,strict=False)
 
     print('Resume from checkpoint from {}'.format(model_path))
 

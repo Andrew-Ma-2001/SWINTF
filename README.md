@@ -213,7 +213,17 @@ SwinIR Adapter 16万步
 | Urban100 | 29.14    |
 
 
-SwinIRAdapter 19万步 loss为nan
+---
+# 新的网络
+
+SwinIR Adapter 5万步
+| Dataset  | Avg PSNR |
+|----------|----------|
+| Set5     | 36.47    |
+| Set14    | 32.39    |
+| BSDS100  | 31.10    |
+| Manga109 | 35.20    |
+| Urban100 | 29.16    |
 
 
 

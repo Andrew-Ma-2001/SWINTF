@@ -141,12 +141,12 @@ class SuperResolutionYadaptDataset(Dataset):
                     self.precompute_test()
         
         if self.mode == 'train':
-            # self.check_train_precompute()
-            # if self.config['precomputed']:
-            #     self.check_train_precompute()
-            #     if not self.precompute:
-            #         self.precompute_train()
-            self.precompute = True
+            self.check_train_precompute()
+            if self.config['precomputed']:
+                self.check_train_precompute()
+                if not self.precompute:
+                    self.precompute_train()
+            # self.precompute = True
 
     def precompute_test(self):
         if self.LR_path == 'BIC':
@@ -653,7 +653,10 @@ if __name__ == "__main__":
     # precompute(test_set, config)
 
     train_set = SuperResolutionYadaptDataset(config=config['train'])
-    train_set.precompute_train()
+    # train_set.precompute_train()
+
+    a = train_set.__getitem__(0)
+    b = 1
 
     # # 对yadapt_features进行测试, 对同一个位置跑两次，结果应该是一样的
     # test_set = SuperResolutionYadaptDataset(config=config['test'])

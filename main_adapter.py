@@ -17,6 +17,7 @@ import warnings
 # Filter out the specific warning
 warnings.filterwarnings("ignore")
 
+
 def check_config_consistency(config):
     # Define the expected keys and their types
     expected_keys = {

@@ -1,5 +1,5 @@
 # model_path='/home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20240204_022316/290000_model.pth'
-model_path='/home/mayanze/PycharmProjects/SwinTF/60000_model_swinir.pth'
+model_path='/home/mayanze/PycharmProjects/SwinTF/100000_model_swinir.pth'
 gpu_id='0,1'
 yadapt='False'
 python predict_adapter.py /home/mayanze/PycharmProjects/SwinTF/config/test_config/exampleSet5.yaml $model_path $gpu_id $yadapt

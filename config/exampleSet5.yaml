@@ -11,11 +11,11 @@ train:
   train_HR: 'dataset/trainsets/trainH/DIV2K'
   train_LR: 'dataset/trainsets/trainL/DIV2K/DIV2K_train_LR_bicubic'
   
-  batch_size: 16 # 4x8
+  batch_size: 32 # 4x8
   shuffle: True
-  num_workers: 16
+  num_workers: 32
 
-  gpu_ids: [2,3]
+  gpu_ids: [0,1,2,3]
 
   # ==================
   # Training parameters
@@ -39,6 +39,8 @@ train:
 
   pretrained_sam: '/home/mayanze/PycharmProjects/SwinTF/sam_vit_h_4b8939.pth'
   pretrained_sam_img_size: 48
+
+  precomputed: True # 如果是 True，则默认保存在 train_LR 的文件夹下
 
 test:
   mode: 'test'
@@ -74,4 +76,4 @@ network:
 
   # 断点续训练
   resume_network: null
-  freeze_network: True
+  freeze_network: False
