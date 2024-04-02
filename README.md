@@ -182,6 +182,23 @@ SwinIR 6万步
 | Manga109 | 38.41    |
 | Urban100 | 32.43    |
 
+SwinIR 23万步
+Config path: config/exampleSet5.yaml
+Resume from checkpoint from experiments/SwinIR_20240328_213746/230000_model.pth
+Avg PSNR: 37.89
+Config path: config/Set14test.yaml
+Resume from checkpoint from experiments/SwinIR_20240328_213746/230000_model.pth
+Avg PSNR: 33.78
+Config path: config/BSDS100.yaml
+Resume from checkpoint from experiments/SwinIR_20240328_213746/230000_model.pth
+Avg PSNR: 32.15
+Config path: config/manga109test.yaml
+Resume from checkpoint from experiments/SwinIR_20240328_213746/230000_model.pth
+Avg PSNR: 38.65
+Config path: config/urban100test.yaml
+Resume from checkpoint from experiments/SwinIR_20240328_213746/230000_model.pth
+Avg PSNR: 32.60
+
 
 SwinIRAdapter 2万步
 | Dataset   | Avg PSNR |

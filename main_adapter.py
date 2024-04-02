@@ -18,63 +18,6 @@ import warnings
 warnings.filterwarnings("ignore")
 
 
-def check_config_consistency(config):
-    # Define the expected keys and their types
-    expected_keys = {
-        'train': dict,
-        'test': dict,
-        'network': dict
-    }
-
-    # Check if all expected keys are present
-    for key, expected_type in expected_keys.items():
-        if key not in config:
-            raise Exception(f"Missing key in config: {key}")
-        if not isinstance(config[key], expected_type):
-            raise Exception(f"Expected type {expected_type} for key {key}, but got {type(config[key])}")
-
-    # Check the keys in the 'train', 'test', and 'network' sections
-    train_keys = ['type', 'mode', 'scale', 'patch_size', 'train_HR', 'train_LR', 'batch_size', 'shuffle', 'num_workers', 'gpu_ids', 'loss', 'optimizer', 'lr', 'weight_decay', 'resume_optimizer', 'step_save', 'step_test', 'step_print', 'scheduler', 'milestones', 'gamma', 'save_path']
-    test_keys = ['mode', 'scale', 'patch_size', 'test_HR', 'test_LR', 'batch_size', 'shuffle', 'num_workers']
-    network_keys = ['upsacle', 'in_channels', 'image_size', 'window_size', 'image_range', 'depths', 'embed_dim', 'num_heads', 'mlp_ratio', 'upsampler', 'resi_connection', 'resume_network']
-
-    for key in train_keys:
-        if key not in config['train']:
-            raise Exception(f"Missing key in config['train']: {key}")
-
-    for key in test_keys:
-        if key not in config['test']:
-            raise Exception(f"Missing key in config['test']: {key}")
-
-    for key in network_keys:
-        if key not in config['network']:
-            raise Exception(f"Missing key in config['network']: {key}")
-
-    # New rules
-    # 1. The batch size on each gpu should be 8
-    if config['train']['batch_size'] / len(config['train']['gpu_ids']) != 8:
-        print("Warning: The batch size on each GPU should be 8.")
-
-    # 2. Train scale and test scale should be the same
-    if config['train']['scale'] != config['test']['scale']:
-        print("Warning: Train scale and test scale should be the same.")
-
-    # 3. The patch size should be divisible by the scale
-    if config['train']['patch_size'] % config['train']['scale'] != 0:
-        print("Warning: The patch size should be divisible by the scale.")
-
-    # 4. The resume_network and resume_optimizer should have the same step
-    if config['train']['resume_optimizer'] != config['network']['resume_network']:
-        print("Warning: The resume_network and resume_optimizer should have the same step.")
-
-    # 4.1 It should either be None or an existing file
-    if config['train']['resume_optimizer'] != 'None' and not os.path.isfile(config['train']['resume_optimizer']):
-        print("Warning: resume_optimizer should either be None or an existing file.")
-    if config['network']['resume_network'] != 'None' and not os.path.isfile(config['network']['resume_network']):
-        print("Warning: resume_network should either be None or an existing file.")
-
-
-    print("Config is consistent.")
 
 
 # =================================================

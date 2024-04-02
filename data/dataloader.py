@@ -120,6 +120,8 @@ class SuperResolutionYadaptDataset(Dataset):
 
         # TODO 把这个参数写在外面
         self.overlap = 8
+        self.pixel_mean = np.array([123.675, 116.28, 103.53])
+        self.pixel_std = np.array([58.395, 57.12, 57.375])
 
         self.pretrained_sam_img_size = config['pretrained_sam_img_size']
 
@@ -312,6 +314,7 @@ class SuperResolutionYadaptDataset(Dataset):
                 y1, y2, y3 = y1.squeeze(0).cpu().numpy(), y2.squeeze(0).cpu().numpy(), y3.squeeze(0).cpu().numpy()
                 y1, y2, y3 = y1[:, :3, :3], y2[:, :3, :3], y3[:, :3, :3]
                 yadapt_features = np.concatenate((y1, y2, y3), axis=0)
+                yadapt_features = (yadapt_features - self.pixel_mean) / self.pixel_std
                 # Print the size of yadapt_features
                 # print(yadapt_features.shape) # 3480x3x3 
                 yadapt_features = torch.from_numpy(yadapt_features).float()
@@ -340,7 +343,10 @@ class SuperResolutionYadaptDataset(Dataset):
                 yadapt_features = np.load(yadapt_feature_path)
                 # 这里因为 yadapt_features 是整个图像的特征，所以要把 yadapt_features 裁剪一下
                 yadapt_features = yadapt_features[int((rnd_h/self.LR_size)*(rnd_w/self.LR_size))]
+                yadapt_features = (yadapt_features - self.pixel_mean) / self.pixel_std
+                yadapt_features = torch.from_numpy(yadapt_features).float()
 
+            
             # --------------------------------
             # crop corresponding H patch
             # --------------------------------
