@@ -366,70 +366,6 @@ class SuperResolutionYadaptDataset(Dataset):
     
             return LR_image, HR_image, yadapt_features
 
-        # if self.mode == "test":
-        #     # LR_image to Batch LR image
-        #     # HR = [:LR_imageshape0*self.scale, :LR_imageshape1*self.scale]
-        #     # 首先对 LR 图像进行 mod_crop 必须能被 48 整除
-        #     LR_image = modcrop(LR_image, 48)
-        #     HR_image_shape = (LR_image.shape[0]*self.scale, LR_image.shape[1]*self.scale) 
-        #     # 然后对应的 HR 图像也要变换 
-        #     HR_image = HR_image[:HR_image_shape[0], :HR_image_shape[1], :]
-        #     # 设置一个 assert 保证 HR 和 LR 放大后的大小是一样的
-        #     assert HR_image.shape[0] == LR_image.shape[0] * self.scale and HR_image.shape[1] == LR_image.shape[1] * self.scale, "HR and LR should have the same size after modcrop"
-
-        #     # 参考下面的精神，将 LR_image 转换成 batch 形式
-        #     # LR_image 的形状 [48*x, 48*y, 3] -> [x, y, 3, 48, 48] -> [x*y, 3, 48, 48]
-        #     x, y, _ = LR_image.shape
-        #     batch_LR_image = LR_image.reshape(x//48, 48, y//48, 48, 3).transpose(0, 2, 1, 3, 4).reshape(-1, 48, 48, 3).transpose(0, 3, 1, 2)
-            
-        #     # 这里要把 48x48 变成 1024x1024 建一个更大的矩阵
-        #     large_img = np.zeros((batch_LR_image.shape[0], 3, 1024, 1024))
-        #     large_img[:, :, :48, :48] = batch_LR_image
-            
-        #     # 然后将 batch_LR_image 转换成 tensor
-        #     batch_LR_image_sam = torch.from_numpy(large_img).float()
-        #     # 然后将 batch_LR_image 输入到模型中
-
-        #     if self.precompute is False:
-        #         if batch_LR_image_sam.shape[0] <= 5:
-        #             if self.use_cuda:
-        #                 batch_LR_image_sam = batch_LR_image_sam.cuda()
-    
-        #             with torch.no_grad():
-        #                 _, y1, y2, y3 = self.model.image_encoder(batch_LR_image_sam)
-        #                 y1, y2, y3 = y1.cpu().numpy(), y2.cpu().numpy(), y3.cpu().numpy()
-        #         else:
-        #             if self.use_cuda:
-        #                 y1, y2, y3 = process_batch(batch_LR_image_sam, self.model.image_encoder, 5)
-        #         # import matplotlib.pyplot as plt
-        #         # plt.imshow(batch_LR_image[0,0,:,:])
-        #         # plt.savefig('test.png')
-        #         # Concatenate the features
-        #         y1, y2, y3 = y1[:, :, :3, :3], y2[:, :, :3, :3], y3[:, :, :3, :3]
-        #         yadapt_features = np.concatenate((y1, y2, y3), axis=1)
-                
-        #     else:
-        #         if self.LR_path == 'BIC':
-        #             save_path = self.HR_path + '_yadapt'
-        #         else:
-        #             save_path = self.LR_path + '_yadapt'
-        #         yadapt_feature_path = os.path.join(save_path, os.path.basename(self.LR_images[idx]).split(".")[0]+'_yadapt.npy')
-        #         yadapt_features = np.load(yadapt_feature_path)
-            
-            
-        #     # Print the size of yadapt_features
-        #     # print(yadapt_features.shape) # 3480x3x3
-        #     batch_yadapt_features = torch.from_numpy(yadapt_features).float()
-        #     # 这里由于 vit 会把 B 和 C 合成一个维度，所以这里要把 batch_yadapt_features 的维度转换一下，变成 [xy/3, 1280*3, 3, 3]
-        #     # batch_yadapt_features = batch_yadapt_features.reshape(yadapt_features.shape[0]//3, 1280*3, 3, 3)
-        #     # assert 到这里 batch_yadapt_features 和 batch_LR_image 的 batch_size 是一样的
-        #     assert batch_yadapt_features.shape[0] == batch_LR_image.shape[0], "batch_yadapt_features and batch_LR_image should have the same batch_size"
-
-        #     batch_LR_image = batch_LR_image / 255.0
-        #     batch_LR_image = torch.from_numpy(batch_LR_image).float()
-
-        #     return batch_LR_image, HR_image, batch_yadapt_features,(x,y)
-
         if self.mode == "test":
             # 需要检查一下一开始能不能对上 HR 和 LR
             assert HR_image.shape[0] == LR_image.shape[0] * self.scale and HR_image.shape[1] == LR_image.shape[1] * self.scale, "HR and LR should have the same size after modcrop"
@@ -467,6 +403,7 @@ class SuperResolutionYadaptDataset(Dataset):
                 # Concatenate the features
                 y1, y2, y3 = y1[:, :, :3, :3], y2[:, :, :3, :3], y3[:, :, :3, :3]
                 yadapt_features = np.concatenate((y1, y2, y3), axis=1)
+                yadapt_features = (yadapt_features - self.pixel_mean) / self.pixel_std
 
             else:
                 if self.LR_path == 'BIC':
@@ -475,6 +412,7 @@ class SuperResolutionYadaptDataset(Dataset):
                     save_path = self.LR_path + '_yadapt'
                 yadapt_feature_path = os.path.join(save_path, os.path.basename(self.LR_images[idx]).split(".")[0]+'_yadapt.npy')
                 yadapt_features = np.load(yadapt_feature_path)
+                yadapt_features = (yadapt_features - self.pixel_mean) / self.pixel_std
             
             
             # Print the size of yadapt_features

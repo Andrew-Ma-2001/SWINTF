@@ -7,7 +7,7 @@ from PIL import Image
 import torch
 import numpy as np
 from utils.utils_image import permute_squeeze, calculate_psnr, imresize_np
-from nets.swinir import SwinIRAdapter, SwinIR
+from nets.swinir import SwinIRAdapter
 from data.dataloader import SuperResolutionYadaptDataset
 import yaml
 import matplotlib.pyplot as plt
@@ -124,7 +124,15 @@ if __name__ == '__main__':
     import sys
     sys.path.append("/home/mayanze/PycharmProjects/SwinTF/")
     config_path, model_path, gpu_ids, yadapt = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]
+   
+    # For Debug
     # config_path = '/home/mayanze/PycharmProjects/SwinTF/config/exampleSet5.yaml'
+    # model_path='/home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20240403_015754/50000_model.pth'
+    # gpu_ids='2,3'
+    # yadapt='True'
+
+
+
 
     if yadapt == 'True':
         print('Yadapt is True SwinIRAdapter')
@@ -201,7 +209,7 @@ if __name__ == '__main__':
     
     
     
-    model.load_state_dict(checkpoint,strict=False)
+    model.load_state_dict(checkpoint,strict=True)
 
     print('Resume from checkpoint from {}'.format(model_path))
 

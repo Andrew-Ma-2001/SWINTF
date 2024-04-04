@@ -244,3 +244,24 @@ SwinIR Adapter 5万步
 
 
 
+---
+SAM 归一化 SwinIR Adapter 5万步
+Config path: /home/mayanze/PycharmProjects/SwinTF/config/test_config/exampleSet5.yaml
+Resume from checkpoint from /home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20240403_015754/50000_model.pth
+Avg PSNR: 38.09
+Yadapt is True SwinIRAdapter
+Config path: /home/mayanze/PycharmProjects/SwinTF/config/test_config/Set14test.yaml
+Resume from checkpoint from /home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20240403_015754/50000_model.pth
+Avg PSNR: 34.09
+Yadapt is True SwinIRAdapter
+Config path: /home/mayanze/PycharmProjects/SwinTF/config/test_config/BSDS100.yaml
+Resume from checkpoint from /home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20240403_015754/50000_model.pth
+Avg PSNR: 32.27
+Yadapt is True SwinIRAdapter
+Config path: /home/mayanze/PycharmProjects/SwinTF/config/test_config/manga109test.yaml
+Resume from checkpoint from /home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20240403_015754/50000_model.pth
+Avg PSNR: 39.22
+Yadapt is True SwinIRAdapter
+Config path: /home/mayanze/PycharmProjects/SwinTF/config/test_config/urban100test.yaml
+Resume from checkpoint from /home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20240403_015754/50000_model.pth
+Avg PSNR: 33.06

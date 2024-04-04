@@ -42,7 +42,15 @@ np.random.seed(seed)
 torch.manual_seed(seed)
 torch.cuda.manual_seed_all(seed)
 
-wandb.init(project='SwinIR', config=config)
+wandb.init(project='SwinIR',config=config)
+
+# wandb.init(
+#     project='SwinIR',
+#     id="4卡SwinIRAdapter新",
+#     # name="4卡SwinIRAdapter新",
+#     config=config,
+#     resume='must'
+# )
 # =================================================
 # 1 Dataset 部分
 # =================================================
@@ -117,33 +125,6 @@ if config['network']['freeze_network']:
 if config['train']['loss'] == 'l1':
     criterion = torch.nn.L1Loss()
 
-# 4.2 Optimizer 定义
-if config['train']['optimizer'] == 'adam':
-    optim_params = []
-    for k, v in model.named_parameters():
-        if v.requires_grad:
-            optim_params.append(v)
-        else:
-            print('Params [{:s}] will not optimize.'.format(k))
-
-    if config['train']['resume_optimizer']:
-        optimizer = torch.optim.Adam(optim_params,
-                                    lr=config['train']['lr'],
-                                    weight_decay=config['train']['weight_decay'])
-        checkpoint = torch.load(config['train']['resume_optimizer'])
-        optimizer.load_state_dict(checkpoint)
-        print('Resume from optimizer from {}'.format(config['train']['resume_optimizer']))
-    else:
-        optimizer = torch.optim.Adam(optim_params,
-                                    lr=config['train']['lr'],
-                                    weight_decay=config['train']['weight_decay'])
-
-# 4.3 Scheduler 定义
-if config['train']['scheduler'] == 'MultiStepLR':
-    scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer,
-                                                    milestones=config['train']['milestones'], # milestones: [250000, 400000, 450000, 475000, 500000]
-                                                    gamma=config['train']['gamma']) # gamma: 0.5
-
 
 # ==================================================
 # 5 Training 部分
@@ -161,6 +142,10 @@ if config['network']['resume_network']:
     model.load_state_dict(checkpoint)
     print('Resume from checkpoint from {}'.format(config['network']['resume_network']))
 
+
+
+
+
 date_time = time.strftime('%Y%m%d_%H%M%S', time.localtime())
 # 保存现在的时间，创建一个文件夹
 config['train']['save_path'] = os.path.join(config['train']['save_path'], config['train']['type'] + '_' + date_time)
@@ -172,6 +157,32 @@ if not os.path.exists(config['train']['save_path']):
 with open(os.path.join(config['train']['save_path'], 'config.yaml'), 'w') as file:
     yaml.dump(config, file)
 
+# 4.2 Optimizer 定义
+if config['train']['optimizer'] == 'adam':
+    optim_params = []
+    for k, v in model.named_parameters():
+        if v.requires_grad:
+            optim_params.append(v)
+        else:
+            print('Params [{:s}] will not optimize.'.format(k))
+
+    if config['train']['resume_optimizer']:
+        optimizer = torch.optim.Adam(optim_params,
+                                    lr=config['train']['lr'],
+                                    weight_decay=config['train']['weight_decay'])
+        checkpoint = torch.load(config['train']['resume_optimizer'], map_location=device)
+        optimizer.load_state_dict(checkpoint)
+        print('Resume from optimizer from {}'.format(config['train']['resume_optimizer']))
+    else:
+        optimizer = torch.optim.Adam(optim_params,
+                                    lr=config['train']['lr'],
+                                    weight_decay=config['train']['weight_decay'])
+
+# 4.3 Scheduler 定义
+if config['train']['scheduler'] == 'MultiStepLR':
+    scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer,
+                                                    milestones=config['train']['milestones'], # milestones: [250000, 400000, 450000, 475000, 500000]
+                                                    gamma=config['train']['gamma']) # gamma: 0.5
 
 
 # 用 Step 来记录训练的次数
