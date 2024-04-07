@@ -254,13 +254,10 @@ def check_plot_yadapt_distribution():
     files = os.listdir(file_dir)
     files = sorted(files)
     files = [os.path.join(file_dir, file) for file in files if file.endswith(".npy")]
-    pixel_mean = np.array([123.675, 116.28, 103.53])
-    pixel_std = np.array([58.395, 57.12, 57.375])
     max_values = []
     i = 0
     for num in tqdm(range(files.__len__())):
         data = np.load(files[num])
-        data = (data - pixel_mean) / pixel_std
         # Make the x axis be -50 to 50
         plt.hist(data.flatten(), bins=100)
         # Save the figure
@@ -274,3 +271,6 @@ def check_plot_yadapt_distribution():
     print(min(max_values))
 
     print(max_values)
+
+check_plot_yadapt_distribution()
+

@@ -55,7 +55,7 @@ def process_batch(batch, model, max_sub_batch_size):
     for sub_batch in sub_batches:
         sub_batch = sub_batch.cuda() # Move sub-batch to default GPU device before using DataParallel
         with torch.no_grad():
-            _, y1, y2, y3 = model(sub_batch)
+                _, y1, y2, y3 = model(sub_batch)
         # Move output to CPU to avoid GPU memory accumulation
         y1_.append(y1.cpu())
         y2_.append(y2.cpu())

@@ -108,6 +108,7 @@ class SuperResolutionYadaptDataset(Dataset):
         self.use_cuda = config['yadapt_use_cuda']
 
         if self.use_cuda:
+            # Move the model to a specific 
             self.model = self.model.cuda()
             self.model.image_encoder = torch.nn.DataParallel(self.model.image_encoder)
 
@@ -217,6 +218,9 @@ class SuperResolutionYadaptDataset(Dataset):
         for idx in range(len(self.HR_images)):
             LR_image = Image.open(self.LR_images[idx])
             LR_image = np.array(LR_image)
+            LR_image = (LR_image - self.pixel_mean) / self.pixel_std
+
+
             patches = [] 
             # Cut the LR_image into patches
             for y in range(0, LR_image.shape[0] - self.LR_size + 1, self.LR_size):
@@ -228,13 +232,14 @@ class SuperResolutionYadaptDataset(Dataset):
             for i, (patch, _, _) in enumerate(patches):
                 batch_LR_image[i] = patch.transpose(2, 0, 1)
 
+            
             # 这里要把 48x48 变成 1024x1024 建一个更大的矩阵
             large_img = np.zeros((batch_LR_image.shape[0], 3, 1024, 1024))
             large_img[:, :, :48, :48] = batch_LR_image
             # 然后将 batch_LR_image 转换成 tensor
             batch_LR_image_sam = torch.from_numpy(large_img).float()
             # 然后将 batch_LR_image 输入到模型中
-            inferece_batch_size = 12
+            inferece_batch_size = 5
             
             if batch_LR_image_sam.shape[0] <= inferece_batch_size:
                 if self.use_cuda:
@@ -302,7 +307,6 @@ class SuperResolutionYadaptDataset(Dataset):
                 y1, y2, y3 = y1.squeeze(0).cpu().numpy(), y2.squeeze(0).cpu().numpy(), y3.squeeze(0).cpu().numpy()
                 y1, y2, y3 = y1[:, :3, :3], y2[:, :3, :3], y3[:, :3, :3]
                 yadapt_features = np.concatenate((y1, y2, y3), axis=0)
-                yadapt_features = (yadapt_features - self.pixel_mean) / self.pixel_std
                 # Print the size of yadapt_features
                 # print(yadapt_features.shape) # 3480x3x3 
                 yadapt_features = torch.from_numpy(yadapt_features).float()
@@ -330,8 +334,7 @@ class SuperResolutionYadaptDataset(Dataset):
                 yadapt_feature_path = os.path.join(save_path, os.path.basename(self.LR_images[idx]).split(".")[0]+'_yadapt.npy')
                 yadapt_features = np.load(yadapt_feature_path)
                 # 这里因为 yadapt_features 是整个图像的特征，所以要把 yadapt_features 裁剪一下
-                # yadapt_features = yadapt_features[int((rnd_h/self.LR_size)*(rnd_w/self.LR_size))]
-                yadapt_features = (yadapt_features - self.pixel_mean) / self.pixel_std
+                yadapt_features = yadapt_features[int((rnd_h/self.LR_size)*(rnd_w/self.LR_size))]
                 yadapt_features = torch.from_numpy(yadapt_features).float()
 
             
@@ -455,52 +458,55 @@ if __name__ == "__main__":
     # precompute(test_set, config)
 
 
-    from tqdm import tqdm
+    # from tqdm import tqdm
+
+    # Set CUDA_VISIBLE_DEVICES environment variable
+    os.environ['CUDA_VISIBLE_DEVICES'] = '0,1'
 
     train_set = SuperResolutionYadaptDataset(config=config['train'])
-    # train_set.precompute_train()
+    train_set.precompute_train()
 
-    total_train_set = len(train_set)
+    # total_train_set = len(train_set)
 
-    y1_max = []
-    y2_max = []
-    y3_max = []
+    # y1_max = []
+    # y2_max = []
+    # y3_max = []
 
-    y1_min = []
-    y2_min = []
-    y3_min = []
-    for i in tqdm(range(total_train_set)):
-        LR_image, HR_image, yadapt = train_set.__getitem__(i)
-        # Equally Split the yadapt into three part by 0 dimension
-        yadapt = yadapt.numpy()
-        yadapt = np.split(yadapt, 3, axis=0)
-        y1_max.append(np.max(yadapt[0]))
-        y2_max.append(np.max(yadapt[1]))
-        y3_max.append(np.max(yadapt[2]))
-        y1_min.append(np.min(yadapt[0]))
-        y2_min.append(np.min(yadapt[1]))
-        y3_min.append(np.min(yadapt[2]))
+    # y1_min = []
+    # y2_min = []
+    # y3_min = []
+    # for i in tqdm(range(total_train_set)):
+    #     LR_image, HR_image, yadapt = train_set.__getitem__(i)
+    #     # Equally Split the yadapt into three part by 0 dimension
+    #     yadapt = yadapt.numpy()
+    #     yadapt = np.split(yadapt, 3, axis=0)
+    #     y1_max.append(np.max(yadapt[0]))
+    #     y2_max.append(np.max(yadapt[1]))
+    #     y3_max.append(np.max(yadapt[2]))
+    #     y1_min.append(np.min(yadapt[0]))
+    #     y2_min.append(np.min(yadapt[1]))
+    #     y3_min.append(np.min(yadapt[2]))
 
-    # Create a plot to show three histograms
-    # Create a histogram
-    import matplotlib.pyplot as plt
-    # A 3x2 plot and Larger figure size
-    fig, axs = plt.subplots(3, 2, figsize=(15, 17))
-    axs[0, 0].hist(y1_max, bins=100)
-    axs[0, 0].set_title('y1_max')
-    axs[0, 1].hist(y1_min, bins=100)
-    axs[0, 1].set_title('y1_min')
-    axs[1, 0].hist(y2_max, bins=100)
-    axs[1, 0].set_title('y2_max')
-    axs[1, 1].hist(y2_min, bins=100)
-    axs[1, 1].set_title('y2_min')
-    axs[2, 0].hist(y3_max, bins=100)
-    axs[2, 0].set_title('y3_max')
-    axs[2, 1].hist(y3_min, bins=100)
-    axs[2, 1].set_title('y3_min')
+    # # Create a plot to show three histograms
+    # # Create a histogram
+    # import matplotlib.pyplot as plt
+    # # A 3x2 plot and Larger figure size
+    # fig, axs = plt.subplots(3, 2, figsize=(15, 17))
+    # axs[0, 0].hist(y1_max, bins=100)
+    # axs[0, 0].set_title('y1_max')
+    # axs[0, 1].hist(y1_min, bins=100)
+    # axs[0, 1].set_title('y1_min')
+    # axs[1, 0].hist(y2_max, bins=100)
+    # axs[1, 0].set_title('y2_max')
+    # axs[1, 1].hist(y2_min, bins=100)
+    # axs[1, 1].set_title('y2_min')
+    # axs[2, 0].hist(y3_max, bins=100)
+    # axs[2, 0].set_title('y3_max')
+    # axs[2, 1].hist(y3_min, bins=100)
+    # axs[2, 1].set_title('y3_min')
 
-    # Save the histogram
-    plt.savefig('yadapt_histogram.png')
+    # # Save the histogram
+    # plt.savefig('yadapt_histogram.png')
 
 
 
