@@ -1,5 +1,12 @@
 # This is the file to load the data from the dataset.
 
+# 2024.04.07 日志
+# 今天检查为什么多次读取出来的数据不一样
+
+
+
+
+
 import os
 import torch
 import numpy as np
@@ -14,7 +21,7 @@ sys.path.append('/home/mayanze/PycharmProjects/SwinTF')
 
 
 from data.extract_sam_features import extract_sam_model
-from utils.utils_data import get_all_images
+from utils.utils_data import get_all_images, extract_patches, process_batch
 from utils.utils_image import imresize_np, modcrop, augment_img
 
 
@@ -98,21 +105,22 @@ class SuperResolutionYadaptDataset(Dataset):
         
         self.model = extract_sam_model(model_path=config['pretrained_sam'], image_size = 1024)
 
-        self.use_cuda = True  # WARNING #TODO 这里要把用不用GPU写在外面
+        self.use_cuda = config['yadapt_use_cuda']
+
         if self.use_cuda:
             self.model = self.model.cuda()
             self.model.image_encoder = torch.nn.DataParallel(self.model.image_encoder)
 
         if self.mode == 'train':
-            self.HR_path = config['train_HR'] if self.config is not None else 'dataset/trainsets/trainH/DIV2K'
-            self.LR_path = config['train_LR'] if self.config is not None else 'dataset/trainsets/trainL/DIV2K/DIV2K_train_LR_bicubic'
+            self.HR_path = config['train_HR'] # 'dataset/trainsets/trainH/DIV2K'
+            self.LR_path = config['train_LR'] # 'dataset/trainsets/trainL/DIV2K/DIV2K_train_LR_bicubic'
             # Add in scale size in LR_path
             self.LR_path = os.path.join(self.LR_path, 'X{}'.format(self.scale))
             # self.yadapt_features = np.load(config['train_yadapt'])
         
         elif self.mode == 'test':
-            self.HR_path = config['test_HR'] if self.config is not None else 'dataset/testsets/Set5'
-            self.LR_path = config['test_LR'] if self.config is not None else 'dataset/testsets/Set5/LRbicx4'
+            self.HR_path = config['test_HR'] # 'dataset/testsets/Set5'
+            self.LR_path = config['test_LR'] # 'dataset/testsets/Set5/LRbicx4'
 
             # Check if path exists
             assert os.path.exists(self.HR_path), "HR_path should exist"
@@ -148,28 +156,7 @@ class SuperResolutionYadaptDataset(Dataset):
                 self.check_train_precompute()
                 if not self.precompute:
                     self.precompute_train()
-            # self.precompute = True
 
-    def precompute_test(self):
-        if self.LR_path == 'BIC':
-            save_path = self.HR_path + '_yadapt'
-        else:
-            save_path = self.LR_path + '_yadapt'
-
-        if not os.path.exists(save_path):
-            os.makedirs(save_path)
-
-        assert len(os.listdir(save_path)) == 0, "The save_path should be empty"
-
-        for i in range(len(self.HR_images)):
-            LR_image, HR_image, yadapt, _ , _, _ = self.__getitem__(i)
-            print(LR_image.shape, HR_image.shape, yadapt.shape)
-            yadapt = yadapt.cpu().numpy()
-            save_name = os.path.join(save_path, os.path.basename(self.LR_images[i]).split(".")[0]+'_yadapt.npy')
-            np.save(save_name, yadapt)
-            print('Save {}'.format(save_name))
-        
-        self.precompute = True
     
     def check_test_precompute(self):
         if self.LR_path == 'BIC':
@@ -194,6 +181,27 @@ class SuperResolutionYadaptDataset(Dataset):
             self.precompute = True
         else:
             self.precompute = False
+
+    def precompute_test(self):
+        if self.LR_path == 'BIC':
+            save_path = self.HR_path + '_yadapt'
+        else:
+            save_path = self.LR_path + '_yadapt'
+
+        if not os.path.exists(save_path):
+            os.makedirs(save_path)
+
+        assert len(os.listdir(save_path)) == 0, "The save_path should be empty"
+
+        for i in range(len(self.HR_images)):
+            LR_image, HR_image, yadapt, _ , _, _ = self.__getitem__(i)
+            print(LR_image.shape, HR_image.shape, yadapt.shape)
+            yadapt = yadapt.cpu().numpy()
+            save_name = os.path.join(save_path, os.path.basename(self.LR_images[i]).split(".")[0]+'_yadapt.npy')
+            np.save(save_name, yadapt)
+            print('Save {}'.format(save_name))
+        
+        self.precompute = True
 
     def precompute_train(self):
         if self.LR_path == 'BIC':
@@ -279,26 +287,6 @@ class SuperResolutionYadaptDataset(Dataset):
             rnd_w = random.choice(np.arange(0, LR_image.shape[1] - self.LR_size + 1, self.LR_size))
             LR_image = LR_image[rnd_h:rnd_h + self.LR_size, rnd_w:rnd_w + self.LR_size, :]
 
-
-            # # XXX Future Fix Move out of the function
-            # # LR_image to Batch LR image
-            # large_img = np.zeros((1024, 1024, 3), dtype=np.float32)
-            # large_img[:self.LR_size, :self.LR_size, :] = LR_image
-            # batch_img = torch.from_numpy(large_img).permute(2, 0, 1).unsqueeze(0).float()
-            # # Send batch_img to cuda
-            # if self.use_cuda:
-            #     batch_img = batch_img.cuda()
-
-            # with torch.no_grad():
-            #     _, y1, y2, y3 = self.model.image_encoder(batch_img)
-            # # Concatenate the features
-
-            # y1, y2, y3 = y1.squeeze(0).cpu().numpy(), y2.squeeze(0).cpu().numpy(), y3.squeeze(0).cpu().numpy()
-            # y1, y2, y3 = y1[:, :3, :3], y2[:, :3, :3], y3[:, :3, :3]
-            # yadapt_features = np.concatenate((y1, y2, y3), axis=0)
-            # # Print the size of yadapt_features
-            # # print(yadapt_features.shape) # 3480x3x3 
-            # yadapt_features = torch.from_numpy(yadapt_features).float()
             
             # 然后将 batch_LR_image 输入到模型中
             if self.precompute is False:
@@ -342,7 +330,7 @@ class SuperResolutionYadaptDataset(Dataset):
                 yadapt_feature_path = os.path.join(save_path, os.path.basename(self.LR_images[idx]).split(".")[0]+'_yadapt.npy')
                 yadapt_features = np.load(yadapt_feature_path)
                 # 这里因为 yadapt_features 是整个图像的特征，所以要把 yadapt_features 裁剪一下
-                yadapt_features = yadapt_features[int((rnd_h/self.LR_size)*(rnd_w/self.LR_size))]
+                # yadapt_features = yadapt_features[int((rnd_h/self.LR_size)*(rnd_w/self.LR_size))]
                 yadapt_features = (yadapt_features - self.pixel_mean) / self.pixel_std
                 yadapt_features = torch.from_numpy(yadapt_features).float()
 
@@ -427,152 +415,22 @@ class SuperResolutionYadaptDataset(Dataset):
             batch_LR_image = torch.from_numpy(batch_LR_image).float()
             return batch_LR_image, HR_image, batch_yadapt_features, patches, (img_height, img_width), (padded_height, padded_width)
 
-# Function to split a batch into smaller sub-batches
-def split_batch(batch, max_sub_batch_size):
-    sub_batches = []
-    for start in range(0, batch.size(0), max_sub_batch_size):
-        end = min(start + max_sub_batch_size, batch.size(0))
-        sub_batches.append(batch[start:end])
-    return sub_batches
-
-# Process the batch across multiple GPUs with DataParallel
-def process_batch(batch, model, max_sub_batch_size):
-    # Split the batch into sub-batches that fit into GPU memory
-    sub_batches = split_batch(batch, max_sub_batch_size)
-
-    # Process each sub-batch using DataParallel and collect the results
-    output_batches = []
-    y1_ = []
-    y2_ = []
-    y3_ = []
-    for sub_batch in sub_batches:
-        sub_batch = sub_batch.cuda() # Move sub-batch to default GPU device before using DataParallel
-        with torch.no_grad():
-            _, y1, y2, y3 = model(sub_batch)
-        # Move output to CPU to avoid GPU memory accumulation
-        y1_.append(y1.cpu())
-        y2_.append(y2.cpu())
-        y3_.append(y3.cpu())
-    
-    y1 = torch.cat(y1_, dim=0)
-    y2 = torch.cat(y2_, dim=0)
-    y3 = torch.cat(y3_, dim=0)
-
-    return y1, y2, y3
-
-
-def extract_patches(image, patch_size, overlap):
-    stride = patch_size - overlap
-    
-    # 这里选择padding的方式是constant，所以padding的部分是黑色的
-    img_height, img_width = image.shape[:2]
-    pad_height = (stride - (img_height - patch_size) % stride) % stride
-    pad_width = (stride - (img_width - patch_size) % stride) % stride
-    padded_image = np.pad(image, ((0, pad_height), (0, pad_width), (0,0)), mode='constant', constant_values=255)
-
-    # 不能裁剪！！！裁剪了之后图片缩小太多了
-    # padded_image = image[:image.shape[0] - (image.shape[0] - patch_size) % stride, :image.shape[1] - (image.shape[1] - patch_size) % stride]
-
-    patches = []
-    padded_height, padded_width = padded_image.shape[:2]
-    for y in range(0, padded_height - patch_size + 1, stride):
-        for x in range(0, padded_width - patch_size + 1, stride):
-            patch = padded_image[y:y + patch_size, x:x + patch_size,:]
-            patches.append((patch, x, y))
-    
-    return patches, padded_image.shape[:2], image.shape[:2]
-
-
-def super_resolve_patch(patch, scale_factor=2):
-    super_res_patch = cv2.resize(patch, (0, 0), fx=scale_factor, fy=scale_factor, interpolation=cv2.INTER_CUBIC)
-    return super_res_patch
-
-
-def super_resolve_patches(patches, scale_factor=2):
-    super_res_patches = []
-    for (patch, x, y) in patches:
-        super_res_patch = super_resolve_patch(patch, scale_factor)
-        super_res_patches.append((super_res_patch, x, y))
-    return super_res_patches
-
-
-def overlapping_image(patches, padded_height, padded_width, patch_size, overlap, stride, scale_factor):
-    """
-    >>> img = cv2.imread('/home/mayanze/PycharmProjects/SwinTF/dataset/testsets/BSDS100/8023.png')
-    >>> img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    >>> img = img[:132, :132]
-    >>> patch_size = 48
-    >>> overlap = 4
-    >>> stride = patch_size - overlap
-    >>> patches, (padded_height, padded_width) = extract_patches(img, patch_size, overlap)
-    >>> super_res_patches = super_resolve_patches(patches, scale_factor=2)
-    >>> super_res_image = overlapping_image(super_res_patches, padded_height, padded_width, patch_size, overlap, stride, scale_factor=2)
-    """
-    max_num_y = padded_height // stride
-    max_num_x = padded_width // stride
-    
-    super_res_image = np.zeros((stride * (padded_height // stride) * scale_factor, stride * (padded_width // stride) * scale_factor), dtype=np.uint8)
-    for (patch, x, y) in patches:
-        # x_pos = x * scale_factor
-        # y_pos = y * scale_factor
-        # 这样写的代价是还要裁掉周围一圈的overlap，等于在HR图像上丢失了一圈像素，但是这样我不会写了，所以还是分成三种情况
-        num_y = y // stride
-        num_x = x // stride
-
-        # TODO 对于patch需要考虑scale_factor的问题
-
-        # # 对于在角落的patch，只有两个overlap
-        # if [num_y, num_x] in [[0, 0], [0, max_num_x-1], [max_num_y-1, 0], [max_num_y-1, max_num_x-1]]:
-        #     if num_y == 0 and num_x == 0:
-        #         patch = patch[:(patch_size-overlap//2)*scale_factor, :(patch_size-overlap//2)*scale_factor]
-        #         # super_res_image[:(patch_size-overlap//2)*scale_factor, :(patch_size-overlap//2)*scale_factor] = patch
-        #     elif num_y == 0 and num_x == max_num_x-1:
-        #         patch = patch[(overlap//2)*scale_factor:, :(patch_size-overlap//2)*scale_factor] # yx
-        #         # super_res_image[:(patch_size-overlap//2)*scale_factor, num_x*stride*scale_factor:num_x*stride*scale_factor+stride*scale_factor] = patch
-        #     elif num_y == max_num_y-1 and num_x == 0:
-        #         patch = patch[:(patch_size-overlap//2)*scale_factor, (overlap//2)*scale_factor:]
-        #         # super_res_image[num_y*stride*scale_factor:num_y*stride*scale_factor+stride*scale_factor, :(patch_size-overlap//2)*scale_factor] = patch
-        #     elif num_y == max_num_y-1 and num_x == max_num_x-1:
-        #         patch = patch[(overlap//2)*scale_factor:, (overlap//2)*scale_factor:]
-        #         # super_res_image[num_y*stride*scale_factor:num_y*stride*scale_factor+stride*scale_factor, num_x*stride*scale_factor:num_x*stride*scale_factor+stride*scale_factor] = patch
-
-        # # 对于在边缘的patch，有三个overlap
-        # elif num_y == 0 or num_x == 0 or num_y == max_num_y-1 or num_x == max_num_x-1:
-        #     if num_y == 0:
-        #         patch = patch[:(patch_size-overlap//2)*scale_factor, (overlap//2)*scale_factor:(patch_size-overlap//2)*scale_factor]
-        #     elif num_x == 0:
-        #         patch = patch[(overlap//2)*scale_factor:(patch_size-overlap//2)*scale_factor, :(patch_size-overlap//2)*scale_factor]
-        #     elif num_y == max_num_y-1:
-        #         patch = patch[(overlap//2)*scale_factor:, (overlap//2)*scale_factor:(patch_size-overlap//2)*scale_factor]
-        #     elif num_x == max_num_x-1:
-        #         patch = patch[(overlap//2)*scale_factor:(patch_size-overlap//2)*scale_factor, (overlap//2)*scale_factor:]
-        
-        # # 对于在中间的patch，有四个overlap
-        # else:
-        #     patch = patch[(overlap//2)*scale_factor:(patch_size-overlap//2)*scale_factor, (overlap//2)*scale_factor:(patch_size-overlap//2)*scale_factor]
-        patch = patch[(overlap//2)*scale_factor:(patch_size-overlap//2)*scale_factor, (overlap//2)*scale_factor:(patch_size-overlap//2)*scale_factor]
-        super_res_image[num_y*stride*scale_factor:(num_y+1)*stride*scale_factor, num_x*stride*scale_factor:(num_x+1)*stride*scale_factor] = patch
-    return super_res_image
-
 
 
 if __name__ == "__main__":
     import sys
+    import yaml
+
     sys.path.append('/home/mayanze/PycharmProjects/SwinTF')
-    # Send in the config file
-    # config_path= sys.argv[1]
     config_path = '/home/mayanze/PycharmProjects/SwinTF/config/exampleSet5.yaml'
 
 
-
-    # dataset class 要有 __init__ 和 __len__ 和 __getitem__ 三个函数
-    # __init__ 中的参数：config（最终），最终是需要 config 来整体设计，一个 config 走天下
-    import yaml
     config_path = config_path
     with open(config_path, 'r') as file:
         config = yaml.safe_load(file)
 
     print(config)
+
     # DIV2K = SuperResolutionDataset(config=config['train'])
     # LR_image, HR_image = DIV2K.__getitem__(0)
     # print(LR_image.shape, HR_image.shape)
@@ -596,23 +454,71 @@ if __name__ == "__main__":
     # print(test_set.precompute) 
     # precompute(test_set, config)
 
+
+    from tqdm import tqdm
+
     train_set = SuperResolutionYadaptDataset(config=config['train'])
     # train_set.precompute_train()
 
-    a = train_set.__getitem__(0)
-    b = 1
+    total_train_set = len(train_set)
 
-    # # 对yadapt_features进行测试, 对同一个位置跑两次，结果应该是一样的
-    # test_set = SuperResolutionYadaptDataset(config=config['test'])
-    # r0_LR_image, r0_HR_image, r0_yadapt, (x,y)= test_set.__getitem__(0)
-    # test_set2 = SuperResolutionYadaptDataset(config=config['test'])
-    # r1_LR_image, r1_HR_image, r1_yadapt, (x,y)= test_set2.__getitem__(0)
+    y1_max = []
+    y2_max = []
+    y3_max = []
 
-    # # 检查是否完全一样
-    # print(np.allclose(r0_LR_image, r1_LR_image))
-    # print(np.allclose(r0_HR_image, r1_HR_image))
+    y1_min = []
+    y2_min = []
+    y3_min = []
+    for i in tqdm(range(total_train_set)):
+        LR_image, HR_image, yadapt = train_set.__getitem__(i)
+        # Equally Split the yadapt into three part by 0 dimension
+        yadapt = yadapt.numpy()
+        yadapt = np.split(yadapt, 3, axis=0)
+        y1_max.append(np.max(yadapt[0]))
+        y2_max.append(np.max(yadapt[1]))
+        y3_max.append(np.max(yadapt[2]))
+        y1_min.append(np.min(yadapt[0]))
+        y2_min.append(np.min(yadapt[1]))
+        y3_min.append(np.min(yadapt[2]))
+
+    # Create a plot to show three histograms
+    # Create a histogram
+    import matplotlib.pyplot as plt
+    # A 3x2 plot and Larger figure size
+    fig, axs = plt.subplots(3, 2, figsize=(15, 17))
+    axs[0, 0].hist(y1_max, bins=100)
+    axs[0, 0].set_title('y1_max')
+    axs[0, 1].hist(y1_min, bins=100)
+    axs[0, 1].set_title('y1_min')
+    axs[1, 0].hist(y2_max, bins=100)
+    axs[1, 0].set_title('y2_max')
+    axs[1, 1].hist(y2_min, bins=100)
+    axs[1, 1].set_title('y2_min')
+    axs[2, 0].hist(y3_max, bins=100)
+    axs[2, 0].set_title('y3_max')
+    axs[2, 1].hist(y3_min, bins=100)
+    axs[2, 1].set_title('y3_min')
+
+    # Save the histogram
+    plt.savefig('yadapt_histogram.png')
+
+
+
+
+
+
+    # train_set = SuperResolutionYadaptDataset(config=config['train'])
+    # r0_LR_image, r0_HR_image, r0_yadapt = train_set.__getitem__(0)
+    # train_set2 = SuperResolutionYadaptDataset(config=config['train'])
+    # r1_LR_image, r1_HR_image, r1_yadapt = train_set2.__getitem__(0)
+
+    # # # 检查是否完全一样
+    # print(np.allclose(r0_LR_image, r1_LR_image)) # 由于有随机，所以不同是正常的
+    # print(np.allclose(r0_HR_image, r1_HR_image)) # 由于有随机，所以不同是正常的
     # print(np.allclose(r0_yadapt, r1_yadapt))
 
     #=========================================================================
     ### 检查出来确实是不一样，yadapt_features 为什么不一样，继续检查
     #=========================================================================
+
+

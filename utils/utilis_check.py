@@ -63,6 +63,7 @@ def check_train_yadapt_shape():
     import numpy as np
     file_path = 'dataset/trainsets/trainL/DIV2K/DIV2K_train_LR_bicubic/X2_yadapt/0824x2_yadapt.npy'
     yadapt_feature = np.load(file_path)
+    print(yadapt_feature.shape)
 
 
 def check_train_pair():
@@ -132,3 +133,144 @@ def check_config_consistency(config):
 
 
     print("Config is consistent.")
+
+
+def check_test_consistency(config):
+    from data.dataloader import SuperResolutionYadaptDataset
+    import numpy as np
+    # 对yadapt_features进行测试, 对同一个位置跑两次，结果应该是一样的
+    test_set = SuperResolutionYadaptDataset(config=config['test'])
+    r0_LR_image, r0_HR_image, r0_yadapt, _, _, _ = test_set.__getitem__(0)
+    test_set2 = SuperResolutionYadaptDataset(config=config['test'])
+    r1_LR_image, r1_HR_image, r1_yadapt,  _, _, _ = test_set2.__getitem__(0)
+
+    # 检查是否完全一样
+    print(np.allclose(r0_LR_image, r1_LR_image))
+    print(np.allclose(r0_HR_image, r1_HR_image))
+    print(np.allclose(r0_yadapt, r1_yadapt))
+
+
+def check_yadapt_files():
+    import numpy as np
+    file1 = '/home/mayanze/PycharmProjects/SwinTF/dataset/trainsets/trainL/DIV2K/DIV2K_train_LR_bicubic/X0_yadapt/0001x2_yadapt.npy'
+    file2 = '/home/mayanze/PycharmProjects/SwinTF/dataset/trainsets/trainL/DIV2K/DIV2K_train_LR_bicubic/X1_yadapt/0001x2_yadapt.npy'
+    yadapt1 = np.load(file1)
+    yadapt2 = np.load(file2)
+    print(np.allclose(yadapt1, yadapt2))
+
+
+
+def check_two_npy_file():
+    # Load in two npy files and check if is the same after sorting
+    import numpy as np
+
+    file_path1 = '/home/mayanze/PycharmProjects/SwinTF/max_yadapt_values.npy'
+    file_path2 = '/home/mayanze/PycharmProjects/SwinTF/max_yadapt_values2.npy'
+
+    yadapt_feature1 = np.load(file_path1)
+    yadapt_feature2 = np.load(file_path2)
+
+    yadapt_feature1 = np.sort(yadapt_feature1)
+    yadapt_feature2 = np.sort(yadapt_feature2)
+
+    print(np.allclose(yadapt_feature1, yadapt_feature2))
+
+# 把预处理函数写在外面，不能写在里面了
+def check_precompute():
+    import numpy as np
+    from PIL import Image
+    from utils.utils_data import get_all_images, process_batch
+    from nets.build_sam import extract_sam_model
+
+    LR_path = '/home/mayanze/PycharmProjects/SwinTF/dataset/trainsets/trainL/DIV2K/DIV2K_train_LR_bicubic/X1'
+    LR_size = 48
+    pretrained_sam_img_size = 48
+    use_cuda = True
+    save_path = LR_path + '_yadapt'
+    model = extract_sam_model(model_path='/home/mayanze/PycharmProjects/SwinTF/sam_vit_h_4b8939.pth', image_size = 1024)
+    # only use 0,1 gpu
+    os.environ['CUDA_VISIBLE_DEVICES'] = '0,1'
+
+
+
+    if use_cuda:
+        model = model.cuda()
+        model.image_encoder = torch.nn.DataParallel(model.image_encoder)
+
+    LR_images = get_all_images(LR_path)
+
+    if not os.path.exists(save_path):
+        os.makedirs(save_path)
+
+    assert len(os.listdir(save_path)) == 0, "The save_path should be empty"
+
+    for idx in range(len(LR_images)):
+        LR_image = Image.open(LR_images[idx])
+        LR_image = np.array(LR_image)
+        patches = [] 
+        # Cut the LR_image into patches
+        for y in range(0, LR_image.shape[0] - LR_size + 1, LR_size):
+            for x in range(0, LR_image.shape[1] - LR_size + 1, LR_size):
+                patch = LR_image[y:y + LR_size, x:x + LR_size,:]
+                patches.append((patch, x, y))
+
+        batch_LR_image = np.zeros((len(patches), 3, pretrained_sam_img_size, pretrained_sam_img_size))
+        for i, (patch, _, _) in enumerate(patches):
+            batch_LR_image[i] = patch.transpose(2, 0, 1)
+
+        # 这里要把 48x48 变成 1024x1024 建一个更大的矩阵
+        large_img = np.zeros((batch_LR_image.shape[0], 3, 1024, 1024))
+        large_img[:, :, :48, :48] = batch_LR_image
+        # 然后将 batch_LR_image 转换成 tensor
+        batch_LR_image_sam = torch.from_numpy(large_img).float()
+        # 然后将 batch_LR_image 输入到模型中
+        inferece_batch_size = 5
+        
+        if batch_LR_image_sam.shape[0] <= inferece_batch_size:
+            if use_cuda:
+                batch_LR_image_sam = batch_LR_image_sam.cuda()
+                
+            with torch.no_grad():
+                _, y1, y2, y3 = model.image_encoder(batch_LR_image_sam)
+                y1, y2, y3 = y1.cpu().numpy(), y2.cpu().numpy(), y3.cpu().numpy()
+        else:
+            if use_cuda:
+                y1, y2, y3 = process_batch(batch_LR_image_sam, model.image_encoder, inferece_batch_size)
+
+        y1, y2, y3 = y1[:, :, :3, :3], y2[:, :, :3, :3], y3[:, :, :3, :3]
+        yadapt_features = np.concatenate((y1, y2, y3), axis=1)
+
+        save_name = os.path.join(save_path, os.path.basename(LR_images[idx]).split(".")[0]+'_yadapt.npy')
+        np.save(save_name, yadapt_features)
+        print('Save {}'.format(save_name))
+
+
+def check_plot_yadapt_distribution():
+    import os
+    import matplotlib.pyplot as plt
+    import numpy as np
+    from tqdm import tqdm
+    file_dir = "/home/mayanze/PycharmProjects/SwinTF/dataset/trainsets/trainL/DIV2K/DIV2K_train_LR_bicubic/X2_yadapt"
+    files = os.listdir(file_dir)
+    files = sorted(files)
+    files = [os.path.join(file_dir, file) for file in files if file.endswith(".npy")]
+    pixel_mean = np.array([123.675, 116.28, 103.53])
+    pixel_std = np.array([58.395, 57.12, 57.375])
+    max_values = []
+    i = 0
+    for num in tqdm(range(files.__len__())):
+        data = np.load(files[num])
+        data = (data - pixel_mean) / pixel_std
+        # Make the x axis be -50 to 50
+        plt.hist(data.flatten(), bins=100)
+        # Save the figure
+        plt.savefig(f"yadapt_distribution_{i}.png")
+        # Reset the plot
+        plt.clf()
+        i += 1
+        max_values.append(np.max(data))
+
+    print(max(max_values))
+    print(min(max_values))
+
+    print(max_values)

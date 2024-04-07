@@ -46,7 +46,6 @@ def extract_sam_model(model_path = '/home/mayanze/PycharmProjects/SwinTF/sam_vit
         out_chans=prompt_embed_dim,
     )
     model_path = model_path
-    # image_encoder.load_state_dict(torch.load(model_path), strict=False)
 
 
     # Get the state of the model before loading the new state dict

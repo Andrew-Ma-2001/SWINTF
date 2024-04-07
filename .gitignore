@@ -1,5 +1,6 @@
 *.npy
 *.pth
+*.zip
 wandb/
 experiments/
 __*/

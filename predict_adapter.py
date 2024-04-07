@@ -133,7 +133,6 @@ if __name__ == '__main__':
 
 
 
-
     if yadapt == 'True':
         print('Yadapt is True SwinIRAdapter')
     else:
@@ -271,9 +270,9 @@ if __name__ == '__main__':
         super_res_image = super_res_image[:img_height*scale_factor-test_set.overlap*scale_factor, :img_width*scale_factor - test_set.overlap*scale_factor]
 
 
-        plt.imsave('{}.png'.format(iter), super_res_image.astype(np.uint8))
+        # plt.imsave('{}.png'.format(iter), super_res_image.astype(np.uint8))
         # print('Save {}.png'.format(iter))
-        plt.imsave('{}_HR.png'.format(iter), HR_image.astype(np.uint8))
+        # plt.imsave('{}_HR.png'.format(iter), HR_image.astype(np.uint8))
 
         super_res_image = rgb2ycbcr(super_res_image, only_y=True)
         HR_image = rgb2ycbcr(HR_image, only_y=True)
