@@ -200,7 +200,6 @@ SwinIR，2万步
 
 
 SwinIR 6万步
-
 | Dataset  | Avg PSNR |
 |----------|----------|
 | Set5     | 37.78    |
@@ -208,6 +207,8 @@ SwinIR 6万步
 | BSDS100  | 32.05    |
 | Manga109 | 38.41    |
 | Urban100 | 32.43    |
+
+
 
 SwinIR 23万步
 | Dataset  | Avg PSNR |
@@ -384,3 +385,27 @@ Yadapt is True SwinIRAdapter
 Config path: /home/mayanze/PycharmProjects/SwinTF/config/test_config/urban100test.yaml
 Resume from checkpoint from /home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20240404_023741/90000_model.pth
 Avg PSNR: 33.12
+
+---
+新归一化 SAMAdapter 14万步
+(base) mayanze@trainer1:~/PycharmProjects/SwinTF$ bash run_test_adapter.sh 
+Yadapt is True SwinIRAdapter
+Config path: /home/mayanze/PycharmProjects/SwinTF/config/test_config/exampleSet5.yaml
+Resume from checkpoint from experiments/SwinIR_20240410_011847/140000_model.pth
+Avg PSNR: 37.96
+Yadapt is True SwinIRAdapter
+Config path: /home/mayanze/PycharmProjects/SwinTF/config/test_config/Set14test.yaml
+Resume from checkpoint from experiments/SwinIR_20240410_011847/140000_model.pth
+Avg PSNR: 33.85
+Yadapt is True SwinIRAdapter
+Config path: /home/mayanze/PycharmProjects/SwinTF/config/test_config/BSDS100.yaml
+Resume from checkpoint from experiments/SwinIR_20240410_011847/140000_model.pth
+Avg PSNR: 32.12
+Yadapt is True SwinIRAdapter
+Config path: /home/mayanze/PycharmProjects/SwinTF/config/test_config/manga109test.yaml
+Resume from checkpoint from experiments/SwinIR_20240410_011847/140000_model.pth
+Avg PSNR: 38.81
+Yadapt is True SwinIRAdapter
+Config path: /home/mayanze/PycharmProjects/SwinTF/config/test_config/urban100test.yaml
+Resume from checkpoint from experiments/SwinIR_20240410_011847/140000_model.pth
+Avg PSNR: 32.97

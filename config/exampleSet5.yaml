@@ -24,7 +24,7 @@ train:
   optimizer: 'adam'
   lr: 0.0002 # 2e-4
   weight_decay: 0.0
-  resume_optimizer: /home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20240404_225746/95000_optimizer.pth
+  resume_optimizer: null
   step_save: 5000
   step_test: 5000 
   step_print: 200
@@ -59,6 +59,7 @@ test:
   pretrained_sam_img_size: 48
 
   precomputed: True # 如果是 True，则默认保存在 test_LR 的文件夹下
+  yadapt_use_cuda: True
   
 network:
   upsacle: 2
@@ -76,5 +77,5 @@ network:
   
 
   # 断点续训练
-  resume_network: /home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20240404_225746/95000_model.pth
+  resume_network: null
   freeze_network: False

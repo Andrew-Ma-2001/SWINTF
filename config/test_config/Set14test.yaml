@@ -56,6 +56,7 @@ test:
   pretrained_sam_img_size: 48
 
   precomputed: True # 如果是 True，则默认保存在 test_LR 的文件夹下
+  yadapt_use_cuda: True
   
 network:
   upsacle: 2
