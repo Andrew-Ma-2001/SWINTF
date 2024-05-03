@@ -358,27 +358,49 @@ class SuperResolutionYadaptDataset(Dataset):
             rnd_w = random.choice(np.arange(0, LR_image.shape[1] - self.LR_size + 1, self.LR_size))
             LR_image = LR_image[rnd_h:rnd_h + self.LR_size, rnd_w:rnd_w + self.LR_size, :]
 
+            # --------------------------------
+            # crop corresponding H patch
+            # --------------------------------
+            rnd_h_H, rnd_w_H = int(rnd_h * self.scale), int(rnd_w * self.scale)
+            HR_image = HR_image[rnd_h_H:rnd_h_H + self.patch_size, rnd_w_H:rnd_w_H + self.patch_size, :]
+
+            mode = random.randint(0, 7)
+
+            # 还是要做数据增强
+            LR_image, HR_image = augment_img(LR_image, mode=mode), augment_img(HR_image, mode=mode)
             
-            # 然后将 batch_LR_image 输入到模型中
-            if self.precompute is False:
-                large_img = np.zeros((1024, 1024, 3), dtype=np.float32)
-                large_img[:self.LR_size, :self.LR_size, :] = LR_image
-                batch_img = torch.from_numpy(large_img).permute(2, 0, 1).unsqueeze(0).float()
-                # Send batch_img to cuda
-                if self.use_cuda:
-                    batch_img = batch_img.cuda()
-                with torch.no_grad():
-                    _, y1, y2, y3 = self.model.image_encoder(batch_img)
-                # Concatenate the features
-                y1, y2, y3 = y1.squeeze(0).cpu().numpy(), y2.squeeze(0).cpu().numpy(), y3.squeeze(0).cpu().numpy()
-                y1, y2, y3 = y1[:, :3, :3], y2[:, :3, :3], y3[:, :3, :3]
-                yadapt_features = np.concatenate((y1, y2, y3), axis=0)
-                mean = yadapt_features.mean()
-                std = yadapt_features.std()
-                yadapt_features = (yadapt_features - mean) / std
-                # Print the size of yadapt_features
-                # print(yadapt_features.shape) # 3480x3x3 
-                yadapt_features = torch.from_numpy(yadapt_features).float()
+            # 默认数据已经算好了
+            if self.LR_path == 'BIC':
+                save_path = self.HR_path + '_yadapt_aug'
+            else:
+                save_path = self.LR_path + '_yadapt_aug'
+
+            # i 是 patch 的 index
+            i = int((rnd_h/self.LR_size)*(rnd_w/self.LR_size))
+            yadapt_feature_path = os.path.join(save_path, os.path.basename(self.LR_images[idx]).split(".")[0]+'_'+str(i)+'_'+str(mode)+'_yadapt.npy')
+            yadapt_features = np.load(yadapt_feature_path)
+            yadapt_features = torch.from_numpy(yadapt_features).float()
+
+            # # 然后将 batch_LR_image 输入到模型中
+            # if self.precompute is False:
+            #     large_img = np.zeros((1024, 1024, 3), dtype=np.float32)
+            #     large_img[:self.LR_size, :self.LR_size, :] = LR_image
+            #     batch_img = torch.from_numpy(large_img).permute(2, 0, 1).unsqueeze(0).float()
+            #     # Send batch_img to cuda
+            #     if self.use_cuda:
+            #         batch_img = batch_img.cuda()
+            #     with torch.no_grad():
+            #         _, y1, y2, y3 = self.model.image_encoder(batch_img)
+            #     # Concatenate the features
+            #     y1, y2, y3 = y1.squeeze(0).cpu().numpy(), y2.squeeze(0).cpu().numpy(), y3.squeeze(0).cpu().numpy()
+            #     y1, y2, y3 = y1[:, :3, :3], y2[:, :3, :3], y3[:, :3, :3]
+            #     yadapt_features = np.concatenate((y1, y2, y3), axis=0)
+            #     mean = yadapt_features.mean()
+            #     std = yadapt_features.std()
+            #     yadapt_features = (yadapt_features - mean) / std
+            #     # Print the size of yadapt_features
+            #     # print(yadapt_features.shape) # 3480x3x3 
+            #     yadapt_features = torch.from_numpy(yadapt_features).float()
 
                 # if batch_LR_image_sam.shape[0] <= 5:
                 #     if self.use_cuda:
@@ -395,32 +417,21 @@ class SuperResolutionYadaptDataset(Dataset):
                 # # Concatenate the features
                 # y1, y2, y3 = y1[:, :, :3, :3], y2[:, :, :3, :3], y3[:, :, :3, :3]
                 # yadapt_features = np.concatenate((y1, y2, y3), axis=1)
-            else:
-                if self.LR_path == 'BIC':
-                    save_path = self.HR_path + '_yadapt'
-                else:
-                    save_path = self.LR_path + '_yadapt'
-                yadapt_feature_path = os.path.join(save_path, os.path.basename(self.LR_images[idx]).split(".")[0]+'_yadapt.npy')
-                yadapt_features = np.load(yadapt_feature_path)
-                # 这里因为 yadapt_features 是整个图像的特征，所以要把 yadapt_features 裁剪一下
-                yadapt_features = yadapt_features[int((rnd_h/self.LR_size)*(rnd_w/self.LR_size))]
-                # Normalize the yadapt_features
-                mean = yadapt_features.mean()
-                std = yadapt_features.std()
-                yadapt_features = (yadapt_features - mean) / std
-                yadapt_features = torch.from_numpy(yadapt_features).float()
+            # else:
+            #     if self.LR_path == 'BIC':
+            #         save_path = self.HR_path + '_yadapt'
+            #     else:
+            #         save_path = self.LR_path + '_yadapt'
+            #     yadapt_feature_path = os.path.join(save_path, os.path.basename(self.LR_images[idx]).split(".")[0]+'_yadapt.npy')
+            #     yadapt_features = np.load(yadapt_feature_path)
+            #     # 这里因为 yadapt_features 是整个图像的特征，所以要把 yadapt_features 裁剪一下
+            #     yadapt_features = yadapt_features[int((rnd_h/self.LR_size)*(rnd_w/self.LR_size))]
+            #     # Normalize the yadapt_features
+            #     mean = yadapt_features.mean()
+            #     std = yadapt_features.std()
+            #     yadapt_features = (yadapt_features - mean) / std
+            #     yadapt_features = torch.from_numpy(yadapt_features).float()
 
-            
-            # --------------------------------
-            # crop corresponding H patch
-            # --------------------------------
-            rnd_h_H, rnd_w_H = int(rnd_h * self.scale), int(rnd_w * self.scale)
-            HR_image = HR_image[rnd_h_H:rnd_h_H + self.patch_size, rnd_w_H:rnd_w_H + self.patch_size, :]
-
-            mode = random.randint(0, 7)
-
-            # 暂时先不做数据增强
-            # LR_image, HR_image = augment_img(LR_image, mode=mode), augment_img(HR_image, mode=mode)
 
             # To numpy
             HR_image = np.array(HR_image) / 255.0
@@ -518,7 +529,7 @@ if __name__ == "__main__":
 
     print(config)
 
-    test_set = SuperResolutionYadaptDataset(config=config['test'])
+    # test_set = SuperResolutionYadaptDataset(config=config['test'])
     
 
     # DIV2K = SuperResolutionDataset(config=config['train'])
