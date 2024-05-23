@@ -17,13 +17,13 @@ import warnings
 # Filter out the specific warning
 warnings.filterwarnings("ignore")
 
-
+DEBUG = False
 
 
 # =================================================
 # 0 Config，Global Parameters 部分
 # =================================================
-config_path = '/home/mayanze/PycharmProjects/SwinTF/config/exampleSet5.yaml'
+config_path = '/home/mayanze/PycharmProjects/SwinTF/config/Set5.yaml' #DEBUG 加入了预训练模型，找一个图像看训练生成的效果
 with open(config_path, 'r') as file:
     config = yaml.safe_load(file)
 
@@ -42,7 +42,9 @@ np.random.seed(seed)
 torch.manual_seed(seed)
 torch.cuda.manual_seed_all(seed)
 
-wandb.init(project='SwinIR',config=config)
+if not DEBUG:
+    # 找问题过程中不用 wandb
+    wandb.init(project='SwinIR',config=config)
 
 # wandb.init(
 #     project='SwinIR',
@@ -214,11 +216,43 @@ for epoch in range(10000000000):
 
         # Make all the y_adapt be zero
         # y_adapt = torch.zeros_like(y_adapt)
+        if DEBUG:
+            # DEBUG 这里将 HR，LR 都保存出来
+            # 保存 HR
+            from PIL import Image
+
+            HR_image = train_HR.cpu().permute(0,2,3,1).numpy()
+            HR_image = HR_image[0]
+            HR_image = HR_image * 255
+            HR_image = HR_image.astype(np.uint8)
+            HR_image = Image.fromarray(HR_image)
+            HR_image.save('HR_image.png')
+
+            # 保存 LR
+            LR_image = train_LR.cpu().permute(0,2,3,1).numpy()
+            LR_image = LR_image[0]
+            LR_image = LR_image * 255
+            LR_image = LR_image.astype(np.uint8)
+            LR_image = Image.fromarray(LR_image)
+            LR_image.save('LR_image.png')
+
 
         y_adapt = y_adapt.cuda()
         # 5.3.2 训练模型
         optimizer.zero_grad()
         output = model.forward(train_LR, y_adapt)
+
+        if DEBUG:
+            # DEBUG 保存 output
+            output_img = output.clamp(0, 1).detach().cpu().permute(0,2,3,1).numpy()
+            output_img = output_img[0]
+            output_img = output_img * 255
+            output_img = output_img.astype(np.uint8)
+            output_img = Image.fromarray(output_img)
+            output_img.save('output.png')
+
+
+
         loss = criterion(output, train_HR)
         loss.backward()
         optimizer.step()
