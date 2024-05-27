@@ -653,8 +653,9 @@ class SelfAttention(nn.Module):
         y_adapt_flatten = y_adapt.flatten(2).transpose(1, 2)    # B, HW, C
         x_flatten = x.flatten(2).transpose(1, 2)    # B, HW, C
 
-        q = self.q(y_adapt_flatten)    # B, HW, C
-        kv = self.kv(x_flatten).view(batch_size, -1, 2, C)
+       ################### 2024-04-16 ##########################
+        q = self.q(x_flatten)  # B, HW, C
+        kv = self.kv(y_adapt_flatten).view(batch_size, -1, 2, C)
         k, v = kv.unbind(2)  # B, HW, C
 
         attn = (q @ k.transpose(-2, -1)) / C #是C还是根号C看经验
@@ -1041,6 +1042,7 @@ class SwinIRAdapter(nn.Module):
 
         # XXX 这里把 self_attention 的大小写死了
         self.y_adapt_feature_size = y_adapt_feature
+        self.yadapt_batch_norm = nn.BatchNorm2d(180)
         self.self_attention = SelfAttention(180)  
         #################### modified 2024/03/28  原view有问题（不能跟原图pixel level对齐），改用pixelshuffle，
         self.adapt_conv = nn.Sequential(
@@ -1133,13 +1135,14 @@ class SwinIRAdapter(nn.Module):
                 if self.training:
                     y_adapt = self.adapt_conv(y_adapt_feature) # B, 180, 48, 48
                     # y_adapt = y_adapt.view(-1, 180, 48, 48)
+                    y_adapt = self.yadapt_batch_norm(y_adapt)
 
                     x = self.self_attention(y_adapt, x)
 
                 else:
                     y_adapt = self.adapt_conv(y_adapt_feature)
-                    y_adapt = y_adapt.view(-1, 180, 48, 48)
-
+                    # y_adapt = y_adapt.view(-1, 180, 48, 48)
+                    y_adapt = self.yadapt_batch_norm(y_adapt)
                     # Reshape 回去
                     # y_adapt1 = y_adapt.view(1, 10, 10, 180, 48, 48)
                     # y_adapt2 = y_adapt1.permute(0, 3, 1, 4, 2, 5).contiguous().view(1, 180, 10*48, 10*48)
