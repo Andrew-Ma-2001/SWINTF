@@ -9,6 +9,7 @@ import numpy as np
 from utils.utils_image import permute_squeeze, calculate_psnr, imresize_np
 from nets.swinir import SwinIR
 import yaml
+from matplotlib import pyplot as plt
 
 def rgb2ycbcr(img, only_y=True):
     '''same as matlab rgb2ycbcr
@@ -65,10 +66,18 @@ def evaluate_with_lrhr_pair(gt_path, lr_path, model):
         with torch.no_grad():
             sr = model(lr)
 
+        # output = output.data.squeeze().float().cpu().clamp_(0, 1).numpy()
         # 计算PSNR
         sr = permute_squeeze(sr)
         gt = permute_squeeze(gt)
         
+        # Save the sr image
+        plt.imsave('sr.png', (sr*255).astype(np.uint8))
+        # plt.imsave('lr.png', (lr*255).astype(np.uint8))
+        plt.imsave('gt.png', (gt*255).astype(np.uint8))
+
+
+
         sr = rgb2ycbcr(sr, only_y=True)
         gt = rgb2ycbcr(gt, only_y=True)
 
@@ -122,12 +131,12 @@ if __name__ == '__main__':
         config = yaml.safe_load(file)
 
     gpu_ids = config['train']['gpu_ids']
-    os.environ['CUDA_VISIBLE_DEVICES'] = '6,7'
+    os.environ['CUDA_VISIBLE_DEVICES'] = '2,3,6,7'
 
     # 载入模型
-    model_path = '/home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20231221_161712/120000_model.pth'
+    # model_path = '/home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20231221_161712/120000_model.pth'
     # SwinIR+SAM
-    # model_path = '/home/mayanze/PycharmProjects/SwinTF/001_classicalSR_DIV2K_s48w8_SwinIR-M_x2.pth'
+    model_path = '/home/mayanze/PycharmProjects/SwinTF/001_classicalSR_DIV2K_s48w8_SwinIR-M_x2.pth'
 
     scale = config['train']['scale']
     model = SwinIR(upscale=config['network']['upsacle'], 
@@ -149,21 +158,60 @@ if __name__ == '__main__':
     # pretrained_model = torch.load(model_path)
     # param_key_g = 'params'
     # model.load_state_dict(pretrained_model[param_key_g] if param_key_g in pretrained_model.keys() else pretrained_model, strict=True)
-   
+    
+    pretrained_model = torch.load(model_path)
+    param_key_g = 'params'
+    model.load_state_dict(pretrained_model[param_key_g] if param_key_g in pretrained_model.keys() else pretrained_model, strict=True)
+
     model = torch.nn.DataParallel(model) 
-    checkpoint = torch.load(model_path)
-    model.load_state_dict(checkpoint)
+    
     print('Resume from checkpoint from {}'.format(model_path))
 
-    
-    
-    
-
-
-    gt_path = 'dataset/testsets/Set5/GTmod12'
-    lr_path = 'dataset/testsets/Set5/LRbicx2'
+    # gt_path = 'dataset/testsets/Set5/GTmod12'
+    lr_path = '/home/mayanze/PycharmProjects/SwinTF/dataset/testsets/aim2019/aim2019swinir'
+    save_dir = '/home/mayanze/PycharmProjects/SwinTF/dataset/testsets/aim2019/aim2019swinirx4'
     # scale = 4
-    evaluate_with_lrhr_pair(gt_path, lr_path, model)
 
     # gt_path = 'dataset/testsets/urban100'
     # evaluate_with_hr(gt_path, model)
+
+    # gt_img_path = [os.path.join(gt_path, x) for x in os.listdir(gt_path) if x.endswith('.png')]
+    lr_img_path = [os.path.join(lr_path, x) for x in os.listdir(lr_path) if x.endswith('.png')]
+
+    # gt_img_path = sorted(gt_img_path)
+    lr_img_path = sorted(lr_img_path)
+
+    avg_psnr = []
+    for i in range(len(lr_img_path)):
+        # gt = Image.open(gt_img_path[i]).convert('RGB')
+        lr = Image.open(lr_img_path[i]).convert('RGB')
+
+        # gt = np.array(gt)
+        lr = np.array(lr)
+
+        # gt = gt.astype(np.float32) / 255.
+        lr = lr.astype(np.float32) / 255.
+
+        # gt = torch.from_numpy(np.ascontiguousarray(np.transpose(gt, (2, 0, 1)))).float()
+        lr = torch.from_numpy(np.ascontiguousarray(np.transpose(lr, (2, 0, 1)))).float()
+
+        # gt = gt.unsqueeze(0)
+        lr = lr.unsqueeze(0)
+
+        # print(gt.shape)
+        # print(lr.shape)
+
+        # 预测
+        with torch.no_grad():
+            sr = model(lr)
+
+        # output = output.data.squeeze().float().cpu().clamp_(0, 1).numpy()
+        # 计算PSNR
+        # sr = permute_squeeze(sr)
+        # gt = permute_squeeze(gt)
+        sr = sr.squeeze().permute(1, 2, 0).float().cpu().clamp_(0, 1).numpy()
+        # Save the sr image
+        # Save the image in a dir with the same name
+        img_name = lr_img_path[i].split('/')[-1]
+        save_path = os.path.join(save_dir, img_name)
+        plt.imsave(save_path, (sr*255).astype(np.uint8))
