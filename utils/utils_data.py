@@ -77,7 +77,7 @@ def extract_patches(image, patch_size, overlap):
     pad_width = (stride - (img_width - patch_size) % stride) % stride
     padded_image = np.pad(image, ((0, pad_height), (0, pad_width), (0,0)), mode='constant', constant_values=255)
 
-    # 不能裁剪！！！裁剪了之后图片缩小太多了
+    # 不能裁剪！！！裁剪了之后图片缩小太多了 #FIXME 检查这里假如裁剪效果会不会更好
     # padded_image = image[:image.shape[0] - (image.shape[0] - patch_size) % stride, :image.shape[1] - (image.shape[1] - patch_size) % stride]
 
     patches = []
