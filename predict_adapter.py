@@ -125,10 +125,10 @@ if __name__ == '__main__':
     sys.path.append("/home/mayanze/PycharmProjects/SwinTF/")
     config_path, model_path, gpu_ids, yadapt = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]
    
-    # For Debug
-    # config_path = '/home/mayanze/PycharmProjects/SwinTF/config/exampleSet5.yaml'
-    # model_path='/home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20240403_015754/50000_model.pth'
-    # gpu_ids='2,3'
+    # #DEBUG
+    # config_path = '/home/mayanze/PycharmProjects/SwinTF/config/test_config/aim2019final.yaml'
+    # model_path= '/home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20240503_113731/230000_model.pth'
+    # gpu_ids='6,7'
     # yadapt='True'
 
 
@@ -240,8 +240,18 @@ if __name__ == '__main__':
         if yadapt == 'False':
             batch_yadapt_features = torch.zeros_like(batch_yadapt_features)
 
+        batch_size = batch_LR_image.size(0)
+        split_size = 100  # Adjust this value based on your GPU memory capacity
+        batch_Pre_image_list = []
+
         with torch.no_grad():
-            batch_Pre_image = model(batch_LR_image, batch_yadapt_features)
+            for i in range(0, batch_size, split_size):
+                batch_LR_image_split = batch_LR_image[i:i+split_size]
+                batch_yadapt_features_split = batch_yadapt_features[i:i+split_size]
+                batch_Pre_image_split = model(batch_LR_image_split, batch_yadapt_features_split)
+                batch_Pre_image_list.append(batch_Pre_image_split)
+
+        batch_Pre_image = torch.cat(batch_Pre_image_list, dim=0)
 
         # with torch.no_grad():
         #     batch_Pre_image = model(batch_LR_image)
@@ -270,13 +280,19 @@ if __name__ == '__main__':
         super_res_image = super_res_image[:img_height*scale_factor-test_set.overlap*scale_factor, :img_width*scale_factor - test_set.overlap*scale_factor]
 
 
+        # plt.imsave('/home/mayanze/PycharmProjects/SwinTF/dataset/testsets/aim2019/aim2019_x2/'+'{}.png'.format(iter), super_res_image.astype(np.uint8))
         # plt.imsave('{}.png'.format(iter), super_res_image.astype(np.uint8))
         # print('Save {}.png'.format(iter))
         # plt.imsave('{}_HR.png'.format(iter), HR_image.astype(np.uint8))
 
+
+
+        # Print two imagees shape
+        # print('Super_res_image shape: {}'.format(super_res_image.shape))
+        # print('HR_image shape: {}'.format(HR_image.shape)) 
+
         super_res_image = rgb2ycbcr(super_res_image, only_y=True)
         HR_image = rgb2ycbcr(HR_image, only_y=True)
-
         psnr = calculate_psnr(super_res_image, HR_image, border=scale)
         total_psnr += psnr
         # print('PSNR: {:.2f}'.format(psnr))

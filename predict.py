@@ -131,7 +131,7 @@ if __name__ == '__main__':
         config = yaml.safe_load(file)
 
     gpu_ids = config['train']['gpu_ids']
-    os.environ['CUDA_VISIBLE_DEVICES'] = '2,3,6,7'
+    os.environ['CUDA_VISIBLE_DEVICES'] = '6,7'
 
     # 载入模型
     # model_path = '/home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20231221_161712/120000_model.pth'
@@ -169,7 +169,7 @@ if __name__ == '__main__':
 
     # gt_path = 'dataset/testsets/Set5/GTmod12'
     lr_path = '/home/mayanze/PycharmProjects/SwinTF/dataset/testsets/aim2019/aim2019swinir'
-    save_dir = '/home/mayanze/PycharmProjects/SwinTF/dataset/testsets/aim2019/aim2019swinirx4'
+    save_dir = '/home/mayanze/PycharmProjects/SwinTF/dataset/testsets/aim2019/aim2019swinir_x4'
     # scale = 4
 
     # gt_path = 'dataset/testsets/urban100'
@@ -196,7 +196,7 @@ if __name__ == '__main__':
         lr = torch.from_numpy(np.ascontiguousarray(np.transpose(lr, (2, 0, 1)))).float()
 
         # gt = gt.unsqueeze(0)
-        lr = lr.unsqueeze(0)
+        lr = lr.unsqueeze(0).cuda()
 
         # print(gt.shape)
         # print(lr.shape)
