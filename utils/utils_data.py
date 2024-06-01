@@ -68,14 +68,14 @@ def process_batch(batch, model, max_sub_batch_size):
     return y1, y2, y3
 
 
-def extract_patches(image, patch_size, overlap):
+def extract_patches(image, patch_size, overlap, constant_values=122):
     stride = patch_size - overlap
     
     # 这里选择padding的方式是constant，所以padding的部分是黑色的
     img_height, img_width = image.shape[:2]
     pad_height = (stride - (img_height - patch_size) % stride) % stride
     pad_width = (stride - (img_width - patch_size) % stride) % stride
-    padded_image = np.pad(image, ((0, pad_height), (0, pad_width), (0,0)), mode='constant', constant_values=255)
+    padded_image = np.pad(image, ((0, pad_height), (0, pad_width), (0,0)), mode='constant', constant_values=constant_values)
 
     # 不能裁剪！！！裁剪了之后图片缩小太多了 #FIXME 检查这里假如裁剪效果会不会更好
     # padded_image = image[:image.shape[0] - (image.shape[0] - patch_size) % stride, :image.shape[1] - (image.shape[1] - patch_size) % stride]
@@ -109,7 +109,7 @@ def overlapping_image(patches, padded_height, padded_width, patch_size, overlap,
     >>> img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     >>> img = img[:132, :132]
     >>> patch_size = 48
-    >>> overlap = 4
+    >>> overlap = 8
     >>> stride = patch_size - overlap
     >>> patches, (padded_height, padded_width) = extract_patches(img, patch_size, overlap)
     >>> super_res_patches = super_resolve_patches(patches, scale_factor=2)
@@ -157,7 +157,18 @@ def overlapping_image(patches, padded_height, padded_width, patch_size, overlap,
         # # 对于在中间的patch，有四个overlap
         # else:
         #     patch = patch[(overlap//2)*scale_factor:(patch_size-overlap//2)*scale_factor, (overlap//2)*scale_factor:(patch_size-overlap//2)*scale_factor]
+
+
         patch = patch[(overlap//2)*scale_factor:(patch_size-overlap//2)*scale_factor, (overlap//2)*scale_factor:(patch_size-overlap//2)*scale_factor]
         super_res_image[num_y*stride*scale_factor:(num_y+1)*stride*scale_factor, num_x*stride*scale_factor:(num_x+1)*stride*scale_factor] = patch
     return super_res_image
 
+# img = cv2.imread('/home/mayanze/PycharmProjects/SwinTF/dataset/testsets/BSDS100/8023.png')
+# img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+# img = img[:132, :132]
+# patch_size = 48
+# overlap = 8
+# stride = patch_size - overlap
+# patches, (padded_height, padded_width) = extract_patches(img, patch_size, overlap)
+# super_res_patches = super_resolve_patches(patches, scale_factor=2)
+# super_res_image = overlapping_image(super_res_patches, padded_height, padded_width, patch_size, overlap, stride, scale_factor=2)

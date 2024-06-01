@@ -282,7 +282,76 @@ def check_plot_yadapt_distribution():
 
     print(max_values)
 
-import sys
-sys.path.append('/home/mayanze/PycharmProjects/SwinTF/')
-check_precompute()
 
+
+# The aim of this code is to load two npy files and compare their content.
+
+def check_yadapt_npy_files():
+    import numpy as np
+
+    file_a = '/home/mayanze/PycharmProjects/SwinTF/dataset/testsets/Set5/LRbicx2_yadapt/baby_yadapt.npy'
+    file_b = '/home/mayanze/PycharmProjects/SwinTF/dataset/testsets/Set5/LRbicx2_yadapt_aug_test3/baby_yadapt.npy'
+
+
+    # 读取所有文件下名字为 /0001x2_x_0_yadapt.npy 的文件
+    import os
+    import glob
+
+    dir = '/home/mayanze/PycharmProjects/SwinTF/dataset/trainsets/trainL/DIV2K/DIV2K_train_LR_bicubic/X2_yadapt_aug'
+    files = glob.glob(os.path.join(dir, '0001x2_*_yadapt.npy'))
+
+    total_yadapt = np.zeros((len(files), 3840, 3, 3))
+    for file in files:
+        yadapt = np.load(file)
+        total_yadapt[files.index(file)] = yadapt
+       # file_a = '/home/mayanze/PycharmProjects/SwinTF/dataset/trainsets/trainL/DIV2K/DIV2K_train_LR_bicubic/X2_yadapt_aug/0001x2_0_0_yadapt.npy'
+    file_b = '/home/mayanze/PycharmProjects/SwinTF/dataset/trainsets/trainL/DIV2K/DIV2K_train_LR_bicubic/X2_yadapt/0001x2_yadapt.npy'
+    # Load in the two files and compare the statistics
+    # a = np.load(file_a)
+    a = total_yadapt
+    b = np.load(file_b)
+
+    print(a.shape)
+    print(b.shape)
+
+    # Show the average, max, min, data distribution
+    print('Average of a: ', np.mean(a))
+    print('Average of b: ', np.mean(b))
+
+    print('Max of a: ', np.max(a))
+    print('Max of b: ', np.max(b))
+
+    print('Min of a: ', np.min(a))
+    print('Min of b: ', np.min(b))
+
+    print('Std of a: ', np.std(a))
+    print('Std of b: ', np.std(b))
+
+    print('Data distribution of a: ', np.histogram(a, bins=10))
+    print('Data distribution of b: ', np.histogram(b, bins=10))
+
+    # Create two plots to show the data distribution
+    import matplotlib.pyplot as plt
+
+    # Create two axes
+    fig, (ax1, ax2) = plt.subplots(1, 2)
+
+    ax1.hist(a.flatten(), bins=10, color='blue', alpha=0.7, label='Data A')
+    ax1.set_title('Histogram of A')
+    ax1.set_xlabel('Value')
+    ax1.set_ylabel('Frequency')
+    ax1.legend()
+
+    ax2.hist(b.flatten(), bins=10, color='red', alpha=0.7, label='Data B')
+    ax2.set_title('Histogram of B')
+    ax2.set_xlabel('Value')
+    ax2.set_ylabel('Frequency')
+    ax2.legend()
+
+    plt.show()
+    # Save the plot
+    fig.savefig('data_distribution.png')
+
+
+
+# check_precompute()
