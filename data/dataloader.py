@@ -18,6 +18,8 @@ from utils.utils_image import imresize_np, modcrop, augment_img
 
 # Write a super resolution dataset class
 
+DEBUG = False
+
 class SuperResolutionDataset(Dataset):
     def __init__(self, config):
         super(SuperResolutionDataset, self).__init__()
@@ -117,8 +119,14 @@ class SuperResolutionYadaptDataset(Dataset):
             assert os.path.exists(self.HR_path), "HR_path should exist"
             assert os.path.exists(self.LR_path) or self.LR_path in ['BIC'], "LR_path should exist or be in ['BIC']"
 
+        elif self.mode == 'pred':
+            self.HR_path = config['pred_HR'] # TODO 这个参数要改，顺便把下面 self.HR_images = get_all_images(self.HR_path) 找个地方放
+            self.LR_path = config['pred_LR']
+
+            assert os.path.exists(self.LR_path), "LR_path should exist"
+
         # TODO 把这个参数写在外面
-        self.overlap = 8
+        self.overlap = 0
         self.pixel_mean = np.array([123.675, 116.28, 103.53])
         self.pixel_std = np.array([58.395, 57.12, 57.375])
 
@@ -133,13 +141,14 @@ class SuperResolutionYadaptDataset(Dataset):
 
         assert len(self.HR_images) == len(self.LR_images), 'HR and LR images should have the same length.'
 
+        #DEBUG 保存路径要写在 init 里面，或者在config里面传进来
         # Check if the yadapt_features exists
         if self.mode == 'test':
             self.check_test_precompute()
             if self.config['precomputed']:
                 self.check_test_precompute()
                 if not self.precompute:
-                    self.precompute_test2()
+                    self.precompute_test2() 
         
         if self.mode == 'train':
             self.check_train_precompute()
@@ -151,9 +160,9 @@ class SuperResolutionYadaptDataset(Dataset):
     
     def check_test_precompute(self):
         if self.LR_path == 'BIC':
-            save_path = self.HR_path + '_yadapt'
+            save_path = self.HR_path + '_yadapt_aug'
         else:
-            save_path = self.LR_path + '_yadapt'
+            save_path = self.LR_path + '_yadapt_aug'
         
         if os.path.exists(save_path):
             assert len(os.listdir(save_path)) == len(self.HR_images), "The save_path stored files should have the same length as HR_images"
@@ -193,12 +202,18 @@ class SuperResolutionYadaptDataset(Dataset):
             print('Save {}'.format(save_name))
         
         self.precompute = True
+    
+    def force_crop(self, image, size):
+        # Crop the image to the size
+        h, w = size
+        img = image[:h, :w, :]
+        return img
 
     def precompute_test2(self):
         if self.LR_path == 'BIC':
-            save_path = self.HR_path + '_yadapt'
+            save_path = self.HR_path + '_yadapt_aug'
         else:
-            save_path = self.LR_path + '_yadapt'
+            save_path = self.LR_path + '_yadapt_aug'
 
         if not os.path.exists(save_path):
             os.makedirs(save_path)
@@ -210,20 +225,28 @@ class SuperResolutionYadaptDataset(Dataset):
             HR_image = modcrop(HR_image, self.scale)
             if self.LR_path == 'BIC':
                 LR_image = Image.open(self.HR_images[idx])
+                # Ensure the image is read in three channels (RGB)
+                LR_image = LR_image.convert('RGB')
                 LR_image = modcrop(LR_image, self.scale)
                 LR_image = imresize_np(LR_image, 1/self.scale)
                 LR_image = np.array(LR_image)
             else:
                 LR_image = Image.open(self.LR_images[idx])
+                LR_image = LR_image.convert('RGB')
                 LR_image = np.array(LR_image)
             LR_image = (LR_image - self.pixel_mean) / self.pixel_std
 
-            assert HR_image.shape[0] == LR_image.shape[0] * self.scale and HR_image.shape[1] == LR_image.shape[1] * self.scale, "HR and LR should have the same size after modcrop"
+            try:
+                assert HR_image.shape[0] == LR_image.shape[0] * self.scale and HR_image.shape[1] == LR_image.shape[1] * self.scale, "HR and LR should have the same size after modcrop"
+            except:
+                HR_image = self.force_crop(HR_image, (LR_image.shape[0] * self.scale, LR_image.shape[1] * self.scale))
+                print('HR and LR should have the same size after modcrop')
+
             HR_image = HR_image[self.overlap:HR_image.shape[0]-self.overlap, self.overlap:HR_image.shape[1] - self.overlap]
 
             # super_res_image = super_res_image[:img_height*2-overlap*2, :img_width*2 - overlap*2]
 
-            patches, (padded_height, padded_width), (img_height, img_width) = extract_patches(LR_image, self.pretrained_sam_img_size, self.overlap)
+            patches, (padded_height, padded_width), (img_height, img_width) = extract_patches(LR_image, self.pretrained_sam_img_size, self.overlap, constant_values=0.5)
             # 这里思考 precompute 的问题
             # 现在把 patches 以 batch 的形式先拼接
             batch_LR_image = np.zeros((len(patches), 3, self.pretrained_sam_img_size, self.pretrained_sam_img_size), dtype=np.float32)
@@ -238,7 +261,7 @@ class SuperResolutionYadaptDataset(Dataset):
             batch_LR_image_sam = torch.from_numpy(large_img).float()
             # 然后将 batch_LR_image 输入到模型中
 
-            if batch_LR_image_sam.shape[0] <= 5:
+            if batch_LR_image_sam.shape[0] <= 15:
                 if self.use_cuda:
                     batch_LR_image_sam = batch_LR_image_sam.cuda()
                 with torch.no_grad():
@@ -246,16 +269,16 @@ class SuperResolutionYadaptDataset(Dataset):
                     y1, y2, y3 = y1.cpu().numpy(), y2.cpu().numpy(), y3.cpu().numpy()
             else:
                 if self.use_cuda:
-                    y1, y2, y3 = process_batch(batch_LR_image_sam, self.model.image_encoder, 5)
+                    y1, y2, y3 = process_batch(batch_LR_image_sam, self.model.image_encoder, 15)
                 # import matplotlib.pyplot as plt
                 # plt.imshow(batch_LR_image[0,0,:,:])
                 # plt.savefig('test.png')
                 # Concatenate the features
             y1, y2, y3 = y1[:, :, :3, :3], y2[:, :, :3, :3], y3[:, :, :3, :3]
             yadapt_features = np.concatenate((y1, y2, y3), axis=1)
-            mean = yadapt_features.mean()
-            std = yadapt_features.std()
-            yadapt_features = (yadapt_features - mean) / std
+            # mean = yadapt_features.mean()
+            # std = yadapt_features.std()
+            # yadapt_features = (yadapt_features - mean) / std
 
             # Print the size of yadapt_features
             # print(yadapt_features.shape) # 3480x3x3
@@ -265,12 +288,20 @@ class SuperResolutionYadaptDataset(Dataset):
             # assert 到这里 batch_yadapt_features 和 batch_LR_image 的 batch_size 是一样的
             assert batch_yadapt_features.shape[0] == batch_LR_image.shape[0], "batch_yadapt_features and batch_LR_image should have the same batch_size"
 
+            # for i in range(yadapt_features.shape[0]):
+            #     save_name = os.path.join(save_path, os.path.basename(self.LR_images[idx]).split(".")[0]+'_'+str(i)+'_yadapt.npy')
+            #     np.save(save_name, yadapt_features[i])
+            #     print('Save {}'.format(save_name))
             save_name = os.path.join(save_path, os.path.basename(self.LR_images[idx]).split(".")[0]+'_yadapt.npy')
             np.save(save_name, yadapt_features)
             print('Save {}'.format(save_name))
 
-
     def precompute_train(self):
+
+        print("Warning This Function Has Not Consider Mode Augmentation")
+        print("Check compute_dataset.py to see how to add mode augmentation")
+        raise NotImplementedError
+
         if self.LR_path == 'BIC':
             save_path = self.HR_path + '_yadapt'
         else:
@@ -331,21 +362,24 @@ class SuperResolutionYadaptDataset(Dataset):
     def __len__(self):
         return len(self.HR_images)
     
-    def __getitem__(self, idx):
+    def get_hr_lr_pair(self, idx):
         HR_image = Image.open(self.HR_images[idx]) # 彩色图像读进来
         # Mode Crop 保证可以整除
         HR_image = modcrop(HR_image, self.scale)
 
         LR_image = Image.open(self.LR_images[idx])
+        LR_image = LR_image.convert('RGB')
         LR_image = np.array(LR_image) 
 
         if self.LR_path == 'BIC':
             LR_image = modcrop(LR_image, self.scale)
             LR_image = imresize_np(LR_image, 1/self.scale)
 
+        return HR_image, LR_image
 
+    def __getitem__(self, idx):
         if self.mode == 'train':
-
+            HR_image, LR_image = self.get_hr_lr_pair(idx)
             H, W, C = LR_image.shape
 
             # --------------------------------
@@ -380,6 +414,15 @@ class SuperResolutionYadaptDataset(Dataset):
             yadapt_feature_path = os.path.join(save_path, os.path.basename(self.LR_images[idx]).split(".")[0]+'_'+str(i)+'_'+str(mode)+'_yadapt.npy')
             yadapt_features = np.load(yadapt_feature_path)
             yadapt_features = torch.from_numpy(yadapt_features).float()
+
+            # DEBUG 看看 yadapt_features 的数据分布
+            if DEBUG:
+                mean = yadapt_features.mean()
+                std = yadapt_features.std()
+                avg = yadapt_features.mean(dim=0)
+                print('mean: {}, std: {}, avg: {}'.format(mean, std, avg))
+
+
 
             # # 然后将 batch_LR_image 输入到模型中
             # if self.precompute is False:
@@ -444,93 +487,100 @@ class SuperResolutionYadaptDataset(Dataset):
             return LR_image, HR_image, yadapt_features
 
         if self.mode == "test":
+            HR_image, LR_image = self.get_hr_lr_pair(idx)
             # 需要检查一下一开始能不能对上 HR 和 LR
-            assert HR_image.shape[0] == LR_image.shape[0] * self.scale and HR_image.shape[1] == LR_image.shape[1] * self.scale, "HR and LR should have the same size after modcrop"
+            try:
+                assert HR_image.shape[0] == LR_image.shape[0] * self.scale and HR_image.shape[1] == LR_image.shape[1] * self.scale, "HR and LR should have the same size after modcrop"
+            except:
+                HR_image = self.force_crop(HR_image, (LR_image.shape[0] * self.scale, LR_image.shape[1] * self.scale))
+                print('HR and LR should have the same size after modcrop')
+
+            # assert HR_image.shape[0] == LR_image.shape[0] * self.scale and HR_image.shape[1] == LR_image.shape[1] * self.scale, "HR and LR should have the same size after modcrop"
             HR_image = HR_image[self.overlap:HR_image.shape[0]-self.overlap, self.overlap:HR_image.shape[1] - self.overlap]
 
-            # super_res_image = super_res_image[:img_height*2-overlap*2, :img_width*2 - overlap*2]
-
-            norm_LR_image = (LR_image - self.pixel_mean) / self.pixel_std
             patches, (padded_height, padded_width), (img_height, img_width) = extract_patches(LR_image, self.pretrained_sam_img_size, self.overlap)
-            # 这里思考 precompute 的问题
-            # 现在把 patches 以 batch 的形式先拼接
             
             batch_LR_image = np.zeros((len(patches), 3, self.pretrained_sam_img_size, self.pretrained_sam_img_size), dtype=np.float32)
             for i, (patch, _, _) in enumerate(patches):
                 batch_LR_image[i] = patch.transpose(2, 0, 1)
-            
-            # batch_LR_image = (batch_LR_image - self.pixel_mean) / self.pixel_std
-            # 这里要把 48x48 变成 1024x1024 建一个更大的矩阵
-            large_img = np.zeros((batch_LR_image.shape[0], 3, 1024, 1024))
-            large_img[:, :, :48, :48] = batch_LR_image
 
-            # 然后将 batch_LR_image 转换成 tensor
-            batch_LR_image_sam = torch.from_numpy(large_img).float()
-            # 然后将 batch_LR_image 输入到模型中
-            if self.precompute is False:
-                if batch_LR_image_sam.shape[0] <= 5:
-                    if self.use_cuda:
-                        batch_LR_image_sam = batch_LR_image_sam.cuda()
-                    with torch.no_grad():
-                        _, y1, y2, y3 = self.model.image_encoder(batch_LR_image_sam)
-                        y1, y2, y3 = y1.cpu().numpy(), y2.cpu().numpy(), y3.cpu().numpy()
-                else:
-                    if self.use_cuda:
-                        y1, y2, y3 = process_batch(batch_LR_image_sam, self.model.image_encoder, 5)
-                # import matplotlib.pyplot as plt
-                # plt.imshow(batch_LR_image[0,0,:,:])
-                # plt.savefig('test.png')
-                # Concatenate the features
-                y1, y2, y3 = y1[:, :, :3, :3], y2[:, :, :3, :3], y3[:, :, :3, :3]
-                yadapt_features = np.concatenate((y1, y2, y3), axis=1)
-                mean = yadapt_features.mean()
-                std = yadapt_features.std()
-                yadapt_features = (yadapt_features - mean) / std
-
+            if self.LR_path == 'BIC':
+                save_path = self.HR_path + '_yadapt_aug'
             else:
-                if self.LR_path == 'BIC':
-                    save_path = self.HR_path + '_yadapt'
-                else:
-                    save_path = self.LR_path + '_yadapt'
-                yadapt_feature_path = os.path.join(save_path, os.path.basename(self.LR_images[idx]).split(".")[0]+'_yadapt.npy')
-                yadapt_features = np.load(yadapt_feature_path)
-                mean = yadapt_features.mean()
-                std = yadapt_features.std()
-                yadapt_features = (yadapt_features - mean) / std
-            
-            
-            # Print the size of yadapt_features
-            # print(yadapt_features.shape) # 3480x3x3
+                save_path = self.LR_path + '_yadapt_aug'
+
+            yadapt_feature_path = os.path.join(save_path, os.path.basename(self.LR_images[idx]).split(".")[0]+'_yadapt.npy')
+            yadapt_features = np.load(yadapt_feature_path)
+
             batch_yadapt_features = torch.from_numpy(yadapt_features).float()
-            # 这里由于 vit 会把 B 和 C 合成一个维度，所以这里要把 batch_yadapt_features 的维度转换一下，变成 [xy/3, 1280*3, 3, 3]
-            # batch_yadapt_features = batch_yadapt_features.reshape(yadapt_features.shape[0]//3, 1280*3, 3, 3)
-            # assert 到这里 batch_yadapt_features 和 batch_LR_image 的 batch_size 是一样的
+
             assert batch_yadapt_features.shape[0] == batch_LR_image.shape[0], "batch_yadapt_features and batch_LR_image should have the same batch_size"
 
             batch_LR_image = batch_LR_image / 255.0
             batch_LR_image = torch.from_numpy(batch_LR_image).float()
+            
             return batch_LR_image, HR_image, batch_yadapt_features, patches, (img_height, img_width), (padded_height, padded_width)
 
+        if self.mode == "pred":
+            _, LR_image = self.get_hr_lr_pair(idx)
+            img_name = os.path.basename(self.LR_images[idx])
+            patches, (padded_height, padded_width), (img_height, img_width) = extract_patches(LR_image, self.pretrained_sam_img_size, self.overlap)
+            
+            batch_LR_image = np.zeros((len(patches), 3, self.pretrained_sam_img_size, self.pretrained_sam_img_size), dtype=np.float32)
+            for i, (patch, _, _) in enumerate(patches):
+                batch_LR_image[i] = patch.transpose(2, 0, 1)
+
+            if self.LR_path == 'BIC':
+                save_path = self.HR_path + '_yadapt_aug'
+            else:
+                save_path = self.LR_path + '_yadapt_aug'
+
+            yadapt_feature_path = os.path.join(save_path, os.path.basename(self.LR_images[idx]).split(".")[0]+'_yadapt.npy')
+            yadapt_features = np.load(yadapt_feature_path)
+            
+            batch_yadapt_features = torch.from_numpy(yadapt_features).float()
+            assert batch_yadapt_features.shape[0] == batch_LR_image.shape[0], "batch_yadapt_features and batch_LR_image should have the same batch_size"
+
+            batch_LR_image = batch_LR_image / 255.0
+            batch_LR_image = torch.from_numpy(batch_LR_image).float()
+            return batch_LR_image, batch_yadapt_features, patches, (img_height, img_width), (padded_height, padded_width), img_name
+
+
+def load_dataset(config_path):
+        import sys
+        import yaml
+        import os
+
+        sys.path.append('/home/mayanze/PycharmProjects/SwinTF')
+        os.environ['CUDA_VISIBLE_DEVICES'] = '0,1,2,3'
+
+        with open(config_path, 'r') as file:
+            config = yaml.safe_load(file)
+
+        print(config)
+
+        test_set = SuperResolutionYadaptDataset(config=config['test'])
+        return test_set
 
 
 if __name__ == "__main__":
-    import sys
-    import yaml
+    # config_path = '/home/mayanze/PycharmProjects/SwinTF/config/manga109_test/blur_iso.yaml'
+    # test_set = load_dataset(config_path)
+    # torch.cuda.empty_cache()
 
-    sys.path.append('/home/mayanze/PycharmProjects/SwinTF')
-    config_path = '/home/mayanze/PycharmProjects/SwinTF/config/urban100test.yaml'
+    # config_path = '/home/mayanze/PycharmProjects/SwinTF/config/manga109_test/blur_aniso.yaml'
+    # test_set = load_dataset(config_path)
+    # torch.cuda.empty_cache()
 
-    import os
-    os.environ['CUDA_VISIBLE_DEVICES'] = '5'
+    # config_path = '/home/mayanze/PycharmProjects/SwinTF/config/manga109_test/jpeg.yaml'
+    # test_set = load_dataset(config_path)
+    # torch.cuda.empty_cache()
 
-    config_path = config_path
-    with open(config_path, 'r') as file:
-        config = yaml.safe_load(file)
+    config_path = '/home/mayanze/PycharmProjects/SwinTF/config/manga109_test/noise.yaml'
+    test_set = load_dataset(config_path)
+    torch.cuda.empty_cache()
 
-    print(config)
 
-    # test_set = SuperResolutionYadaptDataset(config=config['test'])
-    
 
     # DIV2K = SuperResolutionDataset(config=config['train'])
     # LR_image, HR_image = DIV2K.__getitem__(0)
