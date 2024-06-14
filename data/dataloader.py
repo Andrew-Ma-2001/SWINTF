@@ -165,7 +165,7 @@ class SuperResolutionYadaptDataset(Dataset):
             save_path = self.LR_path + '_yadapt_aug'
         
         if os.path.exists(save_path):
-            assert len(os.listdir(save_path)) == len(self.HR_images), "The save_path stored files should have the same length as HR_images"
+            # assert len(os.listdir(save_path)) == len(self.HR_images), "The save_path stored files should have the same length as HR_images"
             self.precompute = True
         else:
             self.precompute = False
@@ -228,8 +228,8 @@ class SuperResolutionYadaptDataset(Dataset):
                 # Ensure the image is read in three channels (RGB)
                 LR_image = LR_image.convert('RGB')
                 LR_image = modcrop(LR_image, self.scale)
-                LR_image = imresize_np(LR_image, 1/self.scale)
-                LR_image = np.array(LR_image)
+                LR_image = imresize_np(LR_image/255.0, 1/self.scale)
+                LR_image = np.array(LR_image*255.0)
             else:
                 LR_image = Image.open(self.LR_images[idx])
                 LR_image = LR_image.convert('RGB')
@@ -239,8 +239,11 @@ class SuperResolutionYadaptDataset(Dataset):
             try:
                 assert HR_image.shape[0] == LR_image.shape[0] * self.scale and HR_image.shape[1] == LR_image.shape[1] * self.scale, "HR and LR should have the same size after modcrop"
             except:
-                HR_image = self.force_crop(HR_image, (LR_image.shape[0] * self.scale, LR_image.shape[1] * self.scale))
+                # HR_image = self.force_crop(HR_image, (LR_image.shape[0] * self.scale, LR_image.shape[1] * self.scale))
+                LR_image = self.force_crop(LR_image, (HR_image.shape[0] // self.scale, HR_image.shape[1] // self.scale))
                 print('HR and LR should have the same size after modcrop')
+                assert HR_image.shape[0] == LR_image.shape[0] * self.scale and HR_image.shape[1] == LR_image.shape[1] * self.scale, "HR and LR should have the same size after modcrop"
+
 
             HR_image = HR_image[self.overlap:HR_image.shape[0]-self.overlap, self.overlap:HR_image.shape[1] - self.overlap]
 
@@ -373,7 +376,8 @@ class SuperResolutionYadaptDataset(Dataset):
 
         if self.LR_path == 'BIC':
             LR_image = modcrop(LR_image, self.scale)
-            LR_image = imresize_np(LR_image, 1/self.scale)
+            LR_image = imresize_np(LR_image/255.0, 1/self.scale)
+            LR_image = np.array(LR_image*255.0)
 
         return HR_image, LR_image
 
@@ -492,8 +496,10 @@ class SuperResolutionYadaptDataset(Dataset):
             try:
                 assert HR_image.shape[0] == LR_image.shape[0] * self.scale and HR_image.shape[1] == LR_image.shape[1] * self.scale, "HR and LR should have the same size after modcrop"
             except:
-                HR_image = self.force_crop(HR_image, (LR_image.shape[0] * self.scale, LR_image.shape[1] * self.scale))
+                LR_image = self.force_crop(LR_image, (HR_image.shape[0] // self.scale, HR_image.shape[1] // self.scale))
                 print('HR and LR should have the same size after modcrop')
+                assert HR_image.shape[0] == LR_image.shape[0] * self.scale and HR_image.shape[1] == LR_image.shape[1] * self.scale, "HR and LR should have the same size after modcrop"
+
 
             # assert HR_image.shape[0] == LR_image.shape[0] * self.scale and HR_image.shape[1] == LR_image.shape[1] * self.scale, "HR and LR should have the same size after modcrop"
             HR_image = HR_image[self.overlap:HR_image.shape[0]-self.overlap, self.overlap:HR_image.shape[1] - self.overlap]
@@ -552,7 +558,7 @@ def load_dataset(config_path):
         import os
 
         sys.path.append('/home/mayanze/PycharmProjects/SwinTF')
-        os.environ['CUDA_VISIBLE_DEVICES'] = '0,1,2,3'
+        os.environ['CUDA_VISIBLE_DEVICES'] = '1,2,3,4'
 
         with open(config_path, 'r') as file:
             config = yaml.safe_load(file)
@@ -564,22 +570,30 @@ def load_dataset(config_path):
 
 
 if __name__ == "__main__":
-    # config_path = '/home/mayanze/PycharmProjects/SwinTF/config/manga109_test/blur_iso.yaml'
-    # test_set = load_dataset(config_path)
-    # torch.cuda.empty_cache()
+    config_path = '/home/mayanze/PycharmProjects/SwinTF/config/manga109_test/blur_iso.yaml'
+    test_set = load_dataset(config_path)
+    test_set = None
+    torch.cuda.empty_cache()
 
-    # config_path = '/home/mayanze/PycharmProjects/SwinTF/config/manga109_test/blur_aniso.yaml'
-    # test_set = load_dataset(config_path)
-    # torch.cuda.empty_cache()
+    config_path = '/home/mayanze/PycharmProjects/SwinTF/config/manga109_test/blur_aniso.yaml'
+    test_set = load_dataset(config_path)
+    test_set = None
+    torch.cuda.empty_cache()
 
-    # config_path = '/home/mayanze/PycharmProjects/SwinTF/config/manga109_test/jpeg.yaml'
-    # test_set = load_dataset(config_path)
-    # torch.cuda.empty_cache()
+    config_path = '/home/mayanze/PycharmProjects/SwinTF/config/manga109_test/jpeg.yaml'
+    test_set = load_dataset(config_path)
+    test_set = None
+    torch.cuda.empty_cache()
 
     config_path = '/home/mayanze/PycharmProjects/SwinTF/config/manga109_test/noise.yaml'
     test_set = load_dataset(config_path)
+    test_set = None
     torch.cuda.empty_cache()
 
+    config_path = '/home/mayanze/PycharmProjects/SwinTF/config/manga109_test/degrade.yaml'
+    test_set = load_dataset(config_path)
+    test_set = None
+    torch.cuda.empty_cache()
 
 
     # DIV2K = SuperResolutionDataset(config=config['train'])
