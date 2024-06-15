@@ -409,3 +409,15 @@ Yadapt is True SwinIRAdapter
 Config path: /home/mayanze/PycharmProjects/SwinTF/config/test_config/urban100test.yaml
 Resume from checkpoint from experiments/SwinIR_20240410_011847/140000_model.pth
 Avg PSNR: 32.97
+
+
+
+---
+Manga109 加噪声
+| Noise Type  | SwinIR Avg PSNR (Manga109) | SwinIRAdapter Avg PSNR (Manga109) |
+|-------------|----------------------------|-----------------------------------|
+| blur_aniso  | 19.15                      | 19.15                             |
+| blur_iso    | 25.87                      | 25.74                             |
+| degrade     | 16.55                      | 16.63                             |
+| jpeg        | 30.11                      | 30.10                             |
+| noise       | 22.02                      | 22.43                             |
