@@ -17,9 +17,10 @@ with open(config_path, 'r') as file:
     config = yaml.safe_load(file)
 
 
-model_path= '/home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20240503_113731/230000_model.pth'
-gpu_ids='0,1,2,3'
-os.environ['CUDA_VISIBLE_DEVICES'] = ','.join(str(x) for x in gpu_ids)
+model_path= '/home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20240503_113731/430000_model.pth'
+
+# gpu_ids='4,5,6,7'
+# os.environ['CUDA_VISIBLE_DEVICES'] = ','.join(str(x) for x in gpu_ids)
 # save_path = '/home/mayanze/PycharmProjects/SwinTF/dataset/testsets/aim2019/aim2019_lr/'  # 必须有 / 结尾
 
 scale = config['test']['scale']
@@ -42,7 +43,7 @@ checkpoint = torch.load(model_path)
 
 model.eval()
 model.cuda()
-model = torch.nn.DataParallel(model) 
+model = torch.nn.DataParallel(model, device_ids=[4,5,6,7]) #XXX 看看是不是在别的卡上算了
     
     
 model.load_state_dict(checkpoint,strict=True)
@@ -52,7 +53,7 @@ print('Resume from checkpoint from {}'.format(model_path))
 sam_model = extract_sam_model(model_path=config['test']['pretrained_sam'], image_size = 1024)
 sam_model.eval()
 sam_model.cuda()
-sam_model.image_encoder = torch.nn.DataParallel(sam_model.image_encoder)
+sam_model.image_encoder = torch.nn.DataParallel(sam_model.image_encoder, device_ids=[4,5,6,7]) #XXX 看看是不是在别的卡上算了
 
 
 overlap = 0
@@ -61,9 +62,12 @@ stride = patch_size - overlap
 scale_factor = 2
 LR_image_paths = get_all_images(config['test']['test_LR'])
 
+# DEBUG 这个要之后修改一下
+LR_image_paths = LR_image_paths
 
+save_path = '/home/mayanze/PycharmProjects/SwinTF/dataset/testsets/aim2019/aim2019_43w_overlap0_x4/'
+# save_path2 = '/home/mayanze/PycharmProjects/SwinTF/dataset/testsets/aim2019/aim2019_43w_overlap0_x4/'
 
-save_path = '/home/mayanze/PycharmProjects/SwinTF/dataset/testsets/aim2019/aim2019_overlap0_x4/'
 if not os.path.exists(save_path):
     os.makedirs(save_path)
 
@@ -98,12 +102,12 @@ def predict_one_img(LR_image_path, img_name, model, sam_model, overlap, patch_si
     # 然后将 batch_LR_image 输入到模型中
 
     with torch.no_grad():
-        if sam_batch_LR_image_sam.shape[0] <= 5:
+        if sam_batch_LR_image_sam.shape[0] <= 5: # 500，3，1024，1024
             sam_batch_LR_image_sam = sam_batch_LR_image_sam.cuda()
             _, y1, y2, y3 = sam_model.image_encoder(sam_batch_LR_image_sam)
-            y1, y2, y3 = y1.cpu().numpy(), y2.cpu().numpy(), y3.cpu().numpy()
+            y1, y2, y3 = y1.cpu().numpy(), y2.cpu().numpy(), y3.cpu().numpy()  #XXX 这一部分可以考虑不用转换成 numpy
         else:
-            y1, y2, y3 = process_batch(sam_batch_LR_image_sam, sam_model.image_encoder, 5)
+            y1, y2, y3 = process_batch(sam_batch_LR_image_sam, sam_model.image_encoder, 5) # 5，3，1024，1024
             # import matplotlib.pyplot as plt
             # plt.imshow(batch_LR_image[0,0,:,:])
             # plt.savefig('test.png')
@@ -120,7 +124,7 @@ def predict_one_img(LR_image_path, img_name, model, sam_model, overlap, patch_si
 
         with torch.no_grad():
             for i in range(0, batch_size, split_size):
-                batch_LR_image_part = lr_batch_LR_image[i:i + split_size].cuda()
+                batch_LR_image_part = lr_batch_LR_image[i:i + split_size].cuda() #DEBUG 是不是有地方已经把变量到cuda里面了，看模型的 forward 部分，那一步会不会发生设备的变化
                 batch_yadapt_features_part = batch_yadapt_features[i:i + split_size].cuda()
                 batch_Pre_image_part = model(batch_LR_image_part, batch_yadapt_features_part)
                 batch_Pre_image_parts.append(batch_Pre_image_part)
@@ -146,3 +150,5 @@ def predict_one_img(LR_image_path, img_name, model, sam_model, overlap, patch_si
 for LR_image_path in tqdm(LR_image_paths):
     img_name = os.path.basename(LR_image_path)
     predict_one_img(LR_image_path, img_name, model, sam_model, overlap, patch_size, stride, scale_factor, save_path)
+    # img_path = os.path.join(save_path, img_name)
+    # predict_one_img(img_path, img_name, model, sam_model, overlap, patch_size, stride, scale_factor, save_path2)

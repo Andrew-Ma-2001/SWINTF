@@ -5,3 +5,6 @@ wandb/
 experiments/
 __*/
 dataset/
+output/
+.idea/
+.vscode/

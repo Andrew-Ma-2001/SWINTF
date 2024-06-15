@@ -125,8 +125,8 @@ if __name__ == '__main__':
     sys.path.append("/home/mayanze/PycharmProjects/SwinTF/")
     config_path, model_path, gpu_ids, yadapt = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]
    
-    # #DEBUG
-    # config_path = '/home/mayanze/PycharmProjects/SwinTF/config/test_config/aim2019final.yaml'
+    #DEBUG
+    # config_path = '/home/mayanze/PycharmProjects/SwinTF/config/manga109_test/blur_iso.yaml'
     # model_path= '/home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20240503_113731/230000_model.pth'
     # gpu_ids='6,7'
     # yadapt='True'
@@ -287,7 +287,7 @@ if __name__ == '__main__':
 
 
 
-        # Print two imagees shape
+        # Print two images shape
         # print('Super_res_image shape: {}'.format(super_res_image.shape))
         # print('HR_image shape: {}'.format(HR_image.shape)) 
 
