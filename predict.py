@@ -6,10 +6,17 @@ import os
 from PIL import Image
 import torch
 import numpy as np
-from utils.utils_image import permute_squeeze, calculate_psnr, imresize_np
+from utils.utils_image import permute_squeeze, calculate_psnr, imresize_np, modcrop
 from nets.swinir import SwinIR
 import yaml
 from matplotlib import pyplot as plt
+
+def force_crop(image, size):
+    # Crop the image to the size
+    h, w = size
+    img = image[:h, :w, :]
+    return img
+
 
 def rgb2ycbcr(img, only_y=True):
     '''same as matlab rgb2ycbcr
@@ -34,7 +41,8 @@ def rgb2ycbcr(img, only_y=True):
         rlt /= 255.
     return rlt.astype(in_img_type)
 
-def evaluate_with_lrhr_pair(gt_path, lr_path, model):
+
+def evaluate_with_lrhr_pair(gt_path, lr_path, model, scale=2):
     # 载入测试图片，以及高清原图
     gt_img_path = [os.path.join(gt_path, x) for x in os.listdir(gt_path) if x.endswith('.png')]
     lr_img_path = [os.path.join(lr_path, x) for x in os.listdir(lr_path) if x.endswith('.png')]
@@ -49,6 +57,13 @@ def evaluate_with_lrhr_pair(gt_path, lr_path, model):
 
         gt = np.array(gt)
         lr = np.array(lr)
+
+        try:
+            assert gt.shape[0] == lr.shape[0] * scale and gt.shape[1] == lr.shape[1] * scale, "HR and LR should have the same size after modcrop"
+        except:
+            lr = force_crop(lr, (gt.shape[0] // scale, gt.shape[1] // scale))
+            print('HR and LR should have the same size after modcrop')
+            assert gt.shape[0] == lr.shape[0] * scale and gt.shape[1] == lr.shape[1] * scale, "HR and LR should have the same size after modcrop"
 
         gt = gt.astype(np.float32) / 255.
         lr = lr.astype(np.float32) / 255.
@@ -72,9 +87,9 @@ def evaluate_with_lrhr_pair(gt_path, lr_path, model):
         gt = permute_squeeze(gt)
         
         # Save the sr image
-        plt.imsave('sr.png', (sr*255).astype(np.uint8))
+        # plt.imsave('sr.png', (sr*255).astype(np.uint8))
         # plt.imsave('lr.png', (lr*255).astype(np.uint8))
-        plt.imsave('gt.png', (gt*255).astype(np.uint8))
+        # plt.imsave('gt.png', (gt*255).astype(np.uint8))
 
 
 
@@ -83,9 +98,10 @@ def evaluate_with_lrhr_pair(gt_path, lr_path, model):
 
         psnr = calculate_psnr(sr * 255, gt * 255, border=scale)
         avg_psnr.append(psnr)
-        print('PSNR: {:.2f}'.format(psnr))
+        # print('PSNR: {:.2f}'.format(psnr))
 
     print('Avg PSNR: {:.2f}'.format(sum(avg_psnr) / len(avg_psnr)))
+    return sum(avg_psnr) / len(avg_psnr)
 
 def evaluate_with_hr(gt_path, model):
     gt_img_path = [os.path.join(gt_path, x) for x in os.listdir(gt_path) if x.endswith('.png')]
