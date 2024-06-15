@@ -1,7 +1,5 @@
 # 把预处理函数写在外面，不能写在里面了
 def check_train_precompute():
-
-    # FIXME 这里的代码有修改路径和mode要改回去
     import numpy as np
     import torch
     import sys
@@ -180,4 +178,3 @@ def check_test_precompute():
         print('Save {}'.format(save_name))
 
 # check_test_precompute()
-
