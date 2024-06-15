@@ -159,13 +159,14 @@ class SuperResolutionYadaptDataset(Dataset):
 
     
     def check_test_precompute(self):
+        # TODO 还是要考虑算一半的情况
         if self.LR_path == 'BIC':
             save_path = self.HR_path + '_yadapt_aug'
         else:
             save_path = self.LR_path + '_yadapt_aug'
         
         if os.path.exists(save_path):
-            # assert len(os.listdir(save_path)) == len(self.HR_images), "The save_path stored files should have the same length as HR_images"
+            assert len(os.listdir(save_path)) == len(self.HR_images), "The save_path stored files should have the same length as HR_images"
             self.precompute = True
         else:
             self.precompute = False
