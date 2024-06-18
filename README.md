@@ -421,3 +421,24 @@ Manga109 加噪声
 | degrade     | 16.55                      | 16.63                             |
 | jpeg        | 30.11                      | 30.10                             |
 | noise       | 22.02                      | 22.43                             |
+
+--> 做定量分析，对 noise
+
+Manga109 针对噪声研究
+| Noise Type           | SwinIR Avg PSNR (Manga109) | SwinIRAdapter Avg PSNR (Manga109) |
+|----------------------|----------------------------|-----------------------------------|
+| noise_01_general     | 7.07                       | 9.59                              |
+| noise_01_channel     | 38.54                      | 37.66                             |
+| noise_01_gray        | 38.12                      | 37.34                             |
+| noise_05_general     | 7.18                       | 9.67                              |
+| noise_05_channel     | 33.76                      | 33.24                             |
+| noise_05_gray        | 31.23                      | 31.05                             |
+| noise_10_general     | 7.35                       | 9.78                              |
+| noise_10_channel     | 29.11                      | 28.76                             |
+| noise_10_gray        | 25.91                      | 25.85                             |
+| noise_15_general     | 7.23                       | 9.67                              |
+| noise_15_channel     | 25.96                      | 25.72                             |
+| noise_15_gray        | 22.55                      | 22.54                             |
+
+--> 发现 general noise 的优化效果好，但是 PSNR 值太低了，看看生成出来的图像
+--> 调整了一下 noise 的强度，重新生成一下
