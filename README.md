@@ -442,3 +442,13 @@ Manga109 针对噪声研究
 
 --> 发现 general noise 的优化效果好，但是 PSNR 值太低了，看看生成出来的图像
 --> 调整了一下 noise 的强度，重新生成一下
+
+Manga109 针对 general 噪声研究
+| Noise Type               | SwinIR Avg PSNR (Manga109) | SwinIRAdapter Avg PSNR (Manga109) |
+|--------------------------|----------------------------|-----------------------------------|
+| noise_sigma_0_010_general | 34.74                     | 34.20                             |
+| noise_sigma_0_050_general | 24.52                     | 24.32                             |
+| noise_sigma_0_100_general | 18.86                     | 19.00                             |
+| noise_sigma_0_150_general | 16.40                     | 16.70                             |
+
+--> 那 manga109 的部分算是算完了，看看 urban100 的结果
