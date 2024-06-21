@@ -416,11 +416,20 @@ Avg PSNR: 32.97
 Manga109 加噪声
 | Noise Type  | SwinIR Avg PSNR (Manga109) | SwinIRAdapter Avg PSNR (Manga109) |
 |-------------|----------------------------|-----------------------------------|
-| blur_aniso  | 19.15                      | 19.15                             |
-| blur_iso    | 25.87                      | 25.74                             |
-| degrade     | 16.55                      | 16.63                             |
-| jpeg        | 30.11                      | 30.10                             |
-| noise       | 22.02                      | 22.43                             |
+| blur_aniso  | 19.15                      | 19.15 ≈                            |
+| blur_iso    | 25.87                      | 25.74 ↓                            |
+| degrade     | 16.55                      | 16.63 ↑                            |
+| jpeg        | 30.11                      | 30.10 ↓                            |
+| noise       | 22.02                      | 22.43 ↑                            |
+
+Urban100 加噪声
+| Noise Type | SwinIR Avg PSNR (Urban100) | SwinIRAdapter Avg PSNR (Urban100) |
+|------------|-----------------------------|-----------------------------------|
+| blur_aniso | 18.90                       | 18.90 ≈                            |
+| blur_iso   | 23.69                       | 23.61 ↓                            |
+| degrade    | 16.08                       | 16.20 ↑                            |
+| jpeg       | 26.71                       | 26.62 ↓                            |
+| noise      | 20.82                       | 21.25 ↑                            |
 
 --> 做定量分析，对 noise
 
@@ -440,6 +449,7 @@ Manga109 针对噪声研究
 | noise_15_channel     | 25.96                      | 25.72                             |
 | noise_15_gray        | 22.55                      | 22.54                             |
 
+** 这里后来发现算 general noise 的跟 sigma 没关系，所以这里其实是三次随机数出来的 general noise **
 --> 发现 general noise 的优化效果好，但是 PSNR 值太低了，看看生成出来的图像
 --> 调整了一下 noise 的强度，重新生成一下
 
@@ -452,3 +462,18 @@ Manga109 针对 general 噪声研究
 | noise_sigma_0_150_general | 16.40                     | 16.70                             |
 
 --> 那 manga109 的部分算是算完了，看看 urban100 的结果
+
+| Noise Type                | SwinIR Avg PSNR (Urban100) | SwinIRAdapter Avg PSNR (Urban100) |
+|---------------------------|----------------------------|-----------------------------------|
+| noise_01_channel          | 32.96                      | 32.40                             |
+| noise_01_gray             | 32.76                      | 32.23                             |
+| noise_05_channel          | 30.20                      | 29.83                             |
+| noise_05_gray             | 28.73                      | 28.49                             |
+| noise_10_channel          | 27.08                      | 26.76                             |
+| noise_10_gray             | 24.57                      | 24.45                             |
+| noise_15_channel          | 24.58                      | 24.35                             |
+| noise_15_gray             | 21.55                      | 21.49                             |
+| noise_sigma_0_010_general | 30.95                      | 30.56                             |
+| noise_sigma_0_050_general | 22.51                      | 22.40                             |
+| noise_sigma_0_100_general | 17.61                      | 17.83                             |
+| noise_sigma_0_150_general | 15.56                      | 16.02                             |
