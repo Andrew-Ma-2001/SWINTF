@@ -1,4 +1,5 @@
 import numpy as np
+import cv2
 import os
 from scipy.ndimage import gaussian_filter
 from scipy.ndimage.interpolation import rotate
@@ -68,6 +69,48 @@ def add_gaussian_noise(image, scale_factor):
     noisy_image = image + noise
     return np.clip(noisy_image, 0, 1)
 
+def add_gaussian_noise_with_params(image, scale_factor, sigma, noise_type, cov_matrix=None):
+    """
+    Usage Example:
+    sigma = 0.1
+    noise_type = 'channel'
+    noisy_image = add_gaussian_noise_with_params(image, scale_factor, sigma, noise_type)
+    """
+    if noise_type == 'general':
+        if cov_matrix is None:
+            cov_matrix = np.random.randn(3, 3)
+            cov_matrix = cov_matrix @ cov_matrix.T  # Make it symmetric positive definite
+        noise = np.random.multivariate_normal(np.zeros(3), cov_matrix, image.shape[:2])
+        noise = noise*sigma
+    elif noise_type == 'channel':
+        noise = np.random.normal(0, sigma, image.shape)
+    elif noise_type == 'gray':
+        noise = np.random.normal(0, sigma, (image.shape[0], image.shape[1]))
+        noise = np.repeat(noise[:, :, np.newaxis], 3, axis=2)
+    else:
+        raise ValueError("Unsupported noise_type. Use 'general', 'channel', or 'gray'.")
+    
+    noisy_image = image + noise
+    return np.clip(noisy_image, 0, 1)
+
+def generate_gaussian_noise_dir_with_params(input_folder, output_folder, sigma, noise_type, cov_matrix=None, scale_factor=2):
+    """
+    Generate Gaussian noise for each image in the input folder and save it to the output folder.
+    """
+    # Create the output folder if it doesn't exist
+    if not os.path.exists(output_folder):
+        os.makedirs(output_folder)
+    
+    # Generate Gaussian noise for each image in the input folder and save it to the output folder
+    for filename in os.listdir(input_folder):
+        if filename.endswith(('.png', '.jpg', '.jpeg')):
+            input_path = os.path.join(input_folder, filename)
+            output_path = os.path.join(output_folder, filename)
+            image = np.asarray(Image.open(input_path).convert('RGB')) / 255.0
+            noisy_image = add_gaussian_noise_with_params(image, scale_factor, sigma, noise_type, cov_matrix)
+            Image.fromarray((noisy_image * 255).astype(np.uint8)).save(output_path)
+            print(f"Processed and saved: {output_path}")
+
 
 def apply_jpeg_compression(image, quality):
     image_pil = Image.fromarray((image * 255).astype(np.uint8))
@@ -133,35 +176,54 @@ if __name__ == "__main__":
 
     scale_factor = 2  # or 4
     
-    process_images(input_folder, output_folder, apply_isotropic_gaussian_blur, scale_factor)
-    process_images(input_folder, output_folder_aniso, apply_anisotropic_gaussian_blur, scale_factor)
-    process_images(input_folder, output_folder_jpeg, add_jpeg_noise, scale_factor)
-    process_images(input_folder, output_folder_noise, add_gaussian_noise, scale_factor)
-    process_images(input_folder, output_folder_degrade, degrade_image, scale_factor)
+    # process_images(input_folder, output_folder, apply_isotropic_gaussian_blur, scale_factor)
+    # process_images(input_folder, output_folder_aniso, apply_anisotropic_gaussian_blur, scale_factor)
+    # process_images(input_folder, output_folder_jpeg, add_jpeg_noise, scale_factor)
+    # process_images(input_folder, output_folder_noise, add_gaussian_noise, scale_factor)
+    # process_images(input_folder, output_folder_degrade, degrade_image, scale_factor)
 
 
 
-    # Load your image here
-    image = np.asarray(Image.open('/home/mayanze/PycharmProjects/SwinTF/dataset/testsets/Set5/LRbicx2/bird.png').convert('RGB')) / 255.0
-    scale_factor = 2  # or 4
-    # Test the functionality of each degradation function on a sample image
-    print("Testing isotropic Gaussian blur...")
-    blurred_image_iso = apply_isotropic_gaussian_blur(image, scale_factor)
-    Image.fromarray((blurred_image_iso * 255).astype(np.uint8)).save('output/blurred_image_iso.jpg')
+    # # Load your image here
+    image = np.asarray(Image.open('/home/mayanze/PycharmProjects/SwinTF/dataset/testsets/urban100_test/hr/img_020.png').convert('RGB')) / 255.0
+    # scale_factor = 2  # or 4
+    # # Test the functionality of each degradation function on a sample image
+    # print("Testing isotropic Gaussian blur...")
+    # blurred_image_iso = apply_isotropic_gaussian_blur(image, scale_factor)
+    # Image.fromarray((blurred_image_iso * 255).astype(np.uint8)).save('output/blurred_image_iso.jpg')
 
-    print("Testing anisotropic Gaussian blur...")
-    blurred_image_aniso = apply_anisotropic_gaussian_blur(image, scale_factor)
-    Image.fromarray((blurred_image_aniso * 255).astype(np.uint8)).save('output/blurred_image_aniso.jpg')
+    # print("Testing anisotropic Gaussian blur...")
+    # blurred_image_aniso = apply_anisotropic_gaussian_blur(image, scale_factor)
+    # Image.fromarray((blurred_image_aniso * 255).astype(np.uint8)).save('output/blurred_image_aniso.jpg')
 
-    print("Testing addition of Gaussian noise...")
-    noisy_image = add_gaussian_noise(image, scale_factor)
-    Image.fromarray((noisy_image * 255).astype(np.uint8)).save('output/noisy_image.jpg')
+    # print("Testing addition of Gaussian noise...")
+    # noisy_image = add_gaussian_noise(image, scale_factor)
+    # Image.fromarray((noisy_image * 255).astype(np.uint8)).save('output/noisy_image.jpg')
 
-    print("Testing JPEG compression...")
-    compressed_image = apply_jpeg_compression(image, 50)  # Using a fixed quality of 50 for testing
-    Image.fromarray((compressed_image * 255).astype(np.uint8)).save('output/compressed_image.jpg')
+    # print("Testing JPEG compression...")
+    # compressed_image = apply_jpeg_compression(image, 50)  # Using a fixed quality of 50 for testing
+    # Image.fromarray((compressed_image * 255).astype(np.uint8)).save('output/compressed_image.jpg')
 
-    print("All degradation functions tested successfully.")
+    # print("All degradation functions tested successfully.")
 
-    degraded_image = degrade_image(image, scale_factor)
-    Image.fromarray((degraded_image * 255).astype(np.uint8)).save('output/degraded_image.jpg')
+    # degraded_image = degrade_image(image, scale_factor)
+    # Image.fromarray((degraded_image * 255).astype(np.uint8)).save('output/degraded_image.jpg')
+
+    # Create a list of sigma
+    sigma = np.linspace(0, 15, 10)
+    sigma = sigma / 100
+    for s in sigma:
+        new_img = add_gaussian_noise_with_params(image, scale_factor, s, 'general')
+        # Image.fromarray((new_img * 255).astype(np.uint8)).save(f'output/new_img_{s}.jpg')
+        # Save the original and noisy images to the output directory
+        output_dir = 'output'
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
+
+        # Save the original image
+        original_image_path = os.path.join(output_dir, 'original_image.jpg')
+        Image.fromarray((image * 255).astype(np.uint8)).save(original_image_path)
+
+        # Save the noisy image
+        noisy_image_path = os.path.join(output_dir, f'noisy_image_sigma_{s:.6f}.jpg')
+        Image.fromarray((new_img * 255).astype(np.uint8)).save(noisy_image_path)
