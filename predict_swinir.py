@@ -1,5 +1,5 @@
 # 这个文件的目的是给 Swinir 写一个通用的检测流程
-from predict import evaluate_with_lrhr_pair
+from predict import evaluate_with_lrhr_pair, evaluate_with_hr
 import torch
 from nets.swinir import SwinIR
 import yaml
@@ -10,8 +10,8 @@ sys.path.append("/home/mayanze/PycharmProjects/SwinTF/")
 
 
 # 还是用 yaml 控制
-config_path = sys.argv[1]
-# config_path = '/home/mayanze/PycharmProjects/SwinTF/config/manga109_test/blur_aniso.yaml'
+# config_path = sys.argv[1]
+config_path = '/home/mayanze/PycharmProjects/SwinTF/config/test_config/BSDS100.yaml'
 print(f'config_path: {config_path}')
 with open(config_path, 'r') as file:
     config = yaml.safe_load(file)
@@ -42,5 +42,12 @@ model = torch.nn.DataParallel(model)
 
 print('Resume from checkpoint from {}'.format(model_path))
 
-avg_psnr = evaluate_with_lrhr_pair(config['test']['test_HR'], config['test']['test_LR'], model, scale)
-# print(f'avg_psnr: {avg_psnr}')
+if config['test']['test_LR'] == "BIC":
+    avg_psnr = evaluate_with_hr(config['test']['test_HR'], model, scale)
+else:
+    avg_psnr = evaluate_with_lrhr_pair(config['test']['test_HR'], config['test']['test_LR'], model, scale)
+
+
+# Example Command:
+# python predict_swinir.py /home/mayanze/PycharmProjects/SwinTF/config/test_config/urban100test.yaml
+# python predict_swinir.py /home/mayanze/PycharmProjects/SwinTF/config/test_config/manga109test.yaml
