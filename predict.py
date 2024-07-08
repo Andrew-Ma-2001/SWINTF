@@ -58,6 +58,7 @@ def evaluate_with_lrhr_pair(gt_path, lr_path, model, scale=2):
         gt = np.array(gt)
         lr = np.array(lr)
 
+        # TODO 这里下面的代码是有问题的，要判断是 hr 还是 lr 的边界
         try:
             assert gt.shape[0] == lr.shape[0] * scale and gt.shape[1] == lr.shape[1] * scale, "HR and LR should have the same size after modcrop"
         except:
@@ -81,7 +82,6 @@ def evaluate_with_lrhr_pair(gt_path, lr_path, model, scale=2):
         with torch.no_grad():
             sr = model(lr)
 
-        # output = output.data.squeeze().float().cpu().clamp_(0, 1).numpy()
         # 计算PSNR
         sr = permute_squeeze(sr)
         gt = permute_squeeze(gt)
@@ -103,7 +103,7 @@ def evaluate_with_lrhr_pair(gt_path, lr_path, model, scale=2):
     print('Avg PSNR: {:.2f}'.format(sum(avg_psnr) / len(avg_psnr)))
     return sum(avg_psnr) / len(avg_psnr)
 
-def evaluate_with_hr(gt_path, model):
+def evaluate_with_hr(gt_path, model, scale=2):
     gt_img_path = [os.path.join(gt_path, x) for x in os.listdir(gt_path) if x.endswith('.png')]
  
     gt_img_path = sorted(gt_img_path)
@@ -111,11 +111,13 @@ def evaluate_with_hr(gt_path, model):
     avg_psnr = []
     for i in range(len(gt_img_path)):
         gt = Image.open(gt_img_path[i]).convert('RGB')
-
         gt = np.array(gt)
+        gt = modcrop(gt, scale)
 
         gt = gt.astype(np.float32) / 255.
         lr = imresize_np(gt, 1/scale, True)
+
+        assert gt.shape[0] == lr.shape[0] * scale and gt.shape[1] == lr.shape[1] * scale, "HR and LR should have the same size after modcrop"
 
         gt = torch.from_numpy(np.ascontiguousarray(np.transpose(gt, (2, 0, 1)))).float()
         lr = torch.from_numpy(np.ascontiguousarray(np.transpose(lr, (2, 0, 1)))).float()
@@ -134,9 +136,14 @@ def evaluate_with_hr(gt_path, model):
         sr = permute_squeeze(sr)
         gt = permute_squeeze(gt)
 
+        sr = rgb2ycbcr(sr, only_y=True)
+        gt = rgb2ycbcr(gt, only_y=True)
+
+        psnr = calculate_psnr(sr * 255, gt * 255, border=scale)
+
         psnr = calculate_psnr(sr * 255, gt * 255, border=scale)
         avg_psnr.append(psnr)
-        print('PSNR: {:.2f}'.format(psnr))
+        # print('PSNR: {:.2f}'.format(psnr))
     print('Avg PSNR: {:.2f}'.format(sum(avg_psnr) / len(avg_psnr)))
 
 

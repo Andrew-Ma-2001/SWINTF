@@ -2,6 +2,10 @@ import os
 import cv2
 import torch
 import numpy as np
+import yaml
+from rich.console import Console
+from rich.table import Table
+from pprint import pformat
 
 
 def _get_all_images(path):
@@ -33,6 +37,60 @@ def get_all_images(path):
     else:
         raise ValueError('Wrong path type: [{:s}].'.format(type(path)))
     return paths
+
+def flatten_dict(d, parent_key='', sep='.'):
+    items = []
+    for k, v in d.items():
+        new_key = f"{parent_key}{sep}{k}" if parent_key else k
+        if isinstance(v, dict):
+            items.extend(flatten_dict(v, new_key, sep=sep).items())
+        else:
+            items.append((new_key, v))
+    return dict(items)
+
+def print_config_as_table(config, name):
+    # Create a console object
+    console = Console()
+
+    # Create a table object
+    table = Table(title=name)
+
+    # Add columns to the table
+    table.add_column("Key", justify="right", style="cyan", no_wrap=True)
+    table.add_column("Sub-Key", justify="right", style="green", no_wrap=True)
+    table.add_column("Value", style="magenta")
+
+    # Flatten the config dictionary
+    flat_config = flatten_dict(config)
+
+    # Track the last main key to add separators
+    last_main_key = None
+
+    # Add rows to the table
+    for key, value in flat_config.items():
+        formatted_value = pformat(value, indent=2, width=80)
+        sub_key = key.split('.')[-1]
+        main_key = key.rsplit('.', 1)[0] if '.' in key else key
+
+        if sub_key in ['resume_optimizer', 'gpu_ids', 'resume_network']:
+            formatted_value = f"[bold red]{formatted_value}[/bold red]"
+
+        if main_key != last_main_key:
+            if last_main_key is not None:
+                # table.add_row("", "", "")  # Add a separator row
+                table.add_section()
+            last_main_key = main_key
+
+        table.add_row(main_key, sub_key, formatted_value)
+
+    # Print the table
+    console.print(table)
+
+
+def load_config(config_path):
+    with open(config_path, 'r') as file:
+        config = yaml.safe_load(file)
+    return config
 
 # Function to split a batch into smaller sub-batches
 def split_batch(batch, max_sub_batch_size):

@@ -456,7 +456,7 @@ Manga109 针对噪声研究
 Manga109 针对 general 噪声研究
 | Noise Type               | SwinIR Avg PSNR (Manga109) | SwinIRAdapter Avg PSNR (Manga109) |
 |--------------------------|----------------------------|-----------------------------------|
-| noise_sigma_0_010_general | 34.74                     | 34.20                             |
+| noise_sigma_0_010_general | 34.74                     | 34.20                             | *不应该
 | noise_sigma_0_050_general | 24.52                     | 24.32                             |
 | noise_sigma_0_100_general | 18.86                     | 19.00                             |
 | noise_sigma_0_150_general | 16.40                     | 16.70                             |
@@ -477,3 +477,20 @@ Manga109 针对 general 噪声研究
 | noise_sigma_0_050_general | 22.51                      | 22.40                             |
 | noise_sigma_0_100_general | 17.61                      | 17.83                             |
 | noise_sigma_0_150_general | 15.56                      | 16.02                             |
+
+Adapter 和 SwinIR 在 Manga109 和 Urban100 再测一下；给的图像都是 matlab 生成的
+Set5 和 Set14 也用 KAIR 的测试一把
+
+What we can learn, what we can benifit 
+
+1) SwiIR urban100test 33.41， manga109 39.54，Set14 34.11， Set5 38.32， BSDS100 32.46
+2) SwinIR 论文 
+
+
+| Dataset | SwinIR 我们 | SwinIR 论文 | SwinIR 43w Step | SwinIR 23w Step | SwinIR 44w Step |
+|----------|----------|----------|----------|----------|---------|
+| Urban100 | 33.41    | 33.40    | 32.95    | 32.88    |38.06    |
+| Manga109 | 39.54    | 39.60    | 39.01    | 39.01    |33.98    |
+| Set14    | 34.11    | 34.14    | 33.85    | 33.88    |32.21    |
+| Set5     | 38.32    | 38.35    | 38.01    | 38.05    |39.17    |
+| BSDS100  | 32.46    | 32.44    | 32.25    | 32.26    |33.09    |
