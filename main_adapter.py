@@ -17,41 +17,59 @@ from predict_adapter import calculate_adapter_avg_psnr
 import warnings
 
 # Filter out the specific warning
-warnings.filterwarnings("ignore")
+warnings.filterwarnings("ignore", message="Leaking Caffe2 thread-pool after fork. (function pthreadpool)")
 
-DEBUG = False
-train_swinir = True
+import argparse
+
+parser = argparse.ArgumentParser(description='Process some parameters.')
+parser.add_argument('--debug', action='store_true', default=False, help='Enable debug mode')
+parser.add_argument('--train_swinir', action='store_true', default=False, help='Train SwinIR model')
+
+args = parser.parse_args()
+
+DEBUG = args.debug
+train_swinir = args.train_swinir
 
 print('Using train_swinir: {}'.format(train_swinir))
 
 def process_config(config):
-    resume = config['train'].get('resume_optimizer') is not None and config['network'].get('resume_network') is not None
+    config['train']['resume'] = config['train'].get('resume_optimizer') is not None and config['network'].get('resume_network') is not None
 
-    gpu_ids = config['train']['gpu_ids']
-    os.environ['CUDA_VISIBLE_DEVICES'] = ','.join(str(x) for x in gpu_ids)
+    # gpu_ids = config['train']['gpu_ids']
+
+    if train_swinir:
+        config['train']['gpu_ids'] = [0,1,2,3]
+    else:
+        config['train']['gpu_ids'] = [4,5,6,7]
+
+    os.environ['CUDA_VISIBLE_DEVICES'] = ','.join(str(x) for x in config['train']['gpu_ids'])
 
     if torch.cuda.is_available():
-        print('Using GPU: {}'.format(gpu_ids))
+        print('Using GPU: {}'.format(config['train']['gpu_ids']))
 
-    if resume:
+    if config['train']['resume']:
         seed = config['train']['seed']
         wandb_name = config['train']['wandb_name']
         wandb_id = config['train']['wandb_id']
         print('Using seed: {}'.format(seed))
+        
+
     else:
         seed = random.randint(1, 10000)
         print('Random seed: {}'.format(seed))
         config['train']['seed'] = seed
         print('Using seed: {}'.format(seed))
         date = time.strftime('%m%d', time.localtime()) 
-        wandb_name = f'{len(gpu_ids)}卡SwinIRAdapter_{date}'
+        wandb_name = f'{len(config["train"]["gpu_ids"])}卡SwinIRAdapter_{date}'
         detail_date = time.strftime('%Y%m%d%H%M%S', time.localtime())
         wandb_id = f'{detail_date}'
         config['train']['wandb_name'] = wandb_name
         config['train']['wandb_id'] = wandb_id
     
-
+    config['train']['save_path'] = os.path.join(config['train']['save_path'], config['train']['type'] + '_' + config['train']['wandb_id'])
+    # print('Save path: {}'.format(config['train']['save_path']))
     return config
+
 
 # =================================================
 # 0 Config，Global Parameters 部分
@@ -64,28 +82,26 @@ if train_swinir:
     config['train']['seed'] = 2024
     config['train']['gpu_ids'] = [0,1,2,3]
 
+
+if torch.cuda.is_available():
+    os.environ['CUDA_VISIBLE_DEVICES'] = '4,5,6,7'
+    print('Using GPU: [4, 5, 6, 7]')
+else:
+    sys.exit('No GPU available')
+
+
 random.seed(config['train']['seed'])
 np.random.seed(config['train']['seed'])
 torch.manual_seed(config['train']['seed'])
 torch.cuda.manual_seed_all(config['train']['seed'])
 
 if not DEBUG:
-    # 保存现在的时间，创建一个文件夹
-    config['train']['save_path'] = os.path.join(config['train']['save_path'], config['train']['type'] + '_' + config['train']['wandb_id'])
-
     if not os.path.exists(config['train']['save_path']):
         os.makedirs(config['train']['save_path'])
 
-    # 保存现在用的 config
     with open(os.path.join(config['train']['save_path'], 'config.yaml'), 'w') as file:
         yaml.dump(config, file)
 
-
-if torch.cuda.is_available():
-    os.environ['CUDA_VISIBLE_DEVICES'] = ','.join(str(x) for x in config['train']['gpu_ids'])
-    print('Using GPU: {}'.format(config['train']['gpu_ids']))
-else:
-    sys.exit('No GPU available')
 
 if not DEBUG:
     wandb.init(
@@ -123,8 +139,6 @@ test_loader = DataLoader(test_set,
                           drop_last=False,
                           pin_memory=True)
 
-stride = test_set.pretrained_sam_img_size - test_set.overlap
-scale_factor = test_set.scale
 # ==================================================
 # 3 Network 部分
 # ==================================================
@@ -321,14 +335,6 @@ for epoch in range(10000000000):
             torch.save(optimizer.state_dict(), os.path.join(config['train']['save_path'], '{:d}_optimizer.pth'.format(current_step)))
         
         # 5.3.5 测试模型
-        # if current_step % config['train']['step_test'] == 0:
-        #     avg_psnr = calculate_adapter_avg_psnr(test_set, model, y_adapt, config['train']['scale'])
-        #     print('Epoch: {:d}, Step: {:d}, Avg PSNR: {:.4f}'.format(epoch, current_step, avg_psnr))
-        #     wandb.log({"Epoch": epoch, "Step": current_step, "Avg PSNR": avg_psnr})
-        #     model.train()
-        
-        
-        # For testing model
         if current_step % config['train']['step_test'] == 0:
             if train_swinir:
                 if config['test']['test_LR'] == "BIC":
@@ -341,7 +347,7 @@ for epoch in range(10000000000):
                 if config['test']['test_LR'] == "BIC":
                     raise ValueError("BIC is not supported for SwinIRAdapter")
                 else:
-                    avg_psnr = calculate_adapter_avg_psnr(test_set, model, y_adapt=True, scale=config['train']['scale'])
+                    avg_psnr = calculate_adapter_avg_psnr(test_set, model, yadapt=True, scale=config['train']['scale'])
                 print('Epoch: {:d}, Step: {:d}, Avg PSNR: {:.4f}'.format(epoch, current_step, avg_psnr))
                 wandb.log({"Epoch": epoch, "Step": current_step, "Avg PSNR": avg_psnr})
                 model.train()
