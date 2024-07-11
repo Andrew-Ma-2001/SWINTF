@@ -12,7 +12,42 @@ from data.dataloader import SuperResolutionYadaptDataset
 import yaml
 import matplotlib.pyplot as plt
 
-
+def calculate_adapter_avg_psnr(test_set, model, yadapt, scale):
+    model.eval()
+    total_psnr = 0
+    stride = test_set.pretrained_sam_img_size - test_set.overlap
+    scale_factor = test_set.scale
+    for iter, test_data in enumerate(test_set):
+        batch_LR_image, HR_image, batch_yadapt_features = test_data[0], test_data[1], test_data[2]
+        patches, (img_height, img_width), (padded_height, padded_width) = test_data[3], test_data[4], test_data[5]
+        if yadapt == 'False':
+            batch_yadapt_features = torch.zeros_like(batch_yadapt_features)
+        batch_size = batch_LR_image.size(0)
+        split_size = 100  # Adjust this value based on your GPU memory capacity
+        batch_Pre_image_list = []
+        with torch.no_grad():
+            for i in range(0, batch_size, split_size):
+                batch_LR_image_split = batch_LR_image[i:i+split_size]
+                batch_yadapt_features_split = batch_yadapt_features[i:i+split_size]
+                batch_Pre_image_split = model(batch_LR_image_split, batch_yadapt_features_split)
+                batch_Pre_image_list.append(batch_Pre_image_split)
+        batch_Pre_image = torch.cat(batch_Pre_image_list, dim=0)
+        batch_Pre_image = batch_Pre_image.clamp(0, 1).cpu().detach().permute(0,2,3,1).numpy()
+        batch_Pre_image = batch_Pre_image * 255
+        batch_Pre_image = batch_Pre_image.astype(np.uint8)
+        super_res_image = np.zeros((stride * (padded_height // stride) * scale_factor, stride * (padded_width // stride) * scale_factor, 3), dtype=np.uint8)
+        for (patch, x, y), pre_image in zip(patches, batch_Pre_image):
+            num_y = y // stride
+            num_x = x // stride
+            patch = pre_image[(test_set.overlap//2)*scale_factor:(test_set.pretrained_sam_img_size-test_set.overlap//2)*scale_factor, (test_set.overlap//2)*scale_factor:(test_set.pretrained_sam_img_size-test_set.overlap//2)*scale_factor, :]
+            super_res_image[num_y*stride*scale_factor:(num_y+1)*stride*scale_factor, num_x*stride*scale_factor:(num_x+1)*stride*scale_factor,:] = patch
+        super_res_image = super_res_image[:img_height*scale_factor-test_set.overlap*scale_factor, :img_width*scale_factor - test_set.overlap*scale_factor]
+        super_res_image = rgb2ycbcr(super_res_image, only_y=True)
+        HR_image = rgb2ycbcr(HR_image, only_y=True)
+        psnr = calculate_psnr(super_res_image, HR_image, border=scale)
+        total_psnr += psnr
+    avg_psnr = total_psnr / len(test_set)
+    return avg_psnr
 
 def evaluate_with_lrhr_pair(gt_path, lr_path, model):
     # 载入测试图片，以及高清原图
@@ -121,15 +156,15 @@ def rgb2ycbcr(img, only_y=True):
     return rlt.astype(in_img_type)
 
 if __name__ == '__main__':
-    import sys
-    sys.path.append("/home/mayanze/PycharmProjects/SwinTF/")
-    config_path, model_path, gpu_ids, yadapt = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]
+    # import sys
+    # sys.path.append("/home/mayanze/PycharmProjects/SwinTF/")
+    # config_path, model_path, gpu_ids, yadapt = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]
    
     #DEBUG
-    # config_path = '/home/mayanze/PycharmProjects/SwinTF/config/manga109_test/blur_iso.yaml'
-    # model_path= '/home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20240503_113731/230000_model.pth'
-    # gpu_ids='6,7'
-    # yadapt='True'
+    config_path = '/home/mayanze/PycharmProjects/SwinTF/config/manga109test.yaml'
+    model_path= '/home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20240627_190811/500000_model.pth'
+    gpu_ids='2,3'
+    yadapt='True'
 
 
 
@@ -228,73 +263,7 @@ if __name__ == '__main__':
     #     num_x = x // stride
 
 
-    total_psnr = 0
-    stride = test_set.pretrained_sam_img_size - test_set.overlap
-    scale_factor = test_set.scale
-
-    for iter, test_data in enumerate(test_set):
-        batch_LR_image, HR_image, batch_yadapt_features = test_data[0], test_data[1], test_data[2]
-        patches, (img_height, img_width), (padded_height, padded_width) = test_data[3], test_data[4], test_data[5]
-        
-
-        if yadapt == 'False':
-            batch_yadapt_features = torch.zeros_like(batch_yadapt_features)
-
-        batch_size = batch_LR_image.size(0)
-        split_size = 100  # Adjust this value based on your GPU memory capacity
-        batch_Pre_image_list = []
-
-        with torch.no_grad():
-            for i in range(0, batch_size, split_size):
-                batch_LR_image_split = batch_LR_image[i:i+split_size]
-                batch_yadapt_features_split = batch_yadapt_features[i:i+split_size]
-                batch_Pre_image_split = model(batch_LR_image_split, batch_yadapt_features_split)
-                batch_Pre_image_list.append(batch_Pre_image_split)
-
-        batch_Pre_image = torch.cat(batch_Pre_image_list, dim=0)
-
-        # with torch.no_grad():
-        #     batch_Pre_image = model(batch_LR_image)
-
-        # batch_Pre_image 的形状  [x*y, 3, 48*scale, 48*scale] -> [x, y, 3,  48*scale, 48*scale] -> [48*x*scale, 48*y*scale, 3] 
-        # batch_LR_image = LR_image.reshape(x//48, 48, y//48, 48, 3).transpose(0, 2, 1, 3, 4).reshape(-1, 3, 48, 48)
-        # batch_Pre_image = batch_Pre_image.view(x//48, y//48, 3, 48*scale, 48*scale)
-        # batch_Pre_image = batch_Pre_image.permute(0, 3, 1, 4, 2).contiguous().view(x*scale, y*scale, 3)
-        # batch_Pre_image = batch_Pre_image.clamp(0, 1)
-        # # Change to numpy 
-        # batch_Pre_image = batch_Pre_image.cpu().detach().numpy()
-        # batch_Pre_image = batch_Pre_image * 255
-        # HR_image = HR_image * 255
-
-        batch_Pre_image = batch_Pre_image.clamp(0, 1).cpu().detach().permute(0,2,3,1).numpy()
-        batch_Pre_image = batch_Pre_image * 255
-        batch_Pre_image = batch_Pre_image.astype(np.uint8)
-        super_res_image = np.zeros((stride * (padded_height // stride) * scale_factor, stride * (padded_width // stride) * scale_factor, 3), dtype=np.uint8)
-
-        for (patch, x, y), pre_image in zip(patches, batch_Pre_image):
-            num_y = y // stride
-            num_x = x // stride
-            patch = pre_image[(test_set.overlap//2)*scale_factor:(test_set.pretrained_sam_img_size-test_set.overlap//2)*scale_factor, (test_set.overlap//2)*scale_factor:(test_set.pretrained_sam_img_size-test_set.overlap//2)*scale_factor, :]
-            super_res_image[num_y*stride*scale_factor:(num_y+1)*stride*scale_factor, num_x*stride*scale_factor:(num_x+1)*stride*scale_factor,:] = patch
-
-        super_res_image = super_res_image[:img_height*scale_factor-test_set.overlap*scale_factor, :img_width*scale_factor - test_set.overlap*scale_factor]
 
 
-        # plt.imsave('/home/mayanze/PycharmProjects/SwinTF/dataset/testsets/aim2019/aim2019_x2/'+'{}.png'.format(iter), super_res_image.astype(np.uint8))
-        # plt.imsave('{}.png'.format(iter), super_res_image.astype(np.uint8))
-        # print('Save {}.png'.format(iter))
-        # plt.imsave('{}_HR.png'.format(iter), HR_image.astype(np.uint8))
-
-
-
-        # Print two images shape
-        # print('Super_res_image shape: {}'.format(super_res_image.shape))
-        # print('HR_image shape: {}'.format(HR_image.shape)) 
-
-        super_res_image = rgb2ycbcr(super_res_image, only_y=True)
-        HR_image = rgb2ycbcr(HR_image, only_y=True)
-        psnr = calculate_psnr(super_res_image, HR_image, border=scale)
-        total_psnr += psnr
-        # print('PSNR: {:.2f}'.format(psnr))
-
-    print('Avg PSNR: {:.2f}'.format(total_psnr / len(test_set)))
+    avg_psnr = calculate_adapter_avg_psnr(test_set, model, yadapt, scale)
+    print('Avg PSNR: {:.2f}'.format(avg_psnr))

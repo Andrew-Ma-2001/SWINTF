@@ -97,7 +97,10 @@ class SuperResolutionYadaptDataset(Dataset):
         
         self.model = extract_sam_model(model_path=config['pretrained_sam'], image_size = 1024)
 
-        self.use_cuda = config['yadapt_use_cuda']
+        if not DEBUG:
+            self.use_cuda = config['yadapt_use_cuda']
+        else:
+            self.use_cuda = False
 
         if self.use_cuda:
             # Move the model to a specific 
@@ -280,22 +283,14 @@ class SuperResolutionYadaptDataset(Dataset):
                 # Concatenate the features
             y1, y2, y3 = y1[:, :, :3, :3], y2[:, :, :3, :3], y3[:, :, :3, :3]
             yadapt_features = np.concatenate((y1, y2, y3), axis=1)
-            # mean = yadapt_features.mean()
-            # std = yadapt_features.std()
-            # yadapt_features = (yadapt_features - mean) / std
 
-            # Print the size of yadapt_features
-            # print(yadapt_features.shape) # 3480x3x3
             batch_yadapt_features = torch.from_numpy(yadapt_features).float()
             # 这里由于 vit 会把 B 和 C 合成一个维度，所以这里要把 batch_yadapt_features 的维度转换一下，变成 [xy/3, 1280*3, 3, 3]
             # batch_yadapt_features = batch_yadapt_features.reshape(yadapt_features.shape[0]//3, 1280*3, 3, 3)
             # assert 到这里 batch_yadapt_features 和 batch_LR_image 的 batch_size 是一样的
             assert batch_yadapt_features.shape[0] == batch_LR_image.shape[0], "batch_yadapt_features and batch_LR_image should have the same batch_size"
 
-            # for i in range(yadapt_features.shape[0]):
-            #     save_name = os.path.join(save_path, os.path.basename(self.LR_images[idx]).split(".")[0]+'_'+str(i)+'_yadapt.npy')
-            #     np.save(save_name, yadapt_features[i])
-            #     print('Save {}'.format(save_name))
+
             save_name = os.path.join(save_path, os.path.basename(self.LR_images[idx]).split(".")[0]+'_yadapt.npy')
             np.save(save_name, yadapt_features)
             print('Save {}'.format(save_name))
@@ -370,7 +365,6 @@ class SuperResolutionYadaptDataset(Dataset):
         HR_image = Image.open(self.HR_images[idx]) # 彩色图像读进来
         # Mode Crop 保证可以整除
         HR_image = modcrop(HR_image, self.scale)
-
         LR_image = Image.open(self.LR_images[idx])
         LR_image = LR_image.convert('RGB')
         LR_image = np.array(LR_image) 
@@ -390,11 +384,12 @@ class SuperResolutionYadaptDataset(Dataset):
             # --------------------------------
             # randomly crop the L patch
             # --------------------------------
-            # rnd_h = random.randint(0, max(0, H - self.LR_size))
-            # rnd_w = random.randint(0, max(0, W - self.LR_size))
+            rnd_h = random.randint(0, max(0, H - self.LR_size))
+            rnd_w = random.randint(0, max(0, W - self.LR_size))
 
-            rnd_h = random.choice(np.arange(0, LR_image.shape[0] - self.LR_size + 1, self.LR_size))
-            rnd_w = random.choice(np.arange(0, LR_image.shape[1] - self.LR_size + 1, self.LR_size))
+            # DEBUG 这个要改回去
+            # rnd_h = random.choice(np.arange(0, LR_image.shape[0] - self.LR_size + 1, self.LR_size))
+            # rnd_w = random.choice(np.arange(0, LR_image.shape[1] - self.LR_size + 1, self.LR_size))            
             LR_image = LR_image[rnd_h:rnd_h + self.LR_size, rnd_w:rnd_w + self.LR_size, :]
 
             # --------------------------------
@@ -415,10 +410,15 @@ class SuperResolutionYadaptDataset(Dataset):
                 save_path = self.LR_path + '_yadapt_aug'
 
             # i 是 patch 的 index
-            i = int((rnd_h/self.LR_size)*(rnd_w/self.LR_size))
-            yadapt_feature_path = os.path.join(save_path, os.path.basename(self.LR_images[idx]).split(".")[0]+'_'+str(i)+'_'+str(mode)+'_yadapt.npy')
-            yadapt_features = np.load(yadapt_feature_path)
-            yadapt_features = torch.from_numpy(yadapt_features).float()
+            try:
+                i = int((rnd_h/self.LR_size)*(rnd_w/self.LR_size))
+                yadapt_feature_path = os.path.join(save_path, os.path.basename(self.LR_images[idx]).split(".")[0]+'_'+str(i)+'_'+str(mode)+'_yadapt.npy')
+                yadapt_features = np.load(yadapt_feature_path)
+                yadapt_features = torch.from_numpy(yadapt_features).float()
+            except:
+                # DEBUG 这个要改回去
+                # print('Error in loading yadapt features')
+                yadapt_features = torch.randn(1, 1, 1, 1)
 
             # DEBUG 看看 yadapt_features 的数据分布
             if DEBUG:
@@ -426,59 +426,6 @@ class SuperResolutionYadaptDataset(Dataset):
                 std = yadapt_features.std()
                 avg = yadapt_features.mean(dim=0)
                 print('mean: {}, std: {}, avg: {}'.format(mean, std, avg))
-
-
-
-            # # 然后将 batch_LR_image 输入到模型中
-            # if self.precompute is False:
-            #     large_img = np.zeros((1024, 1024, 3), dtype=np.float32)
-            #     large_img[:self.LR_size, :self.LR_size, :] = LR_image
-            #     batch_img = torch.from_numpy(large_img).permute(2, 0, 1).unsqueeze(0).float()
-            #     # Send batch_img to cuda
-            #     if self.use_cuda:
-            #         batch_img = batch_img.cuda()
-            #     with torch.no_grad():
-            #         _, y1, y2, y3 = self.model.image_encoder(batch_img)
-            #     # Concatenate the features
-            #     y1, y2, y3 = y1.squeeze(0).cpu().numpy(), y2.squeeze(0).cpu().numpy(), y3.squeeze(0).cpu().numpy()
-            #     y1, y2, y3 = y1[:, :3, :3], y2[:, :3, :3], y3[:, :3, :3]
-            #     yadapt_features = np.concatenate((y1, y2, y3), axis=0)
-            #     mean = yadapt_features.mean()
-            #     std = yadapt_features.std()
-            #     yadapt_features = (yadapt_features - mean) / std
-            #     # Print the size of yadapt_features
-            #     # print(yadapt_features.shape) # 3480x3x3 
-            #     yadapt_features = torch.from_numpy(yadapt_features).float()
-
-                # if batch_LR_image_sam.shape[0] <= 5:
-                #     if self.use_cuda:
-                #         batch_LR_image_sam = batch_LR_image_sam.cuda()
-                #     with torch.no_grad():
-                #         _, y1, y2, y3 = self.model.image_encoder(batch_LR_image_sam)
-                #         y1, y2, y3 = y1.cpu().numpy(), y2.cpu().numpy(), y3.cpu().numpy()
-                # else:
-                #     if self.use_cuda:
-                #         y1, y2, y3 = process_batch(batch_LR_image_sam, self.model.image_encoder, 5)
-                # # import matplotlib.pyplot as plt
-                # # plt.imshow(batch_LR_image[0,0,:,:])
-                # # plt.savefig('test.png')
-                # # Concatenate the features
-                # y1, y2, y3 = y1[:, :, :3, :3], y2[:, :, :3, :3], y3[:, :, :3, :3]
-                # yadapt_features = np.concatenate((y1, y2, y3), axis=1)
-            # else:
-            #     if self.LR_path == 'BIC':
-            #         save_path = self.HR_path + '_yadapt'
-            #     else:
-            #         save_path = self.LR_path + '_yadapt'
-            #     yadapt_feature_path = os.path.join(save_path, os.path.basename(self.LR_images[idx]).split(".")[0]+'_yadapt.npy')
-            #     yadapt_features = np.load(yadapt_feature_path)
-            #     # 这里因为 yadapt_features 是整个图像的特征，所以要把 yadapt_features 裁剪一下
-            #     yadapt_features = yadapt_features[int((rnd_h/self.LR_size)*(rnd_w/self.LR_size))]
-            #     # Normalize the yadapt_features
-            #     mean = yadapt_features.mean()
-            #     std = yadapt_features.std()
-            #     yadapt_features = (yadapt_features - mean) / std
-            #     yadapt_features = torch.from_numpy(yadapt_features).float()
 
 
             # To numpy
@@ -554,48 +501,73 @@ class SuperResolutionYadaptDataset(Dataset):
 
 
 def load_dataset(config_path):
-        import sys
-        import yaml
-        import os
+    import sys
+    import yaml
+    import os
+    sys.path.append('/home/mayanze/PycharmProjects/SwinTF')
+    os.environ['CUDA_VISIBLE_DEVICES'] = '1,2,3,4'
+    with open(config_path, 'r') as file:
+        config = yaml.safe_load(file)
+    print(config)
+    test_set = SuperResolutionYadaptDataset(config=config['test'])
+    return test_set
 
-        sys.path.append('/home/mayanze/PycharmProjects/SwinTF')
-        os.environ['CUDA_VISIBLE_DEVICES'] = '1,2,3,4'
-
-        with open(config_path, 'r') as file:
-            config = yaml.safe_load(file)
-
-        print(config)
-
-        test_set = SuperResolutionYadaptDataset(config=config['test'])
-        return test_set
-
+def precompute_dataset(config_path):
+    test_set = load_dataset(config_path)
+    del test_set
+    torch.cuda.empty_cache()
 
 if __name__ == "__main__":
-    config_path = '/home/mayanze/PycharmProjects/SwinTF/config/manga109_test/blur_iso.yaml'
+    # config_path = '/home/mayanze/PycharmProjects/SwinTF/config/manga109_test/blur_iso.yaml'
+    # test_set = load_dataset(config_path)
+    # test_set = None
+    # torch.cuda.empty_cache()
+
+    # config_path = '/home/mayanze/PycharmProjects/SwinTF/config/manga109_test/blur_aniso.yaml'
+    # test_set = load_dataset(config_path)
+    # test_set = None
+    # torch.cuda.empty_cache()
+
+    # config_path = '/home/mayanze/PycharmProjects/SwinTF/config/manga109_test/jpeg.yaml'
+    # test_set = load_dataset(config_path)
+    # test_set = None
+    # torch.cuda.empty_cache()
+
+    # config_path = '/home/mayanze/PycharmProjects/SwinTF/config/manga109_test/noise.yaml'
+    # test_set = load_dataset(config_path)
+    # test_set = None
+    # torch.cuda.empty_cache()
+
+    # config_path = '/home/mayanze/PycharmProjects/SwinTF/config/manga109_test/degrade.yaml'
+    # test_set = load_dataset(config_path)
+    # test_set = None
+    # torch.cuda.empty_cache()
+
+
+    # config_path = '/home/mayanze/PycharmProjects/SwinTF/config/test_config/manga109test.yaml'
+    # test_set = load_dataset(config_path)
+    # test_set = None
+    # torch.cuda.empty_cache()
+
+    # config_path = '/home/mayanze/PycharmProjects/SwinTF/config/test_config/urban100test.yaml'
+    # test_set = load_dataset(config_path)
+    # test_set = None
+    # torch.cuda.empty_cache()
+    
+    # config_path = '/home/mayanze/PycharmProjects/SwinTF/config/test_config/set5.yaml'
+    # test_set = load_dataset(config_path)
+    # test_set = None
+    # torch.cuda.empty_cache()
+
+    # config_path = '/home/mayanze/PycharmProjects/SwinTF/config/test_config/Set14test.yaml'
+    # test_set = load_dataset(config_path)
+    # test_set = None
+    # torch.cuda.empty_cache()
+
+    config_path = '/home/mayanze/PycharmProjects/SwinTF/config/test_config/BSDS100.yaml'
     test_set = load_dataset(config_path)
     test_set = None
     torch.cuda.empty_cache()
-
-    config_path = '/home/mayanze/PycharmProjects/SwinTF/config/manga109_test/blur_aniso.yaml'
-    test_set = load_dataset(config_path)
-    test_set = None
-    torch.cuda.empty_cache()
-
-    config_path = '/home/mayanze/PycharmProjects/SwinTF/config/manga109_test/jpeg.yaml'
-    test_set = load_dataset(config_path)
-    test_set = None
-    torch.cuda.empty_cache()
-
-    config_path = '/home/mayanze/PycharmProjects/SwinTF/config/manga109_test/noise.yaml'
-    test_set = load_dataset(config_path)
-    test_set = None
-    torch.cuda.empty_cache()
-
-    config_path = '/home/mayanze/PycharmProjects/SwinTF/config/manga109_test/degrade.yaml'
-    test_set = load_dataset(config_path)
-    test_set = None
-    torch.cuda.empty_cache()
-
 
     # DIV2K = SuperResolutionDataset(config=config['train'])
     # LR_image, HR_image = DIV2K.__getitem__(0)

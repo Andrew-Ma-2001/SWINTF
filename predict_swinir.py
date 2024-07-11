@@ -8,18 +8,25 @@ import sys
 sys.path.append("/home/mayanze/PycharmProjects/SwinTF/")
 
 
-
+config_path_list = [
+    '/home/mayanze/PycharmProjects/SwinTF/config/Set5.yaml',
+    '/home/mayanze/PycharmProjects/SwinTF/config/urban100test.yaml',
+    '/home/mayanze/PycharmProjects/SwinTF/config/manga109test.yaml',
+    '/home/mayanze/PycharmProjects/SwinTF/config/BSDS100.yaml',
+    '/home/mayanze/PycharmProjects/SwinTF/config/Set14test.yaml'
+]
 # 还是用 yaml 控制
 # config_path = sys.argv[1]
-config_path = '/home/mayanze/PycharmProjects/SwinTF/config/test_config/BSDS100.yaml'
-print(f'config_path: {config_path}')
+# config_path = '/home/mayanze/PycharmProjects/SwinTF/config/urban100test.yaml'
+
+config_path = config_path_list[0]
 with open(config_path, 'r') as file:
     config = yaml.safe_load(file)
 
 gpu_ids = config['train']['gpu_ids']
 os.environ['CUDA_VISIBLE_DEVICES'] = '6,7'
 
-model_path = '/home/mayanze/PycharmProjects/SwinTF/001_classicalSR_DIV2K_s48w8_SwinIR-M_x2.pth'
+model_path = '/home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20240708163510/55000_model.pth'
 scale = config['train']['scale']
 model = SwinIR(upscale=config['network']['upsacle'], 
                 in_chans=config['network']['in_channels'],
@@ -36,16 +43,24 @@ model.eval()
 model.cuda()
 
 pretrained_model = torch.load(model_path)
-param_key_g = 'params'
-model.load_state_dict(pretrained_model[param_key_g] if param_key_g in pretrained_model.keys() else pretrained_model, strict=True)
+
+# param_key_g = 'params'
+# model.load_state_dict(pretrained_model[param_key_g] if param_key_g in pretrained_model.keys() else pretrained_model, strict=True)
+
 model = torch.nn.DataParallel(model) 
+model.load_state_dict(pretrained_model)
 
 print('Resume from checkpoint from {}'.format(model_path))
 
-if config['test']['test_LR'] == "BIC":
-    avg_psnr = evaluate_with_hr(config['test']['test_HR'], model, scale)
-else:
-    avg_psnr = evaluate_with_lrhr_pair(config['test']['test_HR'], config['test']['test_LR'], model, scale)
+for config_path in config_path_list:
+    print(f'config_path: {config_path}')
+    with open(config_path, 'r') as file:
+        config = yaml.safe_load(file)
+
+    if config['test']['test_LR'] == "BIC":
+        avg_psnr = evaluate_with_hr(config['test']['test_HR'], model, scale)
+    else:
+        avg_psnr = evaluate_with_lrhr_pair(config['test']['test_HR'], config['test']['test_LR'], model, scale)
 
 
 # Example Command:
