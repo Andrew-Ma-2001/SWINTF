@@ -7,6 +7,7 @@ import time
 import wandb
 import random
 import numpy as np
+import swanlab
 from data.dataloader import SuperResolutionYadaptDataset
 from torch.utils.data import DataLoader
 from nets.swinir import SwinIRAdapter, SwinIR
@@ -19,28 +20,30 @@ import warnings
 # Filter out the specific warning
 warnings.filterwarnings("ignore", message="Leaking Caffe2 thread-pool after fork. (function pthreadpool)")
 
-import argparse
+# import argparse
 
-parser = argparse.ArgumentParser(description='Process some parameters.')
-parser.add_argument('--debug', action='store_true', default=False, help='Enable debug mode')
-parser.add_argument('--train_swinir', action='store_true', default=False, help='Train SwinIR model')
+# parser = argparse.ArgumentParser(description='Process some parameters.')
+# parser.add_argument('--debug', action='store_true', default=False, help='Enable debug mode')
+# parser.add_argument('--train_swinir', action='store_true', default=False, help='Train SwinIR model')
+# args = parser.parse_args()
+# DEBUG = args.debug
+# train_swinir = args.train_swinir
 
-args = parser.parse_args()
-
-DEBUG = args.debug
-train_swinir = args.train_swinir
+DEBUG = True
+train_swinir = False
 
 print('Using train_swinir: {}'.format(train_swinir))
+
 
 def process_config(config):
     config['train']['resume'] = config['train'].get('resume_optimizer') is not None and config['network'].get('resume_network') is not None
 
     # gpu_ids = config['train']['gpu_ids']
 
-    if train_swinir:
-        config['train']['gpu_ids'] = [0,1,2,3]
-    else:
-        config['train']['gpu_ids'] = [4,5,6,7]
+    # if train_swinir:
+    #     config['train']['gpu_ids'] = [0,1,2,3]
+    # else:
+    #     config['train']['gpu_ids'] = [4,5,6,7]
 
     os.environ['CUDA_VISIBLE_DEVICES'] = ','.join(str(x) for x in config['train']['gpu_ids'])
 
@@ -74,7 +77,11 @@ def process_config(config):
 # =================================================
 # 0 Config，Global Parameters 部分
 # =================================================
-config_path = '/home/mayanze/PycharmProjects/SwinTF/config/Set5.yaml' 
+config_path = '/home/mayanze/PycharmProjects/SwinTF/config/set5_resume2.yaml'
+
+if DEBUG:
+    config_path = '/home/mayanze/PycharmProjects/SwinTF/config/set5_debug.yaml'
+
 config = load_config(config_path)
 config = process_config(config)
 
@@ -83,11 +90,11 @@ if train_swinir:
     config['train']['gpu_ids'] = [0,1,2,3]
 
 
-if torch.cuda.is_available():
-    os.environ['CUDA_VISIBLE_DEVICES'] = '4,5,6,7'
-    print('Using GPU: [4, 5, 6, 7]')
-else:
-    sys.exit('No GPU available')
+# if torch.cuda.is_available():
+#     os.environ['CUDA_VISIBLE_DEVICES'] = '0,1,2,3'
+#     print('Using GPU: [0, 1, 2, 3]')
+# else:
+#     sys.exit('No GPU available')
 
 
 random.seed(config['train']['seed'])
@@ -104,6 +111,7 @@ if not DEBUG:
 
 
 if not DEBUG:
+    os.environ['WANDB_MODE'] = 'offline'
     wandb.init(
         project='SwinIR',
         id=config['train']['wandb_id'],
@@ -111,6 +119,15 @@ if not DEBUG:
         config=config,
         resume='allow'
     )
+
+    swanlab.init(
+        project='SwinIR',
+        experiment_name=config['train']['wandb_id'],
+        description=config['train']['wandb_name'],
+        config=config
+    )
+
+
         
 # =================================================
 # 1 Dataset 部分
@@ -328,7 +345,7 @@ for epoch in range(10000000000):
         if current_step % config['train']['step_print'] == 0:
             print('Epoch: {:d}, Step: {:d}, Loss: {:.4f}, Smoothed Loss: {:.4f}, LR: {:.8f}'.format(epoch, current_step, loss.item(), loss_smooth, scheduler.get_last_lr()[0]))
             wandb.log({"Epoch": epoch, "Step": current_step, "Loss": loss.item(), "Smoothed Loss": loss_smooth, "Learning Rate": scheduler.get_last_lr()[0]})
-
+            swanlab.log({"Epoch": epoch, "Step": current_step, "Loss": loss.item(), "Smoothed Loss": loss_smooth, "Learning Rate": scheduler.get_last_lr()[0]})
         # 5.3.4 保存模型
         if current_step % config['train']['step_save'] == 0:
             torch.save(model.state_dict(), os.path.join(config['train']['save_path'], '{:d}_model.pth'.format(current_step)))
@@ -343,6 +360,7 @@ for epoch in range(10000000000):
                     avg_psnr = evaluate_with_lrhr_pair(config['test']['test_HR'], config['test']['test_LR'], model, config['train']['scale'])
                 print('Epoch: {:d}, Step: {:d}, Avg PSNR: {:.4f}'.format(epoch, current_step, avg_psnr))
                 wandb.log({"Epoch": epoch, "Step": current_step, "Avg PSNR": avg_psnr})
+                swanlab.log({"Epoch": epoch, "Step": current_step, "Avg PSNR": avg_psnr})
             else:
                 if config['test']['test_LR'] == "BIC":
                     raise ValueError("BIC is not supported for SwinIRAdapter")
@@ -350,4 +368,5 @@ for epoch in range(10000000000):
                     avg_psnr = calculate_adapter_avg_psnr(test_set, model, yadapt=True, scale=config['train']['scale'])
                 print('Epoch: {:d}, Step: {:d}, Avg PSNR: {:.4f}'.format(epoch, current_step, avg_psnr))
                 wandb.log({"Epoch": epoch, "Step": current_step, "Avg PSNR": avg_psnr})
+                swanlab.log({"Epoch": epoch, "Step": current_step, "Avg PSNR": avg_psnr})
                 model.train()

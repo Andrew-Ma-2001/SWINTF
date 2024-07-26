@@ -647,6 +647,22 @@ class SelfAttention(nn.Module):
         self.kv = nn.Linear(in_channels, in_channels*2)
         self.proj = nn.Linear(in_channels, in_channels)
 
+    def plot_attn(self, attn):
+        import matplotlib.pyplot as plt
+        # PLot attn
+        attn_avg = attn[0].detach().cpu().numpy() # Select the first exampl
+        # Reshape the attention map to the original spatial dimensions
+        # Assuming the original spatial dimensions are 48x48
+        H, W = 48, 48
+        attn_map = attn_avg.reshape(H, W, H, W).mean(axis=2).mean(axis=0)
+        # Plot the heatmap
+        plt.figure(figsize=(10, 10))
+        plt.imshow(attn_map, cmap='viridis')
+        plt.colorbar()
+        plt.title('Attention Heatmap')
+        plt.show()
+        plt.savefig('attn.png')
+
     def forward(self, y_adapt, x):
         ################### 2024-03-23 ##########################
         batch_size, C, width, height = x.size()
@@ -660,6 +676,8 @@ class SelfAttention(nn.Module):
 
         attn = (q @ k.transpose(-2, -1)) / C #是C还是根号C看经验
         attn = attn.softmax(dim=-1)
+
+        # self.plot_attn(attn)
 
         out = (attn @ v).transpose(1, 2).reshape(batch_size, -1, C)
         out = self.proj(out).transpose(-1, -2).reshape(batch_size, -1, width, height) + x

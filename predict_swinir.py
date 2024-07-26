@@ -24,9 +24,9 @@ with open(config_path, 'r') as file:
     config = yaml.safe_load(file)
 
 gpu_ids = config['train']['gpu_ids']
-os.environ['CUDA_VISIBLE_DEVICES'] = '6,7'
+os.environ['CUDA_VISIBLE_DEVICES'] = '0,1'
 
-model_path = '/home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20240708163510/55000_model.pth'
+model_path = '/home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20240711002251/50000_model.pth'
 scale = config['train']['scale']
 model = SwinIR(upscale=config['network']['upsacle'], 
                 in_chans=config['network']['in_channels'],
