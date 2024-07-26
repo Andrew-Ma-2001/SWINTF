@@ -10,7 +10,7 @@ def check_train_precompute():
     from data.extract_sam_features import extract_sam_model
     from utils.utils_image import augment_img
 
-    LR_path = '/home/mayanze/PycharmProjects/SwinTF/dataset/testsets/Set5/LRbicx2'
+    LR_path = '/home/mayanze/PycharmProjects/SwinTF/dataset/trainsets/trainL/DIV2K/DIV2K_train_LR_bicubic/X2'
     LR_size = 48
     pretrained_sam_img_size = 48
     use_cuda = True
@@ -34,7 +34,7 @@ def check_train_precompute():
     if not os.path.exists(save_path):
         os.makedirs(save_path)
 
-    assert len(os.listdir(save_path)) == 0, "The save_path should be empty"
+    #assert len(os.listdir(save_path)) == 0, "The save_path should be empty"
 
     modes = [0,1,2,3,4,5,6,7] # 8 modes
 
@@ -46,23 +46,24 @@ def check_train_precompute():
 
             LR_image = (LR_image - pixel_mean) / pixel_std
             # Cut the LR_image into patches
-            for y in range(0, LR_image.shape[0] - LR_size + 1, LR_size):
-                for x in range(0, LR_image.shape[1] - LR_size + 1, LR_size):
-                    patch = LR_image[y:y + LR_size, x:x + LR_size,:]
-                    patch = augment_img(patch, mode)
-                    patches.append((patch, x, y))
+            # for y in range(0, LR_image.shape[0] - LR_size + 1, LR_size):
+            #     for x in range(0, LR_image.shape[1] - LR_size + 1, LR_size):
+            #         patch = LR_image[y:y + LR_size, x:x + LR_size,:]
+            #         patch = augment_img(patch, mode)
+            #         patches.append((patch, x, y))
 
-            batch_LR_image = np.zeros((len(patches), 3, pretrained_sam_img_size, pretrained_sam_img_size))
-            for i, (patch, _, _) in enumerate(patches):
-                batch_LR_image[i] = patch.transpose(2, 0, 1)
+            # batch_LR_image = np.zeros((len(patches), 3, pretrained_sam_img_size, pretrained_sam_img_size))
+            # for i, (patch, _, _) in enumerate(patches):
+                # batch_LR_image[i] = patch.transpose(2, 0, 1)
 
             # 这里要把 48x48 变成 1024x1024 建一个更大的矩阵
-            large_img = np.zeros((batch_LR_image.shape[0], 3, 1024, 1024))
-            large_img[:, :, :48, :48] = batch_LR_image
+            LR_image = LR_image.transpose(2, 0, 1)
+            large_img = np.zeros([1, 3, 1024, 1024])
+            large_img[0, :, :LR_image.shape[1], :LR_image.shape[2]] = LR_image
             # 然后将 batch_LR_image 转换成 tensor
             batch_LR_image_sam = torch.from_numpy(large_img).float()
             # 然后将 batch_LR_image 输入到模型中
-            inferece_batch_size = 15
+            inferece_batch_size = 1
 
             if batch_LR_image_sam.shape[0] <= inferece_batch_size:
                 if use_cuda:
@@ -115,7 +116,7 @@ def check_test_precompute():
     save_path = LR_path + '_yadapt_aug'
     model = extract_sam_model(model_path='/home/mayanze/PycharmProjects/SwinTF/sam_vit_h_4b8939.pth', image_size = 1024)
     # only use 0,1 gpu
-    os.environ['CUDA_VISIBLE_DEVICES'] = '0,1,4,5'
+    os.environ['CUDA_VISIBLE_DEVICES'] = '6,7,4,5'
 
     pixel_mean = [123.675, 116.28, 103.53]
     pixel_std = [58.395, 57.12, 57.375]
@@ -178,3 +179,6 @@ def check_test_precompute():
         print('Save {}'.format(save_name))
 
 # check_test_precompute()
+
+if __name__ == '__main__':
+    check_train_precompute()

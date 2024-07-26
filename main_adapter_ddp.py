@@ -7,11 +7,11 @@ import time
 import wandb
 import random
 import numpy as np
-import swanlab
 from data.dataloader import SuperResolutionYadaptDataset
 from torch.utils.data import DataLoader
+from torch.utils.data.distributed import DistributedSampler
 from nets.swinir import SwinIRAdapter, SwinIR
-from utils.utils_image import calculate_psnr, permute_squeeze
+from utils.utils_dist import *
 from utils.utils_data import print_config_as_table, load_config
 from predict import evaluate_with_lrhr_pair, evaluate_with_hr
 from predict_adapter import calculate_adapter_avg_psnr
@@ -20,35 +20,31 @@ import warnings
 # Filter out the specific warning
 warnings.filterwarnings("ignore", message="Leaking Caffe2 thread-pool after fork. (function pthreadpool)")
 
-# import argparse
+import argparse
 
-# parser = argparse.ArgumentParser(description='Process some parameters.')
-# parser.add_argument('--debug', action='store_true', default=False, help='Enable debug mode')
-# parser.add_argument('--train_swinir', action='store_true', default=False, help='Train SwinIR model')
-# args = parser.parse_args()
-# DEBUG = args.debug
-# train_swinir = args.train_swinir
+parser = argparse.ArgumentParser(description='Process some parameters.')
+parser.add_argument('--debug', action='store_true', default=False, help='Enable debug mode')
+parser.add_argument('--train_swinir', action='store_true', default=False, help='Train SwinIR model')
+# parser.add_argument('--launcher', default='pytorch', help='job launcher')
+parser.add_argument('--local_rank', type=int, default=0)
+parser.add_argument('--dist', default=False)
+args = parser.parse_args()
 
-DEBUG = True
-train_swinir = False
+
+DEBUG = args.debug
+train_swinir = args.train_swinir
 
 print('Using train_swinir: {}'.format(train_swinir))
 
-
 def process_config(config):
     config['train']['resume'] = config['train'].get('resume_optimizer') is not None and config['network'].get('resume_network') is not None
-
-    # gpu_ids = config['train']['gpu_ids']
-
-    # if train_swinir:
-    #     config['train']['gpu_ids'] = [0,1,2,3]
-    # else:
-    #     config['train']['gpu_ids'] = [4,5,6,7]
 
     os.environ['CUDA_VISIBLE_DEVICES'] = ','.join(str(x) for x in config['train']['gpu_ids'])
 
     if torch.cuda.is_available():
         print('Using GPU: {}'.format(config['train']['gpu_ids']))
+    else:
+        sys.exit('No GPU available')
 
     if config['train']['resume']:
         seed = config['train']['seed']
@@ -58,7 +54,10 @@ def process_config(config):
         
 
     else:
-        seed = random.randint(1, 10000)
+        if train_swinir:
+            seed = 2024
+        else:
+            seed = random.randint(1, 10000)
         print('Random seed: {}'.format(seed))
         config['train']['seed'] = seed
         print('Using seed: {}'.format(seed))
@@ -70,63 +69,48 @@ def process_config(config):
         config['train']['wandb_id'] = wandb_id
     
     config['train']['save_path'] = os.path.join(config['train']['save_path'], config['train']['type'] + '_' + config['train']['wandb_id'])
-    # print('Save path: {}'.format(config['train']['save_path']))
     return config
 
 
 # =================================================
 # 0 Config，Global Parameters 部分
 # =================================================
-config_path = '/home/mayanze/PycharmProjects/SwinTF/config/set5_resume2.yaml'
-
-if DEBUG:
-    config_path = '/home/mayanze/PycharmProjects/SwinTF/config/set5_debug.yaml'
-
+config_path = '/home/mayanze/PycharmProjects/SwinTF/config/Set5_ddp.yaml' 
 config = load_config(config_path)
 config = process_config(config)
 
-if train_swinir:
-    config['train']['seed'] = 2024
-    config['train']['gpu_ids'] = [0,1,2,3]
+config['train']['dist'] = args.dist
 
+if config['train']['dist']:
+    init_dist('pytorch')
 
-# if torch.cuda.is_available():
-#     os.environ['CUDA_VISIBLE_DEVICES'] = '0,1,2,3'
-#     print('Using GPU: [0, 1, 2, 3]')
-# else:
-#     sys.exit('No GPU available')
+config['train']['rank'], config['train']['world_size'] = get_dist_info()
 
-
-random.seed(config['train']['seed'])
-np.random.seed(config['train']['seed'])
-torch.manual_seed(config['train']['seed'])
-torch.cuda.manual_seed_all(config['train']['seed'])
-
-if not DEBUG:
+if config['train']['rank'] == 0:
     if not os.path.exists(config['train']['save_path']):
         os.makedirs(config['train']['save_path'])
 
     with open(os.path.join(config['train']['save_path'], 'config.yaml'), 'w') as file:
         yaml.dump(config, file)
 
+    if not DEBUG:
+        wandb.init(
+            project='SwinIR',
+            id=config['train']['wandb_id'],
+            name=config['train']['wandb_name'],
+            config=config,
+            resume='allow'
+        )
 
-if not DEBUG:
-    os.environ['WANDB_MODE'] = 'offline'
-    wandb.init(
-        project='SwinIR',
-        id=config['train']['wandb_id'],
-        name=config['train']['wandb_name'],
-        config=config,
-        resume='allow'
-    )
+if train_swinir:
+    config['train']['seed'] = 2024
 
-    swanlab.init(
-        project='SwinIR',
-        experiment_name=config['train']['wandb_id'],
-        description=config['train']['wandb_name'],
-        config=config
-    )
 
+
+random.seed(config['train']['seed'])
+np.random.seed(config['train']['seed'])
+torch.manual_seed(config['train']['seed'])
+torch.cuda.manual_seed_all(config['train']['seed'])
 
         
 # =================================================
@@ -141,13 +125,25 @@ test_set = SuperResolutionYadaptDataset(config=config['test'])
 # 2 Dataloader 部分
 # ==================================================
 train_size = int(math.ceil(len(train_set) / config['train']['batch_size']))
-# 单机多卡，不用用 DistributedSampler
-train_loader = DataLoader(train_set,
-                          batch_size=config['train']['batch_size'],
-                          shuffle=config['train']['shuffle'],
-                          num_workers=config['train']['num_workers'],
-                          drop_last=True,
-                          pin_memory=True)
+
+if config['train']['dist']:
+    train_sampler = DistributedSampler(train_set, shuffle=config['train']['shuffle'], drop_last=True, seed=config['train']['seed'])
+    train_loader = DataLoader(train_set,
+                              batch_size=config['train']['batch_size'] // len(config['train']['gpu_ids']),
+                              shuffle=False,
+                              num_workers=config['train']['num_workers'] // len(config['train']['gpu_ids']),
+                              drop_last=True,
+                              pin_memory=True,
+                              sampler=train_sampler)
+
+else:
+    train_loader = DataLoader(train_set,
+                              batch_size=config['train']['batch_size'],
+                              shuffle=config['train']['shuffle'],
+                              num_workers=config['train']['num_workers'],
+                              drop_last=True,
+                              pin_memory=True)
+
 
 test_loader = DataLoader(test_set,
                           batch_size=config['test']['batch_size'],
@@ -224,7 +220,17 @@ device = torch.device('cuda' if config['train']['gpu_ids'] is not None else 'cpu
 
 model.train()
 model.cuda()
-model = torch.nn.DataParallel(model)
+
+if config['train']['dist']:
+    find_unused_parameters = True
+    use_static_graph = False
+    model = torch.nn.parallel.DistributedDataParallel(model,
+                                                    device_ids=[torch.cuda.current_device()],
+                                                    find_unused_parameters=find_unused_parameters)
+    if use_static_graph:
+        model._set_static_graph()
+else:
+    model = torch.nn.DataParallel(model)
 
 # 3.2 设计断点续训的机制
 if config['network']['resume_network']:
@@ -275,12 +281,16 @@ if config['network']['resume_network'] and config['train']['resume_optimizer']:
 else:
     current_step = 0
 
-print_config_as_table(config, config_path)
+if config['train']['rank'] == 0:
+    print_config_as_table(config, config_path)
 
 # 5.3 开始训练
 smooth_loss = []
 running_loss = 0.0
 for epoch in range(10000000000):
+    if config['train']['dist']:
+        train_sampler.set_epoch(epoch)
+
     for _, train_data in enumerate(train_loader):
         current_step += 1
         # 5.3.1 数据准备
@@ -342,17 +352,17 @@ for epoch in range(10000000000):
         loss_smooth = sum(smooth_loss) / len(smooth_loss)
 
         # 5.3.3 打印训练信息
-        if current_step % config['train']['step_print'] == 0:
+        if current_step % config['train']['step_print'] == 0 and config['train']['rank'] == 0:
             print('Epoch: {:d}, Step: {:d}, Loss: {:.4f}, Smoothed Loss: {:.4f}, LR: {:.8f}'.format(epoch, current_step, loss.item(), loss_smooth, scheduler.get_last_lr()[0]))
             wandb.log({"Epoch": epoch, "Step": current_step, "Loss": loss.item(), "Smoothed Loss": loss_smooth, "Learning Rate": scheduler.get_last_lr()[0]})
-            swanlab.log({"Epoch": epoch, "Step": current_step, "Loss": loss.item(), "Smoothed Loss": loss_smooth, "Learning Rate": scheduler.get_last_lr()[0]})
+
         # 5.3.4 保存模型
-        if current_step % config['train']['step_save'] == 0:
+        if current_step % config['train']['step_save'] == 0 and config['train']['rank'] == 0:
             torch.save(model.state_dict(), os.path.join(config['train']['save_path'], '{:d}_model.pth'.format(current_step)))
             torch.save(optimizer.state_dict(), os.path.join(config['train']['save_path'], '{:d}_optimizer.pth'.format(current_step)))
         
         # 5.3.5 测试模型
-        if current_step % config['train']['step_test'] == 0:
+        if current_step % config['train']['step_test'] == 0 and config['train']['rank'] == 0:
             if train_swinir:
                 if config['test']['test_LR'] == "BIC":
                     avg_psnr = evaluate_with_hr(config['test']['test_HR'], model, config['train']['scale'])
@@ -360,7 +370,6 @@ for epoch in range(10000000000):
                     avg_psnr = evaluate_with_lrhr_pair(config['test']['test_HR'], config['test']['test_LR'], model, config['train']['scale'])
                 print('Epoch: {:d}, Step: {:d}, Avg PSNR: {:.4f}'.format(epoch, current_step, avg_psnr))
                 wandb.log({"Epoch": epoch, "Step": current_step, "Avg PSNR": avg_psnr})
-                swanlab.log({"Epoch": epoch, "Step": current_step, "Avg PSNR": avg_psnr})
             else:
                 if config['test']['test_LR'] == "BIC":
                     raise ValueError("BIC is not supported for SwinIRAdapter")
@@ -368,5 +377,4 @@ for epoch in range(10000000000):
                     avg_psnr = calculate_adapter_avg_psnr(test_set, model, yadapt=True, scale=config['train']['scale'])
                 print('Epoch: {:d}, Step: {:d}, Avg PSNR: {:.4f}'.format(epoch, current_step, avg_psnr))
                 wandb.log({"Epoch": epoch, "Step": current_step, "Avg PSNR": avg_psnr})
-                swanlab.log({"Epoch": epoch, "Step": current_step, "Avg PSNR": avg_psnr})
                 model.train()

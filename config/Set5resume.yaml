@@ -24,7 +24,7 @@ train:
   optimizer: 'adam'
   lr: 0.0002 # 2e-4
   weight_decay: 0.0
-  resume_optimizer: null
+  resume_optimizer: '/home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20240711131824/75000_optimizer.pth'
   step_save: 5000
   step_test: 5000 
   step_print: 200
@@ -42,6 +42,9 @@ train:
 
   precomputed: True # 如果是 True，则默认保存在 train_LR 的文件夹下
   yadapt_use_cuda: False
+  wandb_id: '20240711131824'
+  wandb_name: "4\u5361SwinIRAdapter_0711"
+  seed: 527
 
 test:
   mode: 'test'
@@ -77,5 +80,5 @@ network:
   
 
   # 断点续训练
-  resume_network: null
+  resume_network: '/home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20240711131824/75000_model.pth'
   freeze_network: False
