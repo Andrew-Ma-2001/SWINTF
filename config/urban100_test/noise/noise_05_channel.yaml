@@ -1,0 +1,73 @@
+network:
+  depths:
+  - 6
+  - 6
+  - 6
+  - 6
+  - 6
+  - 6
+  embed_dim: 180
+  freeze_network: false
+  image_range: 1.0
+  image_size: 48
+  in_channels: 3
+  mlp_ratio: 2
+  num_heads:
+  - 6
+  - 6
+  - 6
+  - 6
+  - 6
+  - 6
+  resi_connection: 1conv
+  resume_network: null
+  upsacle: 2
+  upsampler: pixelshuffle
+  window_size: 8
+test:
+  batch_size: 1
+  mode: test
+  num_workers: 1
+  patch_size: 96
+  precomputed: true
+  pretrained_sam: /home/mayanze/PycharmProjects/SwinTF/sam_vit_h_4b8939.pth
+  pretrained_sam_img_size: 48
+  scale: 2
+  shuffle: false
+  test_HR: /home/mayanze/PycharmProjects/SwinTF/dataset/testsets/urban100_noise/hr
+  test_LR: /home/mayanze/PycharmProjects/SwinTF/dataset/testsets/urban100_noise/noise_05_channel
+  yadapt_use_cuda: true
+train:
+  batch_size: 32
+  gamma: 0.5
+  gpu_ids:
+  - 4
+  - 5
+  loss: l1
+  lr: 0.0002
+  milestones:
+  - 250000
+  - 400000
+  - 450000
+  - 475000
+  - 500000
+  mode: train
+  num_workers: 16
+  optimizer: adam
+  patch_size: 96
+  precomputed: true
+  pretrained_sam: /home/mayanze/PycharmProjects/SwinTF/sam_vit_h_4b8939.pth
+  pretrained_sam_img_size: 48
+  resume_optimizer: null
+  save_path: experiments/
+  scale: 2
+  scheduler: MultiStepLR
+  shuffle: true
+  step_print: 200
+  step_save: 5000
+  step_test: 5000
+  train_HR: dataset/trainsets/trainH/DIV2K
+  train_LR: dataset/trainsets/trainL/DIV2K/DIV2K_train_LR_bicubic
+  type: SwinIR
+  weight_decay: 0.0
+  yadapt_use_cuda: true

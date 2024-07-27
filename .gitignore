@@ -1,0 +1,10 @@
+*.npy
+*.pth
+*.zip
+wandb/
+experiments/
+__*/
+dataset/
+output/
+.idea/
+.vscode/
