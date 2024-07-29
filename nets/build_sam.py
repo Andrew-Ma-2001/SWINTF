@@ -83,6 +83,18 @@ def _build_sam(
         sam.load_state_dict(state_dict)
     return sam
 
+def build_sam_vit_l():
+    pass
+
+def build_sam_vit_b():
+    pass
+
+sam_model_registry = {
+    "default": build_sam_vit_h,
+    "vit_h": build_sam_vit_h,
+    "vit_l": build_sam_vit_l,
+    "vit_b": build_sam_vit_b,
+}
 if __name__ == "__main__":
     # Using ViT-h
     encoder_embed_dim=1280
