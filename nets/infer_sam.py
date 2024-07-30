@@ -1,3 +1,4 @@
+import math
 import sys
 
 sys.path.append("..")
@@ -31,6 +32,50 @@ def preprocess_image(image: np.ndarray, device) -> torch.Tensor:
     pad_h = final_shape - new_h
     img = F.pad(img, (0, pad_w, 0, pad_h))
     return img
+
+
+def mirror_padding(image, target_size):
+    # Pad the image to the target size
+    pad_w = target_size[0] - image.shape[1]
+    pad_h = target_size[1] - image.shape[0]
+    return np.pad(image, ((0, pad_h), (0, pad_w), (0, 0)), mode='reflect')
+def get_img_target_size(image):
+    sam_img_size = 1024
+    w, h = image.shape[1], image.shape[0]
+    scale = sam_img_size / max(w, h)
+
+    if scale < 1:
+        upper_bound = math.ceil(max(w, h) / sam_img_size)
+        target_size = (sam_img_size * upper_bound, sam_img_size * upper_bound)
+    else:
+        target_size = (sam_img_size, sam_img_size)
+
+    return target_size
+
+def preprocess_image_v2(image: np.ndarray, device) -> torch.Tensor:
+    pixel_mean = [123.675, 116.28, 103.53]
+    pixel_std = [58.395, 57.12, 57.375]
+    pixel_mean = torch.Tensor(pixel_mean).view(-1, 1, 1)
+    pixel_std = torch.Tensor(pixel_std).view(-1, 1, 1)
+    target_size = get_img_target_size(image)
+    img = mirror_padding(image, target_size)
+
+    if target_size[0] > 1024:
+        # Slice the image into 1024x1024 patches
+        patches = []
+        for i in range(0, target_size[0]+1, 1024):
+            for j in range(0, target_size[1]+1, 1024):
+                patches.append(img[j:j + 1024, i:i + 1024])
+        tensor_img = torch.tensor(patches, device=device).permute(0, 3, 1, 2).contiguous()
+        tensor_img = (tensor_img - pixel_mean) / pixel_std
+        return tensor_img
+    else:
+        img = torch.tensor(img, device=device).permute(2, 0, 1).contiguous()[None, :, :, :]
+        img = (img - pixel_mean) / pixel_std
+        return img
+
+
+
 
 
 def show_anns(anns):
@@ -72,6 +117,12 @@ mask_generator_2 = SamAutomaticMaskGenerator(
 
 image = cv2.imread('/Users/mayanze/Desktop/SWINTF-master-20240726/nets/0001x2.png')
 image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+
+tg_size = get_img_target_size(image)
+print(tg_size)
+image = mirror_padding(image, tg_size)
+# Use the half of the image
+# image = image[:image.shape[0] // 2, :image.shape[1] // 2]
 img = preprocess_image(image, 'cpu')
 
 # Save the img as a npy file

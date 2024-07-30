@@ -1,6 +1,6 @@
 # Copyright (c) Meta Platforms, Inc. and affiliates.
 # All rights reserved.
-
+import matplotlib.pyplot as plt
 # This source code is licensed under the license found in the
 # LICENSE file in the root directory of this source tree.
 
@@ -36,13 +36,25 @@ class ResizeLongestSide:
     def __init__(self, target_length: int) -> None:
         self.target_length = target_length
 
+
+    def mirror_padding(self, image: np.ndarray, target_size: Tuple[int, int]) -> np.ndarray:
+        """
+        Mirror padding the image to the target size.
+        """
+        target_size = target_size
+        new_h, new_w = target_size
+        h, w = image.shape[:2]
+        pad_h = new_h - h
+        pad_w = new_w - w
+        # Pad the right and bottom
+        return np.pad(image, ((0, pad_h), (0, pad_w), (0, 0)), mode='reflect')
+
+
     def apply_image(self, image: np.ndarray) -> np.ndarray:
         """
         Expects a numpy array with shape HxWxC in uint8 format.
         """
         target_size = self.get_preprocess_shape(image.shape[0], image.shape[1], self.target_length)
-        # Instead of resize, use padding of reversing the image
-
         return np.array(resize(to_pil_image(image), target_size))
 
     def apply_coords(self, coords: np.ndarray, original_size: Tuple[int, ...]) -> np.ndarray:
