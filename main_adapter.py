@@ -29,11 +29,29 @@ warnings.filterwarnings("ignore", message="Leaking Caffe2 thread-pool after fork
 # DEBUG = args.debug
 # train_swinir = args.train_swinir
 
-DEBUG = True
+DEBUG = False
 train_swinir = False
 
 print('Using train_swinir: {}'.format(train_swinir))
 
+# from torch.utils.data._utils.collate import default_collate
+
+# def custom_collate_fn(batch):
+#     try:
+#         return default_collate(batch)
+#     except RuntimeError as e:
+#         print(f"Collate error: {e}")
+#         print(f"Batch size: {len(batch)}")
+#         a = []
+#         b = []
+#         c = []
+#         for i, items in enumerate(batch):
+#             a.append
+#                 print(f"Item {i} type: {type(item)}")
+#                 # Print the shape of each item
+#                 print(f"Item {i} shape: {item.shape}")
+#         # Handle the error or skip the batch
+#         return None
 
 def process_config(config):
     config['train']['resume'] = config['train'].get('resume_optimizer') is not None and config['network'].get('resume_network') is not None
@@ -77,8 +95,7 @@ def process_config(config):
 # =================================================
 # 0 Config，Global Parameters 部分
 # =================================================
-config_path = '/home/mayanze/PycharmProjects/SwinTF/config/set5_resume2.yaml'
-
+config_path = '/home/mayanze/PycharmProjects/SwinTF/config/Set5.yaml'
 if DEBUG:
     config_path = '/home/mayanze/PycharmProjects/SwinTF/config/set5_debug.yaml'
 
@@ -148,6 +165,14 @@ train_loader = DataLoader(train_set,
                           num_workers=config['train']['num_workers'],
                           drop_last=True,
                           pin_memory=True)
+
+# train_loader = DataLoader(train_set,
+#                           batch_size=32,
+#                           shuffle=config['train']['shuffle'],
+#                           num_workers=0,
+#                           drop_last=True,
+#                           pin_memory=True,
+#                           collate_fn=custom_collate_fn)
 
 test_loader = DataLoader(test_set,
                           batch_size=config['test']['batch_size'],
@@ -277,6 +302,14 @@ else:
 
 print_config_as_table(config, config_path)
 
+from tqdm import tqdm
+
+# for epoch in range(10000000000):
+#     for _, train_data in tqdm(enumerate(train_loader), total=len(train_loader), desc="Training Progress"):
+#         current_step += 1
+#         # 5.3.1 数据准备
+#         train_LR, train_HR, y_adapt = train_data
+
 # 5.3 开始训练
 smooth_loss = []
 running_loss = 0.0
@@ -310,9 +343,7 @@ for epoch in range(10000000000):
             LR_image = Image.fromarray(LR_image)
             LR_image.save('LR_image.png')
 
-
         y_adapt = y_adapt.cuda()
-
         optimizer.zero_grad()
 
         if train_swinir:
@@ -328,8 +359,6 @@ for epoch in range(10000000000):
             output_img = output_img.astype(np.uint8)
             output_img = Image.fromarray(output_img)
             output_img.save('output.png')
-
-
 
         loss = criterion(output, train_HR)
         loss.backward()
@@ -350,7 +379,6 @@ for epoch in range(10000000000):
         if current_step % config['train']['step_save'] == 0:
             torch.save(model.state_dict(), os.path.join(config['train']['save_path'], '{:d}_model.pth'.format(current_step)))
             torch.save(optimizer.state_dict(), os.path.join(config['train']['save_path'], '{:d}_optimizer.pth'.format(current_step)))
-        
         # 5.3.5 测试模型
         if current_step % config['train']['step_test'] == 0:
             if train_swinir:
