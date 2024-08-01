@@ -25,8 +25,8 @@ train:
   lr: 0.0002 # 2e-4
   weight_decay: 0.0
   resume_optimizer: null
-  step_save: 200
-  step_test: 200 
+  step_save: 5000
+  step_test: 5000 
   step_print: 200
   # ==================
   # Training scheduler
