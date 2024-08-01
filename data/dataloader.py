@@ -389,8 +389,7 @@ class SuperResolutionYadaptDataset(Dataset):
             # rnd_h = random.randint(0, max(0, H - self.LR_size))
             # rnd_w = random.randint(0, max(0, W - self.LR_size))
             
-            # mode = random.randint(0, 7)
-            mode = 7
+            mode = random.randint(0, 7)
 
             # 还是要做数据增强
             LR_image, HR_image = augment_img(LR_image, mode=mode), augment_img(HR_image, mode=mode)
