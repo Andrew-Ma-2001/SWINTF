@@ -643,6 +643,8 @@ class UpsampleOneStep(nn.Sequential):
 class SelfAttention(nn.Module):
     def __init__(self, in_channels):
         super().__init__()
+        self.norm1 = nn.LayerNorm(in_channels)
+        self.norm2 = nn.LayerNorm(in_channels)
         self.q = nn.Linear(in_channels, in_channels)
         self.kv = nn.Linear(in_channels, in_channels*2)
         self.proj = nn.Linear(in_channels, in_channels)
@@ -664,14 +666,18 @@ class SelfAttention(nn.Module):
         plt.savefig('attn.png')
 
     def forward(self, y_adapt, x):
+        '''
+        y_adapt: B, C, M, N
+        x: B, C, H, W
+        '''
         ################### 2024-03-23 ##########################
         batch_size, C, width, height = x.size()
-        y_adapt_flatten = y_adapt.flatten(2).transpose(1, 2)    # B, HW, C
+        y_adapt_flatten = y_adapt.flatten(2).transpose(1, 2)    # B, MN, C
         x_flatten = x.flatten(2).transpose(1, 2)    # B, HW, C
 
        ################### 2024-04-16 ##########################
-        q = self.q(x_flatten)  # B, HW, C
-        kv = self.kv(y_adapt_flatten).view(batch_size, -1, 2, C)
+        q = self.q(self.norm1(x_flatten))  # B, HW, C
+        kv = self.kv(self.norm2(y_adapt_flatten)).view(batch_size, -1, 2, C)
         k, v = kv.unbind(2)  # B, HW, C
 
         attn = (q @ k.transpose(-2, -1)) / C #是C还是根号C看经验
@@ -679,8 +685,8 @@ class SelfAttention(nn.Module):
 
         # self.plot_attn(attn)
 
-        out = (attn @ v).transpose(1, 2).reshape(batch_size, -1, C)
-        out = self.proj(out).transpose(-1, -2).reshape(batch_size, -1, width, height) + x
+        out = (attn @ v)  # bug here
+        out = self.proj(out).transpose(-1, -2).reshape(batch_size, -1, height, width) + x
 
         # self.proj(out).shape
         # torch.Size([8, 2304, 180])
@@ -1046,10 +1052,7 @@ class SwinIRAdapter(nn.Module):
         self.yadapt_batch_norm = nn.BatchNorm2d(180)
         self.self_attention = SelfAttention(180)  
         #################### modified 2024/03/28  原view有问题（不能跟原图pixel level对齐），改用pixelshuffle，
-        self.adapt_conv = nn.Sequential(
-            nn.Conv2d(3840, 180*16*16, kernel_size=1),
-            nn.PixelShuffle(16)
-        ) # ViT 用的是 1280x64x64 需要降维到 64x64x64
+        self.adapt_conv = nn.Conv2d(3840, 180, kernel_size=1)
 
         # build the last conv layer in deep feature extraction
         if resi_connection == '1conv':
@@ -1134,16 +1137,13 @@ class SwinIRAdapter(nn.Module):
                 x = self.patch_unembed(x, x_size)  # torch.Size([1, 180, 48, 48])
 
                 if self.training:
-                    y_adapt = self.adapt_conv(y_adapt_feature) # B, 180, 48, 48
-                    # y_adapt = y_adapt.view(-1, 180, 48, 48)
-                    y_adapt = self.yadapt_batch_norm(y_adapt)
-
+                    y_adapt = self.adapt_conv(y_adapt_feature) # B, 180, 3, 3
                     x = self.self_attention(y_adapt, x)
 
                 else:
                     y_adapt = self.adapt_conv(y_adapt_feature)
                     # y_adapt = y_adapt.view(-1, 180, 48, 48)
-                    y_adapt = self.yadapt_batch_norm(y_adapt)
+                    # y_adapt = self.yadapt_batch_norm(y_adapt)
                     # Reshape 回去
                     # y_adapt1 = y_adapt.view(1, 10, 10, 180, 48, 48)
                     # y_adapt2 = y_adapt1.permute(0, 3, 1, 4, 2, 5).contiguous().view(1, 180, 10*48, 10*48)
@@ -1224,6 +1224,7 @@ if __name__ == '__main__':
 
     height = 48
     width = 48
+
     # model = SwinIR(upscale=4, img_size=(height, width),
     #                window_size=window_size, img_range=1., depths=[6,6,6,6,6,6],
     #                embed_dim=180, num_heads=[6,6,6,6,6,6], mlp_ratio=2, upsampler='pixelshuffledirect', y_adapt_feature=torch.randn(1, 3480, 3, 3))

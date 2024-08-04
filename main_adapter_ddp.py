@@ -8,7 +8,7 @@ import wandb
 import random
 import numpy as np
 from data.dataloader import SuperResolutionYadaptDataset
-from torch.distributed.elastic.multiprocessing.errors import record
+# from torch.distributed.elastic.multiprocessing.errors import record
 from torch.utils.data import DataLoader
 from torch.utils.data.distributed import DistributedSampler
 from nets.swinir import SwinIRAdapter, SwinIR
@@ -38,14 +38,14 @@ train_swinir = args.train_swinir
 
 print('Using train_swinir: {}'.format(train_swinir))
 
-from torch.utils.data._utils.collate import default_collate
-def custom_collate_fn(batch):
-    try:
-        return default_collate(batch)
-    except RuntimeError as e:
-        print(f"Collate error: {e}")
-        # Handle the error or skip the batch
-        return None
+# from torch.utils.data._utils.collate import default_collate
+# def custom_collate_fn(batch):
+#     try:
+#         return default_collate(batch)
+#     except RuntimeError as e:
+#         print(f"Collate error: {e}")
+#         # Handle the error or skip the batch
+#         return None
     
 def process_config(config):
     config['train']['resume'] = config['train'].get('resume_optimizer') is not None and config['network'].get('resume_network') is not None
@@ -85,7 +85,7 @@ def process_config(config):
 
 
 
-@record
+# @record
 def main():
     # =================================================
     # 0 Config，Global Parameters 部分
@@ -123,6 +123,7 @@ def main():
 
     if train_swinir:
         config['train']['seed'] = 2024
+        config['test']['seed'] = 2024
 
     random.seed(config['train']['seed'])
     np.random.seed(config['train']['seed'])
@@ -389,7 +390,8 @@ def main():
                     if config['test']['test_LR'] == "BIC":
                         raise ValueError("BIC is not supported for SwinIRAdapter")
                     else:
-                        avg_psnr = calculate_adapter_avg_psnr(test_set, model, yadapt=True, scale=config['train']['scale'])
+                        avg_psnr = calculate_adapter_avg_psnr(test_set, model, yadapt=True, scale=config['train']['scale'], 
+                                                              save_img=True, save_name=config['train']['save_path'], save_step=current_step)
                     print('Epoch: {:d}, Step: {:d}, Avg PSNR: {:.4f}'.format(epoch, current_step, avg_psnr))
                     wandb.log({"Epoch": epoch, "Step": current_step, "Avg PSNR": avg_psnr})
                     model.train()
