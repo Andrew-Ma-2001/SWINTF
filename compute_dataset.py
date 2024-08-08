@@ -7,7 +7,7 @@ sys.path.append('/home/mayanze/PycharmProjects/SwinTF/')
 from PIL import Image
 from utils.utils_data import get_all_images, process_batch
 from data.extract_sam_features import extract_sam_model
-from utils.utils_image import augment_img
+from utils.utils_image import augment_img, imresize_np
 
 class ImagePreprocessor:
     def __init__(self, sam_img_size=1024):
@@ -143,7 +143,8 @@ def train_precompute():
 
 def test_precompute():
     os.environ['CUDA_VISIBLE_DEVICES'] = '6,7'
-    LR_path = '/home/mayanze/PycharmProjects/SwinTF/dataset/testsets/Set5/LRbicx2'
+    LR_path = '/home/mayanze/PycharmProjects/SwinTF/dataset/testsets/manga109'
+    BIC = True
     LR_size = 48
     pretrained_sam_img_size = 48
     use_cuda = True
@@ -163,6 +164,13 @@ def test_precompute():
     with torch.no_grad():
         for idx in range(len(LR_images)):
             LR_image = np.array(Image.open(LR_images[idx]))
+
+
+            if BIC:
+                LR_image = imresize_np(LR_image/255.0, 1/2)
+                LR_image = LR_image * 255.0
+
+
             preprocessor.set_image(LR_image)
             torch_img = preprocessor.preprocess_image_v2(device='cuda')
             _, y1, y2, y3 = model.image_encoder(torch_img)
@@ -289,7 +297,7 @@ def check_test_precompute():
     from utils.utils_image import imresize_np, modcrop
     from utils.utils_data import extract_patches
 
-    LR_path = '/home/mayanze/PycharmProjects/SwinTF/dataset/testsets/Set5/LRbicx2'
+    LR_path = '/home/mayanze/PycharmProjects/SwinTF/dataset/testsets/BSDS100'
     LR_size = 48
     pretrained_sam_img_size = 48
     use_cuda = True
@@ -363,8 +371,8 @@ def check_test_precompute():
 
 
 if __name__ == '__main__':
-    # test_precompute()
-    train_precompute()
+    test_precompute()
+    # train_precompute()
 #     from PIL import Image
 #     # check_train_precompute()
 #     preprocessor = ImagePreprocessor()

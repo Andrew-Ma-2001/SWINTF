@@ -648,6 +648,16 @@ class SelfAttention(nn.Module):
         self.q = nn.Linear(in_channels, in_channels)
         self.kv = nn.Linear(in_channels, in_channels*2)
         self.proj = nn.Linear(in_channels, in_channels)
+        self.tau = nn.Parameter(torch.zeros(1))
+        self.mlp = nn.Sequential(
+            nn.Linear(in_channels, in_channels),
+            nn.ReLU(),
+            nn.Linear(in_channels, 1),
+        )
+        # self.mlp[-1].weight.zero_()
+        self.mlp[-1].weight = nn.Parameter(torch.zeros_like(self.mlp[-1].weight))
+        # self.mlp[-1].bias.zero_()
+        self.mlp[-1].bias = nn.Parameter(torch.zeros_like(self.mlp[-1].bias))
 
     def plot_attn(self, attn):
         import matplotlib.pyplot as plt
@@ -671,7 +681,7 @@ class SelfAttention(nn.Module):
         x: B, C, H, W
         '''
         ################### 2024-03-23 ##########################
-        batch_size, C, width, height = x.size()
+        batch_size, C, height, width = x.size()
         y_adapt_flatten = y_adapt.flatten(2).transpose(1, 2)    # B, MN, C
         x_flatten = x.flatten(2).transpose(1, 2)    # B, HW, C
 
@@ -686,7 +696,17 @@ class SelfAttention(nn.Module):
         # self.plot_attn(attn)
 
         out = (attn @ v)  # bug here
-        out = self.proj(out).transpose(-1, -2).reshape(batch_size, -1, height, width) + x
+
+        # mode 1: static hyperparameter
+        out = self.tau * self.proj(out).transpose(-1, -2).reshape(batch_size, -1, height, width) + x
+
+        # mode 2: dynamic hyperparameter
+        # tau = self.mlp(q.mean(1, keepdim=True))
+        # out = (tau * self.proj(out)).transpose(-1, -2).reshape(batch_size, -1, height, width) + x
+
+        # mode 3: pixel-wise hyperparameter
+        # tau = self.mlp(q)
+        # out = (tau * self.proj(out)).transpose(-1, -2).reshape(batch_size, -1, height, width) + x
 
         # self.proj(out).shape
         # torch.Size([8, 2304, 180])

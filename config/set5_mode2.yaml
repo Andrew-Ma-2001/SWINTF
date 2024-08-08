@@ -26,7 +26,7 @@ train:
   weight_decay: 0.0
   resume_optimizer: null
   step_save: 5000
-  step_test: 5000 
+  step_test: 1000 
   step_print: 200
   # ==================
   # Training scheduler
@@ -42,9 +42,6 @@ train:
 
   precomputed: True # 如果是 True，则默认保存在 train_LR 的文件夹下
   yadapt_use_cuda: False
-  wandb_id: '20240711131824'
-  wandb_name: "4\u5361SwinIRAdapter_0711"
-  seed: 2024
 
 test:
   mode: 'test'
@@ -63,7 +60,6 @@ test:
 
   precomputed: True # 如果是 True，则默认保存在 test_LR 的文件夹下
   yadapt_use_cuda: False
-  seed: 2024
   
 network:
   upsacle: 2
@@ -77,6 +73,9 @@ network:
   mlp_ratio: 2
   upsampler: 'pixelshuffle'
   resi_connection: '1conv'
+
+  
+
   # 断点续训练
   resume_network: null
   freeze_network: False
