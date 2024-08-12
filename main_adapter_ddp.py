@@ -17,7 +17,7 @@ from utils.utils_data import print_config_as_table, load_config
 from predict import evaluate_with_lrhr_pair, evaluate_with_hr
 from predict_adapter import calculate_adapter_avg_psnr
 import warnings
-
+from main_test_swinir import test_main
 # Filter out the specific warning
 warnings.filterwarnings("ignore", message="Leaking Caffe2 thread-pool after fork. (function pthreadpool)")
 
@@ -90,8 +90,19 @@ def main():
     # =================================================
     # 0 Config，Global Parameters 部分
     # =================================================
-    config_path = '/home/mayanze/PycharmProjects/SwinTF/config/Set5_ddp.yaml'
+
+    # train_swinir = True
+
+    # config_path = '/home/mayanze/PycharmProjects/SwinTF/config/set5_mode1.yaml'
+    # config_path = '/home/mayanze/PycharmProjects/SwinTF/config/set5_mode2.yaml'
+    # config_path = '/home/mayanze/PycharmProjects/SwinTF/config/set5_mode3.yaml'
+    # config_path = '/home/mayanze/PycharmProjects/SwinTF/config/Set5_ddp.yaml'
+    config_path = '/home/mayanze/PycharmProjects/SwinTF/config/set5_x4.yaml'
+
     # config_path = '/home/mayanze/PycharmProjects/SwinTF/config/set5_debug.yaml'
+
+
+
     config = load_config(config_path)
     config = process_config(config)
 
@@ -379,6 +390,7 @@ def main():
             
             # 5.3.5 测试模型
             if current_step % config['train']['step_test'] == 0 and config['train']['rank'] == 0:
+                model.eval()
                 if train_swinir:
                     if config['test']['test_LR'] == "BIC":
                         avg_psnr = evaluate_with_hr(config['test']['test_HR'], model, config['train']['scale'])
@@ -390,11 +402,12 @@ def main():
                     if config['test']['test_LR'] == "BIC":
                         raise ValueError("BIC is not supported for SwinIRAdapter")
                     else:
-                        avg_psnr = calculate_adapter_avg_psnr(test_set, model, yadapt=True, scale=config['train']['scale'], 
-                                                              save_img=True, save_name=config['train']['save_path'], save_step=current_step)
+                        # avg_psnr = calculate_adapter_avg_psnr(test_set, model, yadapt=True, scale=config['train']['scale'], 
+                        #                                       save_img=True, save_name=config['train']['save_path'], save_step=current_step)
+                        avg_psnr = test_main(config_path, model, test_swinir=False)
                     print('Epoch: {:d}, Step: {:d}, Avg PSNR: {:.4f}'.format(epoch, current_step, avg_psnr))
                     wandb.log({"Epoch": epoch, "Step": current_step, "Avg PSNR": avg_psnr})
-                    model.train()
+                model.train()
 
 if __name__ == "__main__":
     main()

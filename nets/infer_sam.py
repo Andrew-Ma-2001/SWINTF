@@ -1,7 +1,7 @@
 import math
 import sys
 
-sys.path.append("..")
+sys.path.append("/home/mayanze/PycharmProjects/SwinTF")
 from nets.build_sam import sam_model_registry
 from nets.predictor import SamPredictor
 from nets.automatic_mask_generator import SamAutomaticMaskGenerator
@@ -93,10 +93,12 @@ def show_anns(anns):
         img[m] = color_mask
     ax.imshow(img)
 
+import os
+os.environ['CUDA_VISIBLE_DEVICES'] = '3'
 
 sam_checkpoint = "sam_vit_h_4b8939.pth"
 model_type = "vit_h"
-device = "cpu"
+device = "cuda"
 
 sam = sam_model_registry[model_type](checkpoint=sam_checkpoint)
 sam.to(device=device)
@@ -115,18 +117,18 @@ mask_generator_2 = SamAutomaticMaskGenerator(
 
 # predictor = SamPredictor(sam)
 
-image = cv2.imread('/Users/mayanze/Desktop/SWINTF-master-20240726/nets/0001x2.png')
+image = cv2.imread('/home/mayanze/PycharmProjects/SwinTF/nets/img_019.png')
 image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
 tg_size = get_img_target_size(image)
-print(tg_size)
-image = mirror_padding(image, tg_size)
+# print(tg_size)
+# image = mirror_padding(image, tg_size)
 # Use the half of the image
 # image = image[:image.shape[0] // 2, :image.shape[1] // 2]
-img = preprocess_image(image, 'cpu')
+# img = preprocess_image(image, 'cpu')
 
 # Save the img as a npy file
-np.save('img.npy', img.numpy())
+# np.save('img.npy', img.numpy())
 masks = mask_generator.generate(image)
 # predictor.set_image(image)
 # masks = mask_generator_2.generate(image)
@@ -136,6 +138,7 @@ plt.imshow(image)
 show_anns(masks)
 plt.axis('off')
 plt.show()
+plt.savefig('sam.png')
 
 # # Gerate a random image
 # import numpy as np

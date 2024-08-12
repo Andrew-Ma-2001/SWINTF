@@ -45,8 +45,9 @@ test:
   scale: 2
   patch_size: 96 # 32*2
 
-  test_HR: 'dataset/testsets/Set5/GTmod12'
-  test_LR: 'dataset/testsets/Set5/LRbicx2' # 这里要注意在数据读入的时候要有＋号，不然不知道是放大多少倍
+  # test_HR: 'dataset/testsets/Set5/GTmod12'
+  test_HR: '/home/mayanze/PycharmProjects/SwinTF/dataset/testsets/Set5_swinir/HR'
+  test_LR: '/home/mayanze/PycharmProjects/SwinTF/dataset/testsets/Set5_swinir/LR_bicubic/X2' # 这里要注意在数据读入的时候要有＋号，不然不知道是放大多少倍
 
   batch_size: 1
   shuffle: False

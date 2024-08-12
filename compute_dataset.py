@@ -88,7 +88,7 @@ class ImagePreprocessor:
 
     def slice_yadapt_features(self, total_yadapt_feature):
         large_yadapt_feature = self.reshape_yadapt_feature(total_yadapt_feature)
-        cut_yadapt_feature = large_yadapt_feature[:, 0:math.ceil(self.h/16),0:math.ceil(self.w/16)]
+        cut_yadapt_feature = large_yadapt_feature[:, 0:math.ceil(self.h/16)+1,0:math.ceil(self.w/16)+1]
         return cut_yadapt_feature
 
     def clear_image(self):
@@ -99,8 +99,8 @@ class ImagePreprocessor:
         self.pad_img = None
 
 def train_precompute():
-    os.environ['CUDA_VISIBLE_DEVICES'] = '4,5,6,7'
-    LR_path = '/home/mayanze/PycharmProjects/SwinTF/dataset/trainsets/trainL/DIV2K/DIV2K_train_LR_bicubic/X2'
+    os.environ['CUDA_VISIBLE_DEVICES'] = '0,1,6,7'
+    LR_path = '/home/mayanze/PycharmProjects/SwinTF/dataset/trainsets/trainL/DIV2K/DIV2K_train_LR_bicubic/X4'
     LR_size = 48
     pretrained_sam_img_size = 48
     use_cuda = True
@@ -109,13 +109,13 @@ def train_precompute():
     model = model.cuda()
     model.image_encoder = torch.nn.DataParallel(model.image_encoder)
     preprocessor = ImagePreprocessor()
-    # LR_images = get_all_images(LR_path)
-    LR_images = ['dataset/trainsets/trainL/DIV2K/DIV2K_train_LR_bicubic/X2/0437x2.png']
+    LR_images = get_all_images(LR_path)
+    # LR_images = ['dataset/trainsets/trainL/DIV2K/DIV2K_train_LR_bicubic/X2/0437x2.png']
 
     if not os.path.exists(save_path):
         os.makedirs(save_path)
 
-    # assert len(os.listdir(save_path)) == 0, "The save_path should be empty"
+    assert len(os.listdir(save_path)) == 0, "The save_path should be empty"
 
     modes = [0,1,2,3,4,5,6,7] # 8 modes
 
@@ -371,8 +371,8 @@ def check_test_precompute():
 
 
 if __name__ == '__main__':
-    test_precompute()
-    # train_precompute()
+    # test_precompute()
+    train_precompute()
 #     from PIL import Image
 #     # check_train_precompute()
 #     preprocessor = ImagePreprocessor()

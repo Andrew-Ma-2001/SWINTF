@@ -24,9 +24,9 @@ with open(config_path, 'r') as file:
     config = yaml.safe_load(file)
 
 gpu_ids = config['train']['gpu_ids']
-os.environ['CUDA_VISIBLE_DEVICES'] = '0,1'
+os.environ['CUDA_VISIBLE_DEVICES'] = '4,5'
 
-model_path = '/home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20240711002251/50000_model.pth'
+model_path = '/home/mayanze/PycharmProjects/SwinTF/001_classicalSR_DIV2K_s48w8_SwinIR-M_x2.pth'
 scale = config['train']['scale']
 model = SwinIR(upscale=config['network']['upsacle'], 
                 in_chans=config['network']['in_channels'],
@@ -44,11 +44,11 @@ model.cuda()
 
 pretrained_model = torch.load(model_path)
 
-# param_key_g = 'params'
-# model.load_state_dict(pretrained_model[param_key_g] if param_key_g in pretrained_model.keys() else pretrained_model, strict=True)
+param_key_g = 'params'
+model.load_state_dict(pretrained_model[param_key_g] if param_key_g in pretrained_model.keys() else pretrained_model, strict=True)
 
 model = torch.nn.DataParallel(model) 
-model.load_state_dict(pretrained_model)
+# model.load_state_dict(pretrained_model)
 
 print('Resume from checkpoint from {}'.format(model_path))
 

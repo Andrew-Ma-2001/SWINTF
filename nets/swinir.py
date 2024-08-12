@@ -648,16 +648,16 @@ class SelfAttention(nn.Module):
         self.q = nn.Linear(in_channels, in_channels)
         self.kv = nn.Linear(in_channels, in_channels*2)
         self.proj = nn.Linear(in_channels, in_channels)
-        self.tau = nn.Parameter(torch.zeros(1))
-        self.mlp = nn.Sequential(
-            nn.Linear(in_channels, in_channels),
-            nn.ReLU(),
-            nn.Linear(in_channels, 1),
-        )
-        # self.mlp[-1].weight.zero_()
-        self.mlp[-1].weight = nn.Parameter(torch.zeros_like(self.mlp[-1].weight))
-        # self.mlp[-1].bias.zero_()
-        self.mlp[-1].bias = nn.Parameter(torch.zeros_like(self.mlp[-1].bias))
+        # self.tau = nn.Parameter(torch.zeros(1))
+        # self.mlp = nn.Sequential(
+        #     nn.Linear(in_channels, in_channels),
+        #     nn.ReLU(),
+        #     nn.Linear(in_channels, 1),
+        # )
+        # # self.mlp[-1].weight.zero_()
+        # self.mlp[-1].weight = nn.Parameter(torch.zeros_like(self.mlp[-1].weight))
+        # # self.mlp[-1].bias.zero_()
+        # self.mlp[-1].bias = nn.Parameter(torch.zeros_like(self.mlp[-1].bias))
 
     def plot_attn(self, attn):
         import matplotlib.pyplot as plt
@@ -697,8 +697,13 @@ class SelfAttention(nn.Module):
 
         out = (attn @ v)  # bug here
 
+       ################### 2024-08-07 ##########################
+        # mode 0: no hyperparameter exit
+        out = self.proj(out).transpose(-1, -2).reshape(batch_size, -1, height, width) + x
+
+        
         # mode 1: static hyperparameter
-        out = self.tau * self.proj(out).transpose(-1, -2).reshape(batch_size, -1, height, width) + x
+        # out = self.tau * self.proj(out).transpose(-1, -2).reshape(batch_size, -1, height, width) + x
 
         # mode 2: dynamic hyperparameter
         # tau = self.mlp(q.mean(1, keepdim=True))
@@ -1162,17 +1167,20 @@ class SwinIRAdapter(nn.Module):
 
                 else:
                     y_adapt = self.adapt_conv(y_adapt_feature)
+                    x = self.self_attention(y_adapt, x)
+
                     # y_adapt = y_adapt.view(-1, 180, 48, 48)
                     # y_adapt = self.yadapt_batch_norm(y_adapt)
                     # Reshape 回去
                     # y_adapt1 = y_adapt.view(1, 10, 10, 180, 48, 48)
                     # y_adapt2 = y_adapt1.permute(0, 3, 1, 4, 2, 5).contiguous().view(1, 180, 10*48, 10*48)
 
-                    x = self.self_attention(y_adapt, x)
+                    
 
-                ############### 2024-03-23 ####################
-                # x = self.patch_embed(x)
-                x = x.flatten(2).transpose(1, 2)  # B Ph*Pw C
+            ################ 2024-03-23 ####################
+            ## x = self.patch_embed(x)
+                x = x.flatten(2).transpose(1, 2)  # B Ph*Pw C Avoiding having batch norm
+            ## ===========================================================================
 
         x = self.norm(x)  # B L C
         x = self.patch_unembed(x, x_size)
@@ -1254,19 +1262,20 @@ if __name__ == '__main__':
     # print(x.shape)
     # print(height, width)
 
+    adapt_conv = nn.Conv2d(3840, 180, kernel_size=1)
+    attention_model = SelfAttention(180)
+    y_adapt = torch.randn((1, 3840, 3, 3))
+    y_adapt = adapt_conv(y_adapt)
+    # y_adapt_conv = nn.Conv2d(180, 1024, kernel_size=1)
+    x = torch.randn((1, 180, 64, 64))
+    x = attention_model(y_adapt, x)
+    print(x.shape)
 
-    # attention_model = SelfAttention(1024)
-    # y_adapt = torch.randn((1, 256, 64, 64))
-    # y_adapt_conv = nn.Conv2d(256, 1024, kernel_size=1)
-    # x = torch.randn((1, 1024, 64, 64))
-    # x = attention_model(y_adapt_conv(y_adapt), x)
-    # print(x.shape)
-
-    model = SwinIRAdapter(upscale=2, img_size=(48, 48), window_size=8, 
-                          img_range=1., depths=[6,6,6,6,6,6], embed_dim=180, 
-                          num_heads=[6,6,6,6,6,6], mlp_ratio=2, upsampler='pixelshuffledirect')
+    # model = SwinIRAdapter(upscale=2, img_size=(48, 48), window_size=8, 
+    #                       img_range=1., depths=[6,6,6,6,6,6], embed_dim=180, 
+    #                       num_heads=[6,6,6,6,6,6], mlp_ratio=2, upsampler='pixelshuffledirect')
     
-    input_test_image = torch.randn(1, 3, 48, 48)
-    y_adapt_feature = torch.randn(1, 3840, 3, 3)
+    # input_test_image = torch.randn(1, 3, 48, 48)
+    # y_adapt_feature = torch.randn(1, 3840, 3, 3)
 
-    output = model(input_test_image, y_adapt_feature)
+    # output = model(input_test_image, y_adapt_feature)

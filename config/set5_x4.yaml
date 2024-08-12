@@ -5,17 +5,17 @@ train:
   # ==================
   type: 'SwinIR'
   mode: 'train'
-  scale: 2
-  patch_size: 96 # 48x2 
+  scale: 4
+  patch_size: 192 # 48x2 
 
   train_HR: 'dataset/trainsets/trainH/DIV2K'
   train_LR: 'dataset/trainsets/trainL/DIV2K/DIV2K_train_LR_bicubic'
   
-  batch_size: 64 # 4x8
+  batch_size: 32 # 4x8
   shuffle: True
   num_workers: 16
 
-  gpu_ids: [0,1,2,3]
+  gpu_ids: [4,5,6,7]
 
   # ==================
   # Training parameters
@@ -26,7 +26,7 @@ train:
   weight_decay: 0.0
   resume_optimizer: null
   step_save: 5000
-  step_test: 1000 
+  step_test: 5000 
   step_print: 200
   # ==================
   # Training scheduler
@@ -45,11 +45,11 @@ train:
 
 test:
   mode: 'test'
-  scale: 2
-  patch_size: 96 # 32*2
+  scale: 4
+  patch_size: 192 # 32*2
 
   test_HR: 'dataset/testsets/Set5/GTmod12'
-  test_LR: 'dataset/testsets/Set5/LRbicx2' # 这里要注意在数据读入的时候要有＋号，不然不知道是放大多少倍
+  test_LR: 'dataset/testsets/Set5/LRbicx4' # 这里要注意在数据读入的时候要有＋号，不然不知道是放大多少倍
 
   batch_size: 1
   shuffle: False
@@ -62,7 +62,7 @@ test:
   yadapt_use_cuda: False
   
 network:
-  upsacle: 2
+  upsacle: 4
   in_channels: 3
   image_size: 48  # 照抄的，不知道是什么意思  1024 // 4 //  8 = 32
   window_size: 8

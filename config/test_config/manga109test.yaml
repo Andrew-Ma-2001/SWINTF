@@ -47,7 +47,7 @@ test:
   patch_size: 96 # 32*2
 
   test_HR: 'dataset/testsets/manga109'
-  test_LR: 'BIC' # 这里要注意在数据读入的时候要有＋号，不然不知道是放大多少倍
+  test_LR: 'dataset/testsets/manga109_lrx2'
 
   batch_size: 1
   shuffle: False

@@ -11,7 +11,7 @@ train:
   train_HR: 'dataset/trainsets/trainH/DIV2K'
   train_LR: 'dataset/trainsets/trainL/DIV2K/DIV2K_train_LR_bicubic'
   
-  batch_size: 64 # 4x8
+  batch_size: 32 # 4x8
   shuffle: True
   num_workers: 16
 

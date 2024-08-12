@@ -50,7 +50,10 @@ def calculate_adapter_avg_psnr(test_set, model, yadapt, scale, **save_opt):
             for i in range(0, batch_size, split_size):
                 batch_LR_image_split = batch_LR_image[i:i+split_size]
                 batch_yadapt_features_split = batch_yadapt_features[i:i+split_size]
-                batch_Pre_image_split = model(batch_LR_image_split, batch_yadapt_features_split)
+
+                # batch_Pre_image_split = model(batch_LR_image_split, batch_yadapt_features_split)
+                batch_Pre_image_split = model(batch_LR_image_split)
+
                 batch_Pre_image_list.append(batch_Pre_image_split)
         batch_Pre_image = torch.cat(batch_Pre_image_list, dim=0)
         batch_Pre_image = batch_Pre_image.clamp(0, 1).cpu().detach().permute(0,2,3,1).numpy()

@@ -352,6 +352,12 @@ def check_yadapt_npy_files():
     # Save the plot
     fig.savefig('data_distribution.png')
 
-
+def check_two_image_pair():
+    import numpy as np
+    from PIL import Image
+    img1 = Image.open('/home/mayanze/PycharmProjects/SwinTF/dataset/testsets/Set14/LRbicx2/noise_sig_0.0_noise_0.0_quality_50_test/baboon.png')
+    img2 = Image.open('/home/mayanze/PycharmProjects/SwinTF/dataset/testsets/Set14/LRbicx2/noise_sig_0.0_noise_0.0_quality_50/baboon.png')
+    print(np.allclose(img1, img2))
 
 # check_precompute()
+check_two_image_pair()

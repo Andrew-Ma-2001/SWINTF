@@ -15,7 +15,7 @@ train:
   shuffle: True
   num_workers: 16
 
-  gpu_ids: [4,5,6,7]
+  gpu_ids: [0,1,2,3]
 
   # ==================
   # Training parameters
@@ -26,7 +26,7 @@ train:
   weight_decay: 0.0
   resume_optimizer: null
   step_save: 5000
-  step_test: 5000 
+  step_test: 1000 
   step_print: 200
   # ==================
   # Training scheduler
@@ -51,8 +51,8 @@ test:
   scale: 2
   patch_size: 96 # 32*2
 
-  test_HR: 'dataset/testsets/Set5/GTmod12'
-  test_LR: 'dataset/testsets/Set5/LRbicx2' # 这里要注意在数据读入的时候要有＋号，不然不知道是放大多少倍
+  test_HR: 'dataset/testsets/Set14/GTmod12'
+  test_LR: 'dataset/testsets/Set14/LRbicx2/noise_sig_0.0_noise_0.0_quality_50' # 这里要注意在数据读入的时候要有＋号，不然不知道是放大多少倍
 
   batch_size: 1
   shuffle: False

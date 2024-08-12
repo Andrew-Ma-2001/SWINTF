@@ -17,6 +17,7 @@ from predict import evaluate_with_lrhr_pair, evaluate_with_hr
 from predict_adapter import calculate_adapter_avg_psnr
 import warnings
 
+from main_test_swinir import test_main
 # Filter out the specific warning
 warnings.filterwarnings("ignore", message="Leaking Caffe2 thread-pool after fork. (function pthreadpool)")
 
@@ -95,7 +96,7 @@ def process_config(config):
 # =================================================
 # 0 Config，Global Parameters 部分
 # =================================================
-config_path = '/home/mayanze/PycharmProjects/SwinTF/config/Set5.yaml'
+config_path = '/home/mayanze/PycharmProjects/SwinTF/config/set5_x4.yaml'
 if DEBUG:
     config_path = '/home/mayanze/PycharmProjects/SwinTF/config/set5_debug.yaml'
 
@@ -381,6 +382,7 @@ for epoch in range(10000000000):
             torch.save(optimizer.state_dict(), os.path.join(config['train']['save_path'], '{:d}_optimizer.pth'.format(current_step)))
         # 5.3.5 测试模型
         if current_step % config['train']['step_test'] == 0:
+            model.eval()
             if train_swinir:
                 if config['test']['test_LR'] == "BIC":
                     avg_psnr = evaluate_with_hr(config['test']['test_HR'], model, config['train']['scale'])
@@ -393,8 +395,9 @@ for epoch in range(10000000000):
                 if config['test']['test_LR'] == "BIC":
                     raise ValueError("BIC is not supported for SwinIRAdapter")
                 else:
-                    avg_psnr = calculate_adapter_avg_psnr(test_set, model, yadapt=True, scale=config['train']['scale'])
+                    # avg_psnr = calculate_adapter_avg_psnr(test_set, model, yadapt=True, scale=config['train']['scale'])
+                    avg_psnr = test_main(config_path, model, test_swinir=False)
                 print('Epoch: {:d}, Step: {:d}, Avg PSNR: {:.4f}'.format(epoch, current_step, avg_psnr))
                 wandb.log({"Epoch": epoch, "Step": current_step, "Avg PSNR": avg_psnr})
                 swanlab.log({"Epoch": epoch, "Step": current_step, "Avg PSNR": avg_psnr})
-                model.train()
+            model.train()
