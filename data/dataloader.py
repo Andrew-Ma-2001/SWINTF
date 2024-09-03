@@ -380,6 +380,7 @@ class SuperResolutionYadaptDataset(Dataset):
 
     def __getitem__(self, idx):
         if self.mode == 'train':
+            print(self.HR_images[idx])
             HR_image, LR_image = self.get_hr_lr_pair(idx)
             H, W, C = LR_image.shape
 

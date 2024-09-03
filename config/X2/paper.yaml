@@ -6,16 +6,16 @@ train:
   type: 'SwinIR'
   mode: 'train'
   scale: 2
-  patch_size: 96 # 48x2 
+  patch_size: 96 # 32*2 
 
   train_HR: 'dataset/trainsets/trainH/DIV2K'
   train_LR: 'dataset/trainsets/trainL/DIV2K/DIV2K_train_LR_bicubic'
   
-  batch_size: 8 # 4x8
+  batch_size: 32 # 4x8
   shuffle: True
-  num_workers: 0
+  num_workers: 32
 
-  gpu_ids: [7]
+  gpu_ids: [0,1,2,3]
 
   # ==================
   # Training parameters
@@ -24,11 +24,9 @@ train:
   optimizer: 'adam'
   lr: 0.0002 # 2e-4
   weight_decay: 0.0
-  # resume_optimizer: '/home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20240803080852/500000_optimizer.pth'
-  resume_optimizer: '/home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20240813062655/110000_optimizer.pth'
-  # resume_optimizer: null
+  resume_optimizer: null
   step_save: 5000
-  step_test: 1000 
+  step_test: 5000 
   step_print: 200
   # ==================
   # Training scheduler
@@ -43,18 +41,15 @@ train:
   pretrained_sam_img_size: 48
 
   precomputed: True # 如果是 True，则默认保存在 train_LR 的文件夹下
-  yadapt_use_cuda: False
-  wandb_id: '20240711131824'
-  wandb_name: "4\u5361SwinIRAdapter_0711"
-  seed: 2024
+  yadapt_use_cuda: True
 
 test:
   mode: 'test'
   scale: 2
   patch_size: 96 # 32*2
 
-  test_HR: 'dataset/testsets/Set14/GTmod12'
-  test_LR: 'dataset/testsets/Set14/LRbicx2/noise_sig_0.0_noise_0.0_quality_50' # 这里要注意在数据读入的时候要有＋号，不然不知道是放大多少倍
+  test_HR: '/home/mayanze/PycharmProjects/SwinTF/dataset/testsets/images_x2/hr'
+  test_LR: '/home/mayanze/PycharmProjects/SwinTF/dataset/testsets/images_x2/lr' # 这里要注意在数据读入的时候要有＋号，不然不知道是放大多少倍
 
   batch_size: 1
   shuffle: False
@@ -64,9 +59,26 @@ test:
   pretrained_sam_img_size: 48
 
   precomputed: True # 如果是 True，则默认保存在 test_LR 的文件夹下
-  yadapt_use_cuda: False
-  seed: 2024
-  
+  yadapt_use_cuda: True
+
+pred:
+  mode: 'pred'
+  scale: 2
+  patch_size: 96 # 32*2
+
+  pred_HR: 'dataset/testsets/aim2019/aim2019_hr'
+  pred_LR: 'dataset/testsets/aim2019/aim2019_lr' # 这里要注意在数据读入的时候要有＋号，不然不知道是放大多少倍
+
+  batch_size: 1
+  shuffle: False
+  num_workers: 1
+
+  pretrained_sam: '/home/mayanze/PycharmProjects/SwinTF/sam_vit_h_4b8939.pth'
+  pretrained_sam_img_size: 48
+
+  precomputed: True # 如果是 True，则默认保存在 test_LR 的文件夹下
+  yadapt_use_cuda: True
+
 network:
   upsacle: 2
   in_channels: 3
@@ -79,8 +91,9 @@ network:
   mlp_ratio: 2
   upsampler: 'pixelshuffle'
   resi_connection: '1conv'
+
+  
+
   # 断点续训练
-  # resume_network: '/home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20240803080852/500000_model.pth'
-  resume_network: '/home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20240813062655/110000_model.pth'
-  # resume_network: null
+  resume_network: null
   freeze_network: False

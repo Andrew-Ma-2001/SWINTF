@@ -1,0 +1,532 @@
+/home/mayanze/anaconda3/envs/yolov5/lib/python3.10/site-packages/torch/functional.py:504: UserWarning: torch.meshgrid: in an upcoming release, it will be required to pass the indexing argument. (Triggered internally at ../aten/src/ATen/native/TensorShape.cpp:3483.)
+  return _VF.meshgrid(tensors, **kwargs)  # type: ignore[attr-defined]
+loading model from /home/mayanze/PycharmProjects/SwinTF/001_classicalSR_DIV2K_s48w8_SwinIR-M_x4.pth
+loading model from /home/mayanze/PycharmProjects/SwinTF/001_classicalSR_DIV2K_s48w8_SwinIR-M_x4.pth
+Testing 0 baboon               - PSNR: 18.73 dB; SSIM: 0.2616; PSNRB: 0.00 dB;PSNR_Y: 21.40 dB; SSIM_Y: 0.3528; PSNRB_Y: 0.00 dB.
+Testing 1 barbara              - PSNR: 21.52 dB; SSIM: 0.5150; PSNRB: 0.00 dB;PSNR_Y: 23.70 dB; SSIM_Y: 0.5799; PSNRB_Y: 0.00 dB.
+Testing 2 bridge               - PSNR: 21.66 dB; SSIM: 0.4169; PSNRB: 0.00 dB;PSNR_Y: 22.98 dB; SSIM_Y: 0.4504; PSNRB_Y: 0.00 dB.
+Testing 3 coastguard           - PSNR: 23.07 dB; SSIM: 0.3953; PSNRB: 0.00 dB;PSNR_Y: 24.52 dB; SSIM_Y: 0.4472; PSNRB_Y: 0.00 dB.
+Testing 4 comic                - PSNR: 17.98 dB; SSIM: 0.3975; PSNRB: 0.00 dB;PSNR_Y: 20.13 dB; SSIM_Y: 0.4467; PSNRB_Y: 0.00 dB.
+Testing 5 face                 - PSNR: 25.81 dB; SSIM: 0.5310; PSNRB: 0.00 dB;PSNR_Y: 28.85 dB; SSIM_Y: 0.6544; PSNRB_Y: 0.00 dB.
+Testing 6 flowers              - PSNR: 19.99 dB; SSIM: 0.4771; PSNRB: 0.00 dB;PSNR_Y: 23.15 dB; SSIM_Y: 0.5684; PSNRB_Y: 0.00 dB.
+Testing 7 foreman              - PSNR: 24.50 dB; SSIM: 0.6827; PSNRB: 0.00 dB;PSNR_Y: 26.42 dB; SSIM_Y: 0.7246; PSNRB_Y: 0.00 dB.
+Testing 8 lenna                - PSNR: 24.33 dB; SSIM: 0.6054; PSNRB: 0.00 dB;PSNR_Y: 26.76 dB; SSIM_Y: 0.6978; PSNRB_Y: 0.00 dB.
+Testing 9 man                  - PSNR: 22.35 dB; SSIM: 0.4934; PSNRB: 0.00 dB;PSNR_Y: 23.67 dB; SSIM_Y: 0.5474; PSNRB_Y: 0.00 dB.
+Testing 10 monarch              - PSNR: 22.43 dB; SSIM: 0.7239; PSNRB: 0.00 dB;PSNR_Y: 24.97 dB; SSIM_Y: 0.7777; PSNRB_Y: 0.00 dB.
+Testing 11 pepper               - PSNR: 23.08 dB; SSIM: 0.5837; PSNRB: 0.00 dB;PSNR_Y: 27.34 dB; SSIM_Y: 0.7222; PSNRB_Y: 0.00 dB.
+Testing 12 ppt3                 - PSNR: 19.12 dB; SSIM: 0.6785; PSNRB: 0.00 dB;PSNR_Y: 21.52 dB; SSIM_Y: 0.7272; PSNRB_Y: 0.00 dB.
+Testing 13 zebra                - PSNR: 20.42 dB; SSIM: 0.4939; PSNRB: 0.00 dB;PSNR_Y: 22.21 dB; SSIM_Y: 0.5566; PSNRB_Y: 0.00 dB.
+
+results/swinir_classical_sr_x4 
+-- Average PSNR/SSIM(RGB): 21.78 dB; 0.5183
+-- Average PSNR_Y/SSIM_Y: 24.11 dB; 0.5895
+/home/mayanze/anaconda3/envs/yolov5/lib/python3.10/site-packages/torch/functional.py:504: UserWarning: torch.meshgrid: in an upcoming release, it will be required to pass the indexing argument. (Triggered internally at ../aten/src/ATen/native/TensorShape.cpp:3483.)
+  return _VF.meshgrid(tensors, **kwargs)  # type: ignore[attr-defined]
+loading model from /home/mayanze/PycharmProjects/SwinTF/001_classicalSR_DIV2K_s48w8_SwinIR-M_x4.pth
+loading model from /home/mayanze/PycharmProjects/SwinTF/001_classicalSR_DIV2K_s48w8_SwinIR-M_x4.pth
+Testing 0 baboon               - PSNR: 18.90 dB; SSIM: 0.2757; PSNRB: 0.00 dB;PSNR_Y: 21.53 dB; SSIM_Y: 0.3675; PSNRB_Y: 0.00 dB.
+Testing 1 barbara              - PSNR: 21.68 dB; SSIM: 0.5310; PSNRB: 0.00 dB;PSNR_Y: 23.79 dB; SSIM_Y: 0.5949; PSNRB_Y: 0.00 dB.
+Testing 2 bridge               - PSNR: 21.89 dB; SSIM: 0.4353; PSNRB: 0.00 dB;PSNR_Y: 23.21 dB; SSIM_Y: 0.4678; PSNRB_Y: 0.00 dB.
+Testing 3 coastguard           - PSNR: 23.26 dB; SSIM: 0.4023; PSNRB: 0.00 dB;PSNR_Y: 24.69 dB; SSIM_Y: 0.4529; PSNRB_Y: 0.00 dB.
+Testing 4 comic                - PSNR: 18.31 dB; SSIM: 0.4206; PSNRB: 0.00 dB;PSNR_Y: 20.49 dB; SSIM_Y: 0.4722; PSNRB_Y: 0.00 dB.
+Testing 5 face                 - PSNR: 26.17 dB; SSIM: 0.5417; PSNRB: 0.00 dB;PSNR_Y: 29.16 dB; SSIM_Y: 0.6667; PSNRB_Y: 0.00 dB.
+Testing 6 flowers              - PSNR: 20.41 dB; SSIM: 0.4978; PSNRB: 0.00 dB;PSNR_Y: 23.57 dB; SSIM_Y: 0.5909; PSNRB_Y: 0.00 dB.
+Testing 7 foreman              - PSNR: 24.97 dB; SSIM: 0.6962; PSNRB: 0.00 dB;PSNR_Y: 26.91 dB; SSIM_Y: 0.7386; PSNRB_Y: 0.00 dB.
+Testing 8 lenna                - PSNR: 24.81 dB; SSIM: 0.6196; PSNRB: 0.00 dB;PSNR_Y: 27.25 dB; SSIM_Y: 0.7120; PSNRB_Y: 0.00 dB.
+Testing 9 man                  - PSNR: 22.70 dB; SSIM: 0.5138; PSNRB: 0.00 dB;PSNR_Y: 24.03 dB; SSIM_Y: 0.5655; PSNRB_Y: 0.00 dB.
+Testing 10 monarch              - PSNR: 22.96 dB; SSIM: 0.7405; PSNRB: 0.00 dB;PSNR_Y: 25.53 dB; SSIM_Y: 0.7931; PSNRB_Y: 0.00 dB.
+Testing 11 pepper               - PSNR: 23.50 dB; SSIM: 0.5955; PSNRB: 0.00 dB;PSNR_Y: 27.76 dB; SSIM_Y: 0.7339; PSNRB_Y: 0.00 dB.
+Testing 12 ppt3                 - PSNR: 19.39 dB; SSIM: 0.6907; PSNRB: 0.00 dB;PSNR_Y: 21.78 dB; SSIM_Y: 0.7380; PSNRB_Y: 0.00 dB.
+Testing 13 zebra                - PSNR: 20.74 dB; SSIM: 0.5173; PSNRB: 0.00 dB;PSNR_Y: 22.53 dB; SSIM_Y: 0.5777; PSNRB_Y: 0.00 dB.
+
+results/swinir_classical_sr_x4 
+-- Average PSNR/SSIM(RGB): 22.12 dB; 0.5341
+-- Average PSNR_Y/SSIM_Y: 24.44 dB; 0.6051
+/home/mayanze/anaconda3/envs/yolov5/lib/python3.10/site-packages/torch/functional.py:504: UserWarning: torch.meshgrid: in an upcoming release, it will be required to pass the indexing argument. (Triggered internally at ../aten/src/ATen/native/TensorShape.cpp:3483.)
+  return _VF.meshgrid(tensors, **kwargs)  # type: ignore[attr-defined]
+loading model from /home/mayanze/PycharmProjects/SwinTF/001_classicalSR_DIV2K_s48w8_SwinIR-M_x4.pth
+loading model from /home/mayanze/PycharmProjects/SwinTF/001_classicalSR_DIV2K_s48w8_SwinIR-M_x4.pth
+Testing 0 baboon               - PSNR: 19.05 dB; SSIM: 0.2896; PSNRB: 0.00 dB;PSNR_Y: 21.64 dB; SSIM_Y: 0.3833; PSNRB_Y: 0.00 dB.
+Testing 1 barbara              - PSNR: 21.86 dB; SSIM: 0.5480; PSNRB: 0.00 dB;PSNR_Y: 23.95 dB; SSIM_Y: 0.6112; PSNRB_Y: 0.00 dB.
+Testing 2 bridge               - PSNR: 22.14 dB; SSIM: 0.4519; PSNRB: 0.00 dB;PSNR_Y: 23.47 dB; SSIM_Y: 0.4835; PSNRB_Y: 0.00 dB.
+Testing 3 coastguard           - PSNR: 23.24 dB; SSIM: 0.4072; PSNRB: 0.00 dB;PSNR_Y: 24.65 dB; SSIM_Y: 0.4564; PSNRB_Y: 0.00 dB.
+Testing 4 comic                - PSNR: 18.48 dB; SSIM: 0.4414; PSNRB: 0.00 dB;PSNR_Y: 20.68 dB; SSIM_Y: 0.4944; PSNRB_Y: 0.00 dB.
+Testing 5 face                 - PSNR: 26.48 dB; SSIM: 0.5548; PSNRB: 0.00 dB;PSNR_Y: 29.50 dB; SSIM_Y: 0.6751; PSNRB_Y: 0.00 dB.
+Testing 6 flowers              - PSNR: 20.69 dB; SSIM: 0.5126; PSNRB: 0.00 dB;PSNR_Y: 23.89 dB; SSIM_Y: 0.6051; PSNRB_Y: 0.00 dB.
+Testing 7 foreman              - PSNR: 25.35 dB; SSIM: 0.7167; PSNRB: 0.00 dB;PSNR_Y: 27.27 dB; SSIM_Y: 0.7582; PSNRB_Y: 0.00 dB.
+Testing 8 lenna                - PSNR: 25.07 dB; SSIM: 0.6297; PSNRB: 0.00 dB;PSNR_Y: 27.55 dB; SSIM_Y: 0.7227; PSNRB_Y: 0.00 dB.
+Testing 9 man                  - PSNR: 23.00 dB; SSIM: 0.5288; PSNRB: 0.00 dB;PSNR_Y: 24.33 dB; SSIM_Y: 0.5796; PSNRB_Y: 0.00 dB.
+Testing 10 monarch              - PSNR: 23.44 dB; SSIM: 0.7555; PSNRB: 0.00 dB;PSNR_Y: 26.08 dB; SSIM_Y: 0.8088; PSNRB_Y: 0.00 dB.
+Testing 11 pepper               - PSNR: 23.85 dB; SSIM: 0.6066; PSNRB: 0.00 dB;PSNR_Y: 28.17 dB; SSIM_Y: 0.7464; PSNRB_Y: 0.00 dB.
+Testing 12 ppt3                 - PSNR: 19.84 dB; SSIM: 0.7097; PSNRB: 0.00 dB;PSNR_Y: 22.26 dB; SSIM_Y: 0.7565; PSNRB_Y: 0.00 dB.
+Testing 13 zebra                - PSNR: 21.22 dB; SSIM: 0.5428; PSNRB: 0.00 dB;PSNR_Y: 23.05 dB; SSIM_Y: 0.6017; PSNRB_Y: 0.00 dB.
+
+results/swinir_classical_sr_x4 
+-- Average PSNR/SSIM(RGB): 22.41 dB; 0.5497
+-- Average PSNR_Y/SSIM_Y: 24.75 dB; 0.6202
+/home/mayanze/anaconda3/envs/yolov5/lib/python3.10/site-packages/torch/functional.py:504: UserWarning: torch.meshgrid: in an upcoming release, it will be required to pass the indexing argument. (Triggered internally at ../aten/src/ATen/native/TensorShape.cpp:3483.)
+  return _VF.meshgrid(tensors, **kwargs)  # type: ignore[attr-defined]
+loading model from /home/mayanze/PycharmProjects/SwinTF/001_classicalSR_DIV2K_s48w8_SwinIR-M_x4.pth
+loading model from /home/mayanze/PycharmProjects/SwinTF/001_classicalSR_DIV2K_s48w8_SwinIR-M_x4.pth
+Testing 0 baboon               - PSNR: 19.16 dB; SSIM: 0.3025; PSNRB: 0.00 dB;PSNR_Y: 21.76 dB; SSIM_Y: 0.3985; PSNRB_Y: 0.00 dB.
+Testing 1 barbara              - PSNR: 22.18 dB; SSIM: 0.5728; PSNRB: 0.00 dB;PSNR_Y: 24.29 dB; SSIM_Y: 0.6356; PSNRB_Y: 0.00 dB.
+Testing 2 bridge               - PSNR: 22.32 dB; SSIM: 0.4698; PSNRB: 0.00 dB;PSNR_Y: 23.64 dB; SSIM_Y: 0.5003; PSNRB_Y: 0.00 dB.
+Testing 3 coastguard           - PSNR: 23.60 dB; SSIM: 0.4260; PSNRB: 0.00 dB;PSNR_Y: 25.00 dB; SSIM_Y: 0.4744; PSNRB_Y: 0.00 dB.
+Testing 4 comic                - PSNR: 18.71 dB; SSIM: 0.4557; PSNRB: 0.00 dB;PSNR_Y: 20.90 dB; SSIM_Y: 0.5098; PSNRB_Y: 0.00 dB.
+Testing 5 face                 - PSNR: 26.71 dB; SSIM: 0.5662; PSNRB: 0.00 dB;PSNR_Y: 29.75 dB; SSIM_Y: 0.6840; PSNRB_Y: 0.00 dB.
+Testing 6 flowers              - PSNR: 20.93 dB; SSIM: 0.5280; PSNRB: 0.00 dB;PSNR_Y: 24.18 dB; SSIM_Y: 0.6203; PSNRB_Y: 0.00 dB.
+Testing 7 foreman              - PSNR: 25.73 dB; SSIM: 0.7336; PSNRB: 0.00 dB;PSNR_Y: 27.67 dB; SSIM_Y: 0.7738; PSNRB_Y: 0.00 dB.
+Testing 8 lenna                - PSNR: 25.41 dB; SSIM: 0.6424; PSNRB: 0.00 dB;PSNR_Y: 27.96 dB; SSIM_Y: 0.7359; PSNRB_Y: 0.00 dB.
+Testing 9 man                  - PSNR: 23.28 dB; SSIM: 0.5459; PSNRB: 0.00 dB;PSNR_Y: 24.60 dB; SSIM_Y: 0.5941; PSNRB_Y: 0.00 dB.
+Testing 10 monarch              - PSNR: 23.90 dB; SSIM: 0.7693; PSNRB: 0.00 dB;PSNR_Y: 26.61 dB; SSIM_Y: 0.8213; PSNRB_Y: 0.00 dB.
+Testing 11 pepper               - PSNR: 24.23 dB; SSIM: 0.6185; PSNRB: 0.00 dB;PSNR_Y: 28.70 dB; SSIM_Y: 0.7590; PSNRB_Y: 0.00 dB.
+Testing 12 ppt3                 - PSNR: 20.25 dB; SSIM: 0.7260; PSNRB: 0.00 dB;PSNR_Y: 22.72 dB; SSIM_Y: 0.7716; PSNRB_Y: 0.00 dB.
+Testing 13 zebra                - PSNR: 21.72 dB; SSIM: 0.5630; PSNRB: 0.00 dB;PSNR_Y: 23.60 dB; SSIM_Y: 0.6210; PSNRB_Y: 0.00 dB.
+
+results/swinir_classical_sr_x4 
+-- Average PSNR/SSIM(RGB): 22.72 dB; 0.5657
+-- Average PSNR_Y/SSIM_Y: 25.10 dB; 0.6357
+/home/mayanze/anaconda3/envs/yolov5/lib/python3.10/site-packages/torch/functional.py:504: UserWarning: torch.meshgrid: in an upcoming release, it will be required to pass the indexing argument. (Triggered internally at ../aten/src/ATen/native/TensorShape.cpp:3483.)
+  return _VF.meshgrid(tensors, **kwargs)  # type: ignore[attr-defined]
+loading model from /home/mayanze/PycharmProjects/SwinTF/001_classicalSR_DIV2K_s48w8_SwinIR-M_x4.pth
+loading model from /home/mayanze/PycharmProjects/SwinTF/001_classicalSR_DIV2K_s48w8_SwinIR-M_x4.pth
+Testing 0 baboon               - PSNR: 19.35 dB; SSIM: 0.3230; PSNRB: 0.00 dB;PSNR_Y: 21.91 dB; SSIM_Y: 0.4194; PSNRB_Y: 0.00 dB.
+Testing 1 barbara              - PSNR: 22.48 dB; SSIM: 0.5920; PSNRB: 0.00 dB;PSNR_Y: 24.59 dB; SSIM_Y: 0.6550; PSNRB_Y: 0.00 dB.
+Testing 2 bridge               - PSNR: 22.61 dB; SSIM: 0.4936; PSNRB: 0.00 dB;PSNR_Y: 23.93 dB; SSIM_Y: 0.5229; PSNRB_Y: 0.00 dB.
+Testing 3 coastguard           - PSNR: 23.84 dB; SSIM: 0.4384; PSNRB: 0.00 dB;PSNR_Y: 25.24 dB; SSIM_Y: 0.4858; PSNRB_Y: 0.00 dB.
+Testing 4 comic                - PSNR: 18.97 dB; SSIM: 0.4825; PSNRB: 0.00 dB;PSNR_Y: 21.19 dB; SSIM_Y: 0.5369; PSNRB_Y: 0.00 dB.
+Testing 5 face                 - PSNR: 26.95 dB; SSIM: 0.5768; PSNRB: 0.00 dB;PSNR_Y: 30.01 dB; SSIM_Y: 0.6908; PSNRB_Y: 0.00 dB.
+Testing 6 flowers              - PSNR: 21.30 dB; SSIM: 0.5477; PSNRB: 0.00 dB;PSNR_Y: 24.57 dB; SSIM_Y: 0.6405; PSNRB_Y: 0.00 dB.
+Testing 7 foreman              - PSNR: 26.10 dB; SSIM: 0.7449; PSNRB: 0.00 dB;PSNR_Y: 28.06 dB; SSIM_Y: 0.7838; PSNRB_Y: 0.00 dB.
+Testing 8 lenna                - PSNR: 25.89 dB; SSIM: 0.6586; PSNRB: 0.00 dB;PSNR_Y: 28.51 dB; SSIM_Y: 0.7528; PSNRB_Y: 0.00 dB.
+Testing 9 man                  - PSNR: 23.78 dB; SSIM: 0.5746; PSNRB: 0.00 dB;PSNR_Y: 25.10 dB; SSIM_Y: 0.6205; PSNRB_Y: 0.00 dB.
+Testing 10 monarch              - PSNR: 24.48 dB; SSIM: 0.7854; PSNRB: 0.00 dB;PSNR_Y: 27.26 dB; SSIM_Y: 0.8362; PSNRB_Y: 0.00 dB.
+Testing 11 pepper               - PSNR: 24.63 dB; SSIM: 0.6293; PSNRB: 0.00 dB;PSNR_Y: 28.94 dB; SSIM_Y: 0.7675; PSNRB_Y: 0.00 dB.
+Testing 12 ppt3                 - PSNR: 20.57 dB; SSIM: 0.7422; PSNRB: 0.00 dB;PSNR_Y: 23.02 dB; SSIM_Y: 0.7895; PSNRB_Y: 0.00 dB.
+Testing 13 zebra                - PSNR: 22.05 dB; SSIM: 0.5851; PSNRB: 0.00 dB;PSNR_Y: 23.94 dB; SSIM_Y: 0.6411; PSNRB_Y: 0.00 dB.
+
+results/swinir_classical_sr_x4 
+-- Average PSNR/SSIM(RGB): 23.07 dB; 0.5839
+-- Average PSNR_Y/SSIM_Y: 25.45 dB; 0.6531
+/home/mayanze/anaconda3/envs/yolov5/lib/python3.10/site-packages/torch/functional.py:504: UserWarning: torch.meshgrid: in an upcoming release, it will be required to pass the indexing argument. (Triggered internally at ../aten/src/ATen/native/TensorShape.cpp:3483.)
+  return _VF.meshgrid(tensors, **kwargs)  # type: ignore[attr-defined]
+loading model from /home/mayanze/PycharmProjects/SwinTF/001_classicalSR_DIV2K_s48w8_SwinIR-M_x4.pth
+loading model from /home/mayanze/PycharmProjects/SwinTF/001_classicalSR_DIV2K_s48w8_SwinIR-M_x4.pth
+Testing 0 baboon               - PSNR: 19.61 dB; SSIM: 0.3520; PSNRB: 0.00 dB;PSNR_Y: 22.18 dB; SSIM_Y: 0.4510; PSNRB_Y: 0.00 dB.
+Testing 1 barbara              - PSNR: 22.85 dB; SSIM: 0.6162; PSNRB: 0.00 dB;PSNR_Y: 24.92 dB; SSIM_Y: 0.6783; PSNRB_Y: 0.00 dB.
+Testing 2 bridge               - PSNR: 22.91 dB; SSIM: 0.5236; PSNRB: 0.00 dB;PSNR_Y: 24.23 dB; SSIM_Y: 0.5509; PSNRB_Y: 0.00 dB.
+Testing 3 coastguard           - PSNR: 23.90 dB; SSIM: 0.4535; PSNRB: 0.00 dB;PSNR_Y: 25.30 dB; SSIM_Y: 0.4997; PSNRB_Y: 0.00 dB.
+Testing 4 comic                - PSNR: 19.56 dB; SSIM: 0.5307; PSNRB: 0.00 dB;PSNR_Y: 21.79 dB; SSIM_Y: 0.5865; PSNRB_Y: 0.00 dB.
+Testing 5 face                 - PSNR: 27.33 dB; SSIM: 0.5931; PSNRB: 0.00 dB;PSNR_Y: 30.41 dB; SSIM_Y: 0.7041; PSNRB_Y: 0.00 dB.
+Testing 6 flowers              - PSNR: 21.92 dB; SSIM: 0.5794; PSNRB: 0.00 dB;PSNR_Y: 25.31 dB; SSIM_Y: 0.6756; PSNRB_Y: 0.00 dB.
+Testing 7 foreman              - PSNR: 27.27 dB; SSIM: 0.7753; PSNRB: 0.00 dB;PSNR_Y: 29.35 dB; SSIM_Y: 0.8135; PSNRB_Y: 0.00 dB.
+Testing 8 lenna                - PSNR: 26.43 dB; SSIM: 0.6763; PSNRB: 0.00 dB;PSNR_Y: 29.17 dB; SSIM_Y: 0.7709; PSNRB_Y: 0.00 dB.
+Testing 9 man                  - PSNR: 24.37 dB; SSIM: 0.6097; PSNRB: 0.00 dB;PSNR_Y: 25.70 dB; SSIM_Y: 0.6515; PSNRB_Y: 0.00 dB.
+Testing 10 monarch              - PSNR: 25.49 dB; SSIM: 0.8096; PSNRB: 0.00 dB;PSNR_Y: 28.48 dB; SSIM_Y: 0.8594; PSNRB_Y: 0.00 dB.
+Testing 11 pepper               - PSNR: 25.35 dB; SSIM: 0.6521; PSNRB: 0.00 dB;PSNR_Y: 29.73 dB; SSIM_Y: 0.7907; PSNRB_Y: 0.00 dB.
+Testing 12 ppt3                 - PSNR: 21.15 dB; SSIM: 0.7715; PSNRB: 0.00 dB;PSNR_Y: 23.62 dB; SSIM_Y: 0.8183; PSNRB_Y: 0.00 dB.
+Testing 13 zebra                - PSNR: 22.73 dB; SSIM: 0.6204; PSNRB: 0.00 dB;PSNR_Y: 24.65 dB; SSIM_Y: 0.6736; PSNRB_Y: 0.00 dB.
+
+results/swinir_classical_sr_x4 
+-- Average PSNR/SSIM(RGB): 23.63 dB; 0.6117
+-- Average PSNR_Y/SSIM_Y: 26.06 dB; 0.6803
+/home/mayanze/anaconda3/envs/yolov5/lib/python3.10/site-packages/torch/functional.py:504: UserWarning: torch.meshgrid: in an upcoming release, it will be required to pass the indexing argument. (Triggered internally at ../aten/src/ATen/native/TensorShape.cpp:3483.)
+  return _VF.meshgrid(tensors, **kwargs)  # type: ignore[attr-defined]
+loading model from /home/mayanze/PycharmProjects/SwinTF/001_classicalSR_DIV2K_s48w8_SwinIR-M_x4.pth
+loading model from /home/mayanze/PycharmProjects/SwinTF/001_classicalSR_DIV2K_s48w8_SwinIR-M_x4.pth
+Testing 0 baboon               - PSNR: 20.06 dB; SSIM: 0.3928; PSNRB: 0.00 dB;PSNR_Y: 22.62 dB; SSIM_Y: 0.4951; PSNRB_Y: 0.00 dB.
+Testing 1 barbara              - PSNR: 23.53 dB; SSIM: 0.6546; PSNRB: 0.00 dB;PSNR_Y: 25.54 dB; SSIM_Y: 0.7138; PSNRB_Y: 0.00 dB.
+Testing 2 bridge               - PSNR: 23.48 dB; SSIM: 0.5789; PSNRB: 0.00 dB;PSNR_Y: 24.80 dB; SSIM_Y: 0.6031; PSNRB_Y: 0.00 dB.
+Testing 3 coastguard           - PSNR: 24.27 dB; SSIM: 0.4877; PSNRB: 0.00 dB;PSNR_Y: 25.66 dB; SSIM_Y: 0.5311; PSNRB_Y: 0.00 dB.
+Testing 4 comic                - PSNR: 20.27 dB; SSIM: 0.5922; PSNRB: 0.00 dB;PSNR_Y: 22.50 dB; SSIM_Y: 0.6497; PSNRB_Y: 0.00 dB.
+Testing 5 face                 - PSNR: 28.07 dB; SSIM: 0.6300; PSNRB: 0.00 dB;PSNR_Y: 31.36 dB; SSIM_Y: 0.7379; PSNRB_Y: 0.00 dB.
+Testing 6 flowers              - PSNR: 22.89 dB; SSIM: 0.6331; PSNRB: 0.00 dB;PSNR_Y: 26.40 dB; SSIM_Y: 0.7294; PSNRB_Y: 0.00 dB.
+Testing 7 foreman              - PSNR: 29.10 dB; SSIM: 0.8288; PSNRB: 0.00 dB;PSNR_Y: 31.31 dB; SSIM_Y: 0.8630; PSNRB_Y: 0.00 dB.
+Testing 8 lenna                - PSNR: 27.74 dB; SSIM: 0.7203; PSNRB: 0.00 dB;PSNR_Y: 30.73 dB; SSIM_Y: 0.8157; PSNRB_Y: 0.00 dB.
+Testing 9 man                  - PSNR: 25.19 dB; SSIM: 0.6625; PSNRB: 0.00 dB;PSNR_Y: 26.51 dB; SSIM_Y: 0.6990; PSNRB_Y: 0.00 dB.
+Testing 10 monarch              - PSNR: 27.20 dB; SSIM: 0.8521; PSNRB: 0.00 dB;PSNR_Y: 30.31 dB; SSIM_Y: 0.8970; PSNRB_Y: 0.00 dB.
+Testing 11 pepper               - PSNR: 26.55 dB; SSIM: 0.6891; PSNRB: 0.00 dB;PSNR_Y: 31.11 dB; SSIM_Y: 0.8248; PSNRB_Y: 0.00 dB.
+Testing 12 ppt3                 - PSNR: 22.04 dB; SSIM: 0.8226; PSNRB: 0.00 dB;PSNR_Y: 24.64 dB; SSIM_Y: 0.8676; PSNRB_Y: 0.00 dB.
+Testing 13 zebra                - PSNR: 23.78 dB; SSIM: 0.6799; PSNRB: 0.00 dB;PSNR_Y: 25.71 dB; SSIM_Y: 0.7287; PSNRB_Y: 0.00 dB.
+
+results/swinir_classical_sr_x4 
+-- Average PSNR/SSIM(RGB): 24.58 dB; 0.6589
+-- Average PSNR_Y/SSIM_Y: 27.09 dB; 0.7254
+/home/mayanze/anaconda3/envs/yolov5/lib/python3.10/site-packages/torch/functional.py:504: UserWarning: torch.meshgrid: in an upcoming release, it will be required to pass the indexing argument. (Triggered internally at ../aten/src/ATen/native/TensorShape.cpp:3483.)
+  return _VF.meshgrid(tensors, **kwargs)  # type: ignore[attr-defined]
+loading model from /home/mayanze/PycharmProjects/SwinTF/001_classicalSR_DIV2K_s48w8_SwinIR-M_x4.pth
+loading model from /home/mayanze/PycharmProjects/SwinTF/001_classicalSR_DIV2K_s48w8_SwinIR-M_x4.pth
+Testing 0 baboon               - PSNR: 20.40 dB; SSIM: 0.4222; PSNRB: 0.00 dB;PSNR_Y: 22.94 dB; SSIM_Y: 0.5287; PSNRB_Y: 0.00 dB.
+Testing 1 barbara              - PSNR: 24.09 dB; SSIM: 0.7003; PSNRB: 0.00 dB;PSNR_Y: 26.04 dB; SSIM_Y: 0.7537; PSNRB_Y: 0.00 dB.
+Testing 2 bridge               - PSNR: 24.11 dB; SSIM: 0.6262; PSNRB: 0.00 dB;PSNR_Y: 25.44 dB; SSIM_Y: 0.6474; PSNRB_Y: 0.00 dB.
+Testing 3 coastguard           - PSNR: 24.72 dB; SSIM: 0.5303; PSNRB: 0.00 dB;PSNR_Y: 26.08 dB; SSIM_Y: 0.5699; PSNRB_Y: 0.00 dB.
+Testing 4 comic                - PSNR: 20.99 dB; SSIM: 0.6536; PSNRB: 0.00 dB;PSNR_Y: 23.20 dB; SSIM_Y: 0.7086; PSNRB_Y: 0.00 dB.
+Testing 5 face                 - PSNR: 29.32 dB; SSIM: 0.7001; PSNRB: 0.00 dB;PSNR_Y: 32.82 dB; SSIM_Y: 0.7932; PSNRB_Y: 0.00 dB.
+Testing 6 flowers              - PSNR: 23.75 dB; SSIM: 0.7036; PSNRB: 0.00 dB;PSNR_Y: 27.52 dB; SSIM_Y: 0.7953; PSNRB_Y: 0.00 dB.
+Testing 7 foreman              - PSNR: 31.77 dB; SSIM: 0.9115; PSNRB: 0.00 dB;PSNR_Y: 34.11 dB; SSIM_Y: 0.9340; PSNRB_Y: 0.00 dB.
+Testing 8 lenna                - PSNR: 29.10 dB; SSIM: 0.7675; PSNRB: 0.00 dB;PSNR_Y: 32.18 dB; SSIM_Y: 0.8597; PSNRB_Y: 0.00 dB.
+Testing 9 man                  - PSNR: 26.19 dB; SSIM: 0.7336; PSNRB: 0.00 dB;PSNR_Y: 27.52 dB; SSIM_Y: 0.7576; PSNRB_Y: 0.00 dB.
+Testing 10 monarch              - PSNR: 29.20 dB; SSIM: 0.9050; PSNRB: 0.00 dB;PSNR_Y: 32.61 dB; SSIM_Y: 0.9406; PSNRB_Y: 0.00 dB.
+Testing 11 pepper               - PSNR: 27.68 dB; SSIM: 0.7379; PSNRB: 0.00 dB;PSNR_Y: 32.70 dB; SSIM_Y: 0.8678; PSNRB_Y: 0.00 dB.
+Testing 12 ppt3                 - PSNR: 23.07 dB; SSIM: 0.8937; PSNRB: 0.00 dB;PSNR_Y: 25.86 dB; SSIM_Y: 0.9259; PSNRB_Y: 0.00 dB.
+Testing 13 zebra                - PSNR: 25.30 dB; SSIM: 0.7409; PSNRB: 0.00 dB;PSNR_Y: 27.18 dB; SSIM_Y: 0.7802; PSNRB_Y: 0.00 dB.
+
+results/swinir_classical_sr_x4 
+-- Average PSNR/SSIM(RGB): 25.69 dB; 0.7162
+-- Average PSNR_Y/SSIM_Y: 28.30 dB; 0.7759
+/home/mayanze/anaconda3/envs/yolov5/lib/python3.10/site-packages/torch/functional.py:504: UserWarning: torch.meshgrid: in an upcoming release, it will be required to pass the indexing argument. (Triggered internally at ../aten/src/ATen/native/TensorShape.cpp:3483.)
+  return _VF.meshgrid(tensors, **kwargs)  # type: ignore[attr-defined]
+loading model from /home/mayanze/PycharmProjects/SwinTF/001_classicalSR_DIV2K_s48w8_SwinIR-M_x4.pth
+loading model from /home/mayanze/PycharmProjects/SwinTF/001_classicalSR_DIV2K_s48w8_SwinIR-M_x4.pth
+Testing 0 baboon               - PSNR: 21.13 dB; SSIM: 0.4875; PSNRB: 0.00 dB;PSNR_Y: 23.17 dB; SSIM_Y: 0.5514; PSNRB_Y: 0.00 dB.
+Testing 1 barbara              - PSNR: 24.72 dB; SSIM: 0.7334; PSNRB: 0.00 dB;PSNR_Y: 26.24 dB; SSIM_Y: 0.7666; PSNRB_Y: 0.00 dB.
+Testing 2 bridge               - PSNR: 24.12 dB; SSIM: 0.6263; PSNRB: 0.00 dB;PSNR_Y: 25.44 dB; SSIM_Y: 0.6475; PSNRB_Y: 0.00 dB.
+Testing 3 coastguard           - PSNR: 24.92 dB; SSIM: 0.5350; PSNRB: 0.00 dB;PSNR_Y: 26.25 dB; SSIM_Y: 0.5732; PSNRB_Y: 0.00 dB.
+Testing 4 comic                - PSNR: 22.48 dB; SSIM: 0.7424; PSNRB: 0.00 dB;PSNR_Y: 23.95 dB; SSIM_Y: 0.7586; PSNRB_Y: 0.00 dB.
+Testing 5 face                 - PSNR: 30.00 dB; SSIM: 0.7228; PSNRB: 0.00 dB;PSNR_Y: 33.05 dB; SSIM_Y: 0.7988; PSNRB_Y: 0.00 dB.
+Testing 6 flowers              - PSNR: 26.76 dB; SSIM: 0.8086; PSNRB: 0.00 dB;PSNR_Y: 28.78 dB; SSIM_Y: 0.8334; PSNRB_Y: 0.00 dB.
+Testing 7 foreman              - PSNR: 32.12 dB; SSIM: 0.9165; PSNRB: 0.00 dB;PSNR_Y: 33.71 dB; SSIM_Y: 0.9318; PSNRB_Y: 0.00 dB.
+Testing 8 lenna                - PSNR: 30.76 dB; SSIM: 0.7971; PSNRB: 0.00 dB;PSNR_Y: 32.91 dB; SSIM_Y: 0.8705; PSNRB_Y: 0.00 dB.
+Testing 9 man                  - PSNR: 26.21 dB; SSIM: 0.7345; PSNRB: 0.00 dB;PSNR_Y: 27.53 dB; SSIM_Y: 0.7582; PSNRB_Y: 0.00 dB.
+Testing 10 monarch              - PSNR: 32.72 dB; SSIM: 0.9411; PSNRB: 0.00 dB;PSNR_Y: 34.17 dB; SSIM_Y: 0.9527; PSNRB_Y: 0.00 dB.
+Testing 11 pepper               - PSNR: 31.58 dB; SSIM: 0.7982; PSNRB: 0.00 dB;PSNR_Y: 34.64 dB; SSIM_Y: 0.8838; PSNRB_Y: 0.00 dB.
+Testing 12 ppt3                 - PSNR: 25.73 dB; SSIM: 0.9515; PSNRB: 0.00 dB;PSNR_Y: 27.24 dB; SSIM_Y: 0.9616; PSNRB_Y: 0.00 dB.
+Testing 13 zebra                - PSNR: 26.60 dB; SSIM: 0.7785; PSNRB: 0.00 dB;PSNR_Y: 27.98 dB; SSIM_Y: 0.7938; PSNRB_Y: 0.00 dB.
+
+results/swinir_classical_sr_x4 
+-- Average PSNR/SSIM(RGB): 27.13 dB; 0.7552
+-- Average PSNR_Y/SSIM_Y: 28.93 dB; 0.7916
+/home/mayanze/anaconda3/envs/yolov5/lib/python3.10/site-packages/torch/functional.py:504: UserWarning: torch.meshgrid: in an upcoming release, it will be required to pass the indexing argument. (Triggered internally at ../aten/src/ATen/native/TensorShape.cpp:3483.)
+  return _VF.meshgrid(tensors, **kwargs)  # type: ignore[attr-defined]
+loading model from /home/mayanze/PycharmProjects/SwinTF/001_classicalSR_DIV2K_s48w8_SwinIR-M_x4.pth
+loading model from /home/mayanze/PycharmProjects/SwinTF/001_classicalSR_DIV2K_s48w8_SwinIR-M_x4.pth
+Testing 0 baboon               - PSNR: 20.94 dB; SSIM: 0.4492; PSNRB: 0.00 dB;PSNR_Y: 22.98 dB; SSIM_Y: 0.5132; PSNRB_Y: 0.00 dB.
+Testing 1 barbara              - PSNR: 24.79 dB; SSIM: 0.7164; PSNRB: 0.00 dB;PSNR_Y: 26.33 dB; SSIM_Y: 0.7514; PSNRB_Y: 0.00 dB.
+Testing 2 bridge               - PSNR: 23.95 dB; SSIM: 0.5985; PSNRB: 0.00 dB;PSNR_Y: 25.27 dB; SSIM_Y: 0.6217; PSNRB_Y: 0.00 dB.
+Testing 3 coastguard           - PSNR: 24.94 dB; SSIM: 0.5159; PSNRB: 0.00 dB;PSNR_Y: 26.27 dB; SSIM_Y: 0.5565; PSNRB_Y: 0.00 dB.
+Testing 4 comic                - PSNR: 21.95 dB; SSIM: 0.6929; PSNRB: 0.00 dB;PSNR_Y: 23.42 dB; SSIM_Y: 0.7097; PSNRB_Y: 0.00 dB.
+Testing 5 face                 - PSNR: 29.71 dB; SSIM: 0.7071; PSNRB: 0.00 dB;PSNR_Y: 32.68 dB; SSIM_Y: 0.7854; PSNRB_Y: 0.00 dB.
+Testing 6 flowers              - PSNR: 25.84 dB; SSIM: 0.7793; PSNRB: 0.00 dB;PSNR_Y: 27.77 dB; SSIM_Y: 0.8034; PSNRB_Y: 0.00 dB.
+Testing 7 foreman              - PSNR: 31.16 dB; SSIM: 0.9019; PSNRB: 0.00 dB;PSNR_Y: 32.72 dB; SSIM_Y: 0.9186; PSNRB_Y: 0.00 dB.
+Testing 8 lenna                - PSNR: 30.09 dB; SSIM: 0.7813; PSNRB: 0.00 dB;PSNR_Y: 32.05 dB; SSIM_Y: 0.8563; PSNRB_Y: 0.00 dB.
+Testing 9 man                  - PSNR: 25.64 dB; SSIM: 0.7070; PSNRB: 0.00 dB;PSNR_Y: 26.96 dB; SSIM_Y: 0.7331; PSNRB_Y: 0.00 dB.
+Testing 10 monarch              - PSNR: 29.78 dB; SSIM: 0.9206; PSNRB: 0.00 dB;PSNR_Y: 31.14 dB; SSIM_Y: 0.9343; PSNRB_Y: 0.00 dB.
+Testing 11 pepper               - PSNR: 30.71 dB; SSIM: 0.7861; PSNRB: 0.00 dB;PSNR_Y: 33.35 dB; SSIM_Y: 0.8729; PSNRB_Y: 0.00 dB.
+Testing 12 ppt3                 - PSNR: 23.80 dB; SSIM: 0.9146; PSNRB: 0.00 dB;PSNR_Y: 25.34 dB; SSIM_Y: 0.9286; PSNRB_Y: 0.00 dB.
+Testing 13 zebra                - PSNR: 25.46 dB; SSIM: 0.7456; PSNRB: 0.00 dB;PSNR_Y: 26.82 dB; SSIM_Y: 0.7657; PSNRB_Y: 0.00 dB.
+
+results/swinir_classical_sr_x4 
+-- Average PSNR/SSIM(RGB): 26.34 dB; 0.7297
+-- Average PSNR_Y/SSIM_Y: 28.08 dB; 0.7679
+/home/mayanze/anaconda3/envs/yolov5/lib/python3.10/site-packages/torch/functional.py:504: UserWarning: torch.meshgrid: in an upcoming release, it will be required to pass the indexing argument. (Triggered internally at ../aten/src/ATen/native/TensorShape.cpp:3483.)
+  return _VF.meshgrid(tensors, **kwargs)  # type: ignore[attr-defined]
+loading model from /home/mayanze/PycharmProjects/SwinTF/001_classicalSR_DIV2K_s48w8_SwinIR-M_x4.pth
+loading model from /home/mayanze/PycharmProjects/SwinTF/001_classicalSR_DIV2K_s48w8_SwinIR-M_x4.pth
+Testing 0 baboon               - PSNR: 20.22 dB; SSIM: 0.3626; PSNRB: 0.00 dB;PSNR_Y: 22.25 dB; SSIM_Y: 0.4252; PSNRB_Y: 0.00 dB.
+Testing 1 barbara              - PSNR: 23.43 dB; SSIM: 0.6366; PSNRB: 0.00 dB;PSNR_Y: 24.97 dB; SSIM_Y: 0.6765; PSNRB_Y: 0.00 dB.
+Testing 2 bridge               - PSNR: 22.79 dB; SSIM: 0.5074; PSNRB: 0.00 dB;PSNR_Y: 24.11 dB; SSIM_Y: 0.5363; PSNRB_Y: 0.00 dB.
+Testing 3 coastguard           - PSNR: 24.05 dB; SSIM: 0.4534; PSNRB: 0.00 dB;PSNR_Y: 25.37 dB; SSIM_Y: 0.4997; PSNRB_Y: 0.00 dB.
+Testing 4 comic                - PSNR: 19.89 dB; SSIM: 0.5385; PSNRB: 0.00 dB;PSNR_Y: 21.38 dB; SSIM_Y: 0.5585; PSNRB_Y: 0.00 dB.
+Testing 5 face                 - PSNR: 28.49 dB; SSIM: 0.6542; PSNRB: 0.00 dB;PSNR_Y: 31.14 dB; SSIM_Y: 0.7391; PSNRB_Y: 0.00 dB.
+Testing 6 flowers              - PSNR: 23.12 dB; SSIM: 0.6691; PSNRB: 0.00 dB;PSNR_Y: 24.92 dB; SSIM_Y: 0.6977; PSNRB_Y: 0.00 dB.
+Testing 7 foreman              - PSNR: 27.41 dB; SSIM: 0.8389; PSNRB: 0.00 dB;PSNR_Y: 28.88 dB; SSIM_Y: 0.8610; PSNRB_Y: 0.00 dB.
+Testing 8 lenna                - PSNR: 27.66 dB; SSIM: 0.7220; PSNRB: 0.00 dB;PSNR_Y: 29.14 dB; SSIM_Y: 0.7989; PSNRB_Y: 0.00 dB.
+Testing 9 man                  - PSNR: 23.93 dB; SSIM: 0.6172; PSNRB: 0.00 dB;PSNR_Y: 25.25 dB; SSIM_Y: 0.6542; PSNRB_Y: 0.00 dB.
+Testing 10 monarch              - PSNR: 25.37 dB; SSIM: 0.8536; PSNRB: 0.00 dB;PSNR_Y: 26.67 dB; SSIM_Y: 0.8721; PSNRB_Y: 0.00 dB.
+Testing 11 pepper               - PSNR: 28.05 dB; SSIM: 0.7369; PSNRB: 0.00 dB;PSNR_Y: 30.01 dB; SSIM_Y: 0.8298; PSNRB_Y: 0.00 dB.
+Testing 12 ppt3                 - PSNR: 20.12 dB; SSIM: 0.7938; PSNRB: 0.00 dB;PSNR_Y: 21.72 dB; SSIM_Y: 0.8172; PSNRB_Y: 0.00 dB.
+Testing 13 zebra                - PSNR: 21.99 dB; SSIM: 0.6138; PSNRB: 0.00 dB;PSNR_Y: 23.31 dB; SSIM_Y: 0.6534; PSNRB_Y: 0.00 dB.
+
+results/swinir_classical_sr_x4 
+-- Average PSNR/SSIM(RGB): 24.04 dB; 0.6427
+-- Average PSNR_Y/SSIM_Y: 25.65 dB; 0.6871
+/home/mayanze/anaconda3/envs/yolov5/lib/python3.10/site-packages/torch/functional.py:504: UserWarning: torch.meshgrid: in an upcoming release, it will be required to pass the indexing argument. (Triggered internally at ../aten/src/ATen/native/TensorShape.cpp:3483.)
+  return _VF.meshgrid(tensors, **kwargs)  # type: ignore[attr-defined]
+loading model from /home/mayanze/PycharmProjects/SwinTF/001_classicalSR_DIV2K_s48w8_SwinIR-M_x4.pth
+loading model from /home/mayanze/PycharmProjects/SwinTF/001_classicalSR_DIV2K_s48w8_SwinIR-M_x4.pth
+Testing 0 baboon               - PSNR: 19.62 dB; SSIM: 0.2994; PSNRB: 0.00 dB;PSNR_Y: 21.67 dB; SSIM_Y: 0.3622; PSNRB_Y: 0.00 dB.
+Testing 1 barbara              - PSNR: 22.37 dB; SSIM: 0.5698; PSNRB: 0.00 dB;PSNR_Y: 23.93 dB; SSIM_Y: 0.6146; PSNRB_Y: 0.00 dB.
+Testing 2 bridge               - PSNR: 21.66 dB; SSIM: 0.4202; PSNRB: 0.00 dB;PSNR_Y: 22.98 dB; SSIM_Y: 0.4548; PSNRB_Y: 0.00 dB.
+Testing 3 coastguard           - PSNR: 23.26 dB; SSIM: 0.4019; PSNRB: 0.00 dB;PSNR_Y: 24.58 dB; SSIM_Y: 0.4527; PSNRB_Y: 0.00 dB.
+Testing 4 comic                - PSNR: 18.56 dB; SSIM: 0.4213; PSNRB: 0.00 dB;PSNR_Y: 20.07 dB; SSIM_Y: 0.4472; PSNRB_Y: 0.00 dB.
+Testing 5 face                 - PSNR: 27.37 dB; SSIM: 0.6065; PSNRB: 0.00 dB;PSNR_Y: 29.82 dB; SSIM_Y: 0.6979; PSNRB_Y: 0.00 dB.
+Testing 6 flowers              - PSNR: 21.42 dB; SSIM: 0.5777; PSNRB: 0.00 dB;PSNR_Y: 23.20 dB; SSIM_Y: 0.6122; PSNRB_Y: 0.00 dB.
+Testing 7 foreman              - PSNR: 25.22 dB; SSIM: 0.7829; PSNRB: 0.00 dB;PSNR_Y: 26.69 dB; SSIM_Y: 0.8108; PSNRB_Y: 0.00 dB.
+Testing 8 lenna                - PSNR: 25.93 dB; SSIM: 0.6693; PSNRB: 0.00 dB;PSNR_Y: 27.21 dB; SSIM_Y: 0.7469; PSNRB_Y: 0.00 dB.
+Testing 9 man                  - PSNR: 22.55 dB; SSIM: 0.5340; PSNRB: 0.00 dB;PSNR_Y: 23.88 dB; SSIM_Y: 0.5817; PSNRB_Y: 0.00 dB.
+Testing 10 monarch              - PSNR: 23.05 dB; SSIM: 0.7914; PSNRB: 0.00 dB;PSNR_Y: 24.36 dB; SSIM_Y: 0.8143; PSNRB_Y: 0.00 dB.
+Testing 11 pepper               - PSNR: 26.02 dB; SSIM: 0.6875; PSNRB: 0.00 dB;PSNR_Y: 27.76 dB; SSIM_Y: 0.7861; PSNRB_Y: 0.00 dB.
+Testing 12 ppt3                 - PSNR: 18.40 dB; SSIM: 0.7156; PSNRB: 0.00 dB;PSNR_Y: 20.02 dB; SSIM_Y: 0.7423; PSNRB_Y: 0.00 dB.
+Testing 13 zebra                - PSNR: 19.70 dB; SSIM: 0.4826; PSNRB: 0.00 dB;PSNR_Y: 21.01 dB; SSIM_Y: 0.5376; PSNRB_Y: 0.00 dB.
+
+results/swinir_classical_sr_x4 
+-- Average PSNR/SSIM(RGB): 22.51 dB; 0.5686
+-- Average PSNR_Y/SSIM_Y: 24.08 dB; 0.6187
+/home/mayanze/anaconda3/envs/yolov5/lib/python3.10/site-packages/torch/functional.py:504: UserWarning: torch.meshgrid: in an upcoming release, it will be required to pass the indexing argument. (Triggered internally at ../aten/src/ATen/native/TensorShape.cpp:3483.)
+  return _VF.meshgrid(tensors, **kwargs)  # type: ignore[attr-defined]
+loading model from /home/mayanze/PycharmProjects/SwinTF/001_classicalSR_DIV2K_s48w8_SwinIR-M_x4.pth
+loading model from /home/mayanze/PycharmProjects/SwinTF/001_classicalSR_DIV2K_s48w8_SwinIR-M_x4.pth
+Testing 0 baboon               - PSNR: 19.20 dB; SSIM: 0.2628; PSNRB: 0.00 dB;PSNR_Y: 21.29 dB; SSIM_Y: 0.3271; PSNRB_Y: 0.00 dB.
+Testing 1 barbara              - PSNR: 21.69 dB; SSIM: 0.5295; PSNRB: 0.00 dB;PSNR_Y: 23.27 dB; SSIM_Y: 0.5777; PSNRB_Y: 0.00 dB.
+Testing 2 bridge               - PSNR: 20.86 dB; SSIM: 0.3646; PSNRB: 0.00 dB;PSNR_Y: 22.18 dB; SSIM_Y: 0.4029; PSNRB_Y: 0.00 dB.
+Testing 3 coastguard           - PSNR: 22.74 dB; SSIM: 0.3747; PSNRB: 0.00 dB;PSNR_Y: 24.06 dB; SSIM_Y: 0.4276; PSNRB_Y: 0.00 dB.
+Testing 4 comic                - PSNR: 17.70 dB; SSIM: 0.3498; PSNRB: 0.00 dB;PSNR_Y: 19.23 dB; SSIM_Y: 0.3797; PSNRB_Y: 0.00 dB.
+Testing 5 face                 - PSNR: 26.56 dB; SSIM: 0.5762; PSNRB: 0.00 dB;PSNR_Y: 28.89 dB; SSIM_Y: 0.6723; PSNRB_Y: 0.00 dB.
+Testing 6 flowers              - PSNR: 20.34 dB; SSIM: 0.5181; PSNRB: 0.00 dB;PSNR_Y: 22.11 dB; SSIM_Y: 0.5571; PSNRB_Y: 0.00 dB.
+Testing 7 foreman              - PSNR: 23.83 dB; SSIM: 0.7415; PSNRB: 0.00 dB;PSNR_Y: 25.31 dB; SSIM_Y: 0.7744; PSNRB_Y: 0.00 dB.
+Testing 8 lenna                - PSNR: 24.77 dB; SSIM: 0.6334; PSNRB: 0.00 dB;PSNR_Y: 25.95 dB; SSIM_Y: 0.7112; PSNRB_Y: 0.00 dB.
+Testing 9 man                  - PSNR: 21.61 dB; SSIM: 0.4790; PSNRB: 0.00 dB;PSNR_Y: 22.93 dB; SSIM_Y: 0.5338; PSNRB_Y: 0.00 dB.
+Testing 10 monarch              - PSNR: 21.62 dB; SSIM: 0.7440; PSNRB: 0.00 dB;PSNR_Y: 22.93 dB; SSIM_Y: 0.7703; PSNRB_Y: 0.00 dB.
+Testing 11 pepper               - PSNR: 24.61 dB; SSIM: 0.6504; PSNRB: 0.00 dB;PSNR_Y: 26.25 dB; SSIM_Y: 0.7525; PSNRB_Y: 0.00 dB.
+Testing 12 ppt3                 - PSNR: 17.30 dB; SSIM: 0.6657; PSNRB: 0.00 dB;PSNR_Y: 18.92 dB; SSIM_Y: 0.6950; PSNRB_Y: 0.00 dB.
+Testing 13 zebra                - PSNR: 18.34 dB; SSIM: 0.3968; PSNRB: 0.00 dB;PSNR_Y: 19.64 dB; SSIM_Y: 0.4601; PSNRB_Y: 0.00 dB.
+
+results/swinir_classical_sr_x4 
+-- Average PSNR/SSIM(RGB): 21.51 dB; 0.5205
+-- Average PSNR_Y/SSIM_Y: 23.07 dB; 0.5744
+/home/mayanze/anaconda3/envs/yolov5/lib/python3.10/site-packages/torch/functional.py:504: UserWarning: torch.meshgrid: in an upcoming release, it will be required to pass the indexing argument. (Triggered internally at ../aten/src/ATen/native/TensorShape.cpp:3483.)
+  return _VF.meshgrid(tensors, **kwargs)  # type: ignore[attr-defined]
+loading model from /home/mayanze/PycharmProjects/SwinTF/001_classicalSR_DIV2K_s48w8_SwinIR-M_x4.pth
+loading model from /home/mayanze/PycharmProjects/SwinTF/001_classicalSR_DIV2K_s48w8_SwinIR-M_x4.pth
+Testing 0 baboon               - PSNR: 18.92 dB; SSIM: 0.2427; PSNRB: 0.00 dB;PSNR_Y: 21.05 dB; SSIM_Y: 0.3085; PSNRB_Y: 0.00 dB.
+Testing 1 barbara              - PSNR: 21.22 dB; SSIM: 0.5046; PSNRB: 0.00 dB;PSNR_Y: 22.82 dB; SSIM_Y: 0.5550; PSNRB_Y: 0.00 dB.
+Testing 2 bridge               - PSNR: 20.34 dB; SSIM: 0.3330; PSNRB: 0.00 dB;PSNR_Y: 21.66 dB; SSIM_Y: 0.3733; PSNRB_Y: 0.00 dB.
+Testing 3 coastguard           - PSNR: 22.42 dB; SSIM: 0.3610; PSNRB: 0.00 dB;PSNR_Y: 23.73 dB; SSIM_Y: 0.4149; PSNRB_Y: 0.00 dB.
+Testing 4 comic                - PSNR: 17.17 dB; SSIM: 0.3098; PSNRB: 0.00 dB;PSNR_Y: 18.70 dB; SSIM_Y: 0.3421; PSNRB_Y: 0.00 dB.
+Testing 5 face                 - PSNR: 26.02 dB; SSIM: 0.5580; PSNRB: 0.00 dB;PSNR_Y: 28.29 dB; SSIM_Y: 0.6573; PSNRB_Y: 0.00 dB.
+Testing 6 flowers              - PSNR: 19.67 dB; SSIM: 0.4824; PSNRB: 0.00 dB;PSNR_Y: 21.44 dB; SSIM_Y: 0.5245; PSNRB_Y: 0.00 dB.
+Testing 7 foreman              - PSNR: 22.96 dB; SSIM: 0.7135; PSNRB: 0.00 dB;PSNR_Y: 24.44 dB; SSIM_Y: 0.7497; PSNRB_Y: 0.00 dB.
+Testing 8 lenna                - PSNR: 24.02 dB; SSIM: 0.6109; PSNRB: 0.00 dB;PSNR_Y: 25.15 dB; SSIM_Y: 0.6887; PSNRB_Y: 0.00 dB.
+Testing 9 man                  - PSNR: 21.01 dB; SSIM: 0.4463; PSNRB: 0.00 dB;PSNR_Y: 22.33 dB; SSIM_Y: 0.5051; PSNRB_Y: 0.00 dB.
+Testing 10 monarch              - PSNR: 20.76 dB; SSIM: 0.7124; PSNRB: 0.00 dB;PSNR_Y: 22.09 dB; SSIM_Y: 0.7412; PSNRB_Y: 0.00 dB.
+Testing 11 pepper               - PSNR: 23.69 dB; SSIM: 0.6260; PSNRB: 0.00 dB;PSNR_Y: 25.29 dB; SSIM_Y: 0.7296; PSNRB_Y: 0.00 dB.
+Testing 12 ppt3                 - PSNR: 16.61 dB; SSIM: 0.6356; PSNRB: 0.00 dB;PSNR_Y: 18.22 dB; SSIM_Y: 0.6658; PSNRB_Y: 0.00 dB.
+Testing 13 zebra                - PSNR: 17.55 dB; SSIM: 0.3482; PSNRB: 0.00 dB;PSNR_Y: 18.84 dB; SSIM_Y: 0.4149; PSNRB_Y: 0.00 dB.
+
+results/swinir_classical_sr_x4 
+-- Average PSNR/SSIM(RGB): 20.88 dB; 0.4917
+-- Average PSNR_Y/SSIM_Y: 22.43 dB; 0.5479
+/home/mayanze/anaconda3/envs/yolov5/lib/python3.10/site-packages/torch/functional.py:504: UserWarning: torch.meshgrid: in an upcoming release, it will be required to pass the indexing argument. (Triggered internally at ../aten/src/ATen/native/TensorShape.cpp:3483.)
+  return _VF.meshgrid(tensors, **kwargs)  # type: ignore[attr-defined]
+loading model from /home/mayanze/PycharmProjects/SwinTF/001_classicalSR_DIV2K_s48w8_SwinIR-M_x4.pth
+loading model from /home/mayanze/PycharmProjects/SwinTF/001_classicalSR_DIV2K_s48w8_SwinIR-M_x4.pth
+Testing 0 baboon               - PSNR: 21.09 dB; SSIM: 0.4831; PSNRB: 0.00 dB;PSNR_Y: 23.14 dB; SSIM_Y: 0.5475; PSNRB_Y: 0.00 dB.
+Testing 1 barbara              - PSNR: 24.79 dB; SSIM: 0.7280; PSNRB: 0.00 dB;PSNR_Y: 26.33 dB; SSIM_Y: 0.7636; PSNRB_Y: 0.00 dB.
+Testing 2 bridge               - PSNR: 24.15 dB; SSIM: 0.6263; PSNRB: 0.00 dB;PSNR_Y: 25.48 dB; SSIM_Y: 0.6485; PSNRB_Y: 0.00 dB.
+Testing 3 coastguard           - PSNR: 24.84 dB; SSIM: 0.5306; PSNRB: 0.00 dB;PSNR_Y: 26.18 dB; SSIM_Y: 0.5703; PSNRB_Y: 0.00 dB.
+Testing 4 comic                - PSNR: 22.37 dB; SSIM: 0.7340; PSNRB: 0.00 dB;PSNR_Y: 23.84 dB; SSIM_Y: 0.7512; PSNRB_Y: 0.00 dB.
+Testing 5 face                 - PSNR: 29.85 dB; SSIM: 0.7143; PSNRB: 0.00 dB;PSNR_Y: 32.91 dB; SSIM_Y: 0.7946; PSNRB_Y: 0.00 dB.
+Testing 6 flowers              - PSNR: 26.55 dB; SSIM: 0.7978; PSNRB: 0.00 dB;PSNR_Y: 28.57 dB; SSIM_Y: 0.8254; PSNRB_Y: 0.00 dB.
+Testing 7 foreman              - PSNR: 31.93 dB; SSIM: 0.9084; PSNRB: 0.00 dB;PSNR_Y: 33.60 dB; SSIM_Y: 0.9281; PSNRB_Y: 0.00 dB.
+Testing 8 lenna                - PSNR: 30.50 dB; SSIM: 0.7884; PSNRB: 0.00 dB;PSNR_Y: 32.66 dB; SSIM_Y: 0.8650; PSNRB_Y: 0.00 dB.
+Testing 9 man                  - PSNR: 26.09 dB; SSIM: 0.7286; PSNRB: 0.00 dB;PSNR_Y: 27.44 dB; SSIM_Y: 0.7560; PSNRB_Y: 0.00 dB.
+Testing 10 monarch              - PSNR: 32.24 dB; SSIM: 0.9316; PSNRB: 0.00 dB;PSNR_Y: 33.76 dB; SSIM_Y: 0.9478; PSNRB_Y: 0.00 dB.
+Testing 11 pepper               - PSNR: 31.38 dB; SSIM: 0.7910; PSNRB: 0.00 dB;PSNR_Y: 34.47 dB; SSIM_Y: 0.8803; PSNRB_Y: 0.00 dB.
+Testing 12 ppt3                 - PSNR: 25.41 dB; SSIM: 0.9449; PSNRB: 0.00 dB;PSNR_Y: 26.92 dB; SSIM_Y: 0.9581; PSNRB_Y: 0.00 dB.
+Testing 13 zebra                - PSNR: 26.43 dB; SSIM: 0.7743; PSNRB: 0.00 dB;PSNR_Y: 27.83 dB; SSIM_Y: 0.7914; PSNRB_Y: 0.00 dB.
+
+results/swinir_classical_sr_x4 
+-- Average PSNR/SSIM(RGB): 26.97 dB; 0.7487
+-- Average PSNR_Y/SSIM_Y: 28.80 dB; 0.7877
+/home/mayanze/anaconda3/envs/yolov5/lib/python3.10/site-packages/torch/functional.py:504: UserWarning: torch.meshgrid: in an upcoming release, it will be required to pass the indexing argument. (Triggered internally at ../aten/src/ATen/native/TensorShape.cpp:3483.)
+  return _VF.meshgrid(tensors, **kwargs)  # type: ignore[attr-defined]
+loading model from /home/mayanze/PycharmProjects/SwinTF/001_classicalSR_DIV2K_s48w8_SwinIR-M_x4.pth
+loading model from /home/mayanze/PycharmProjects/SwinTF/001_classicalSR_DIV2K_s48w8_SwinIR-M_x4.pth
+Testing 0 baboon               - PSNR: 21.01 dB; SSIM: 0.4737; PSNRB: 0.00 dB;PSNR_Y: 23.07 dB; SSIM_Y: 0.5402; PSNRB_Y: 0.00 dB.
+Testing 1 barbara              - PSNR: 24.60 dB; SSIM: 0.7090; PSNRB: 0.00 dB;PSNR_Y: 26.18 dB; SSIM_Y: 0.7531; PSNRB_Y: 0.00 dB.
+Testing 2 bridge               - PSNR: 24.06 dB; SSIM: 0.6174; PSNRB: 0.00 dB;PSNR_Y: 25.44 dB; SSIM_Y: 0.6434; PSNRB_Y: 0.00 dB.
+Testing 3 coastguard           - PSNR: 24.66 dB; SSIM: 0.5212; PSNRB: 0.00 dB;PSNR_Y: 26.05 dB; SSIM_Y: 0.5654; PSNRB_Y: 0.00 dB.
+Testing 4 comic                - PSNR: 22.24 dB; SSIM: 0.7195; PSNRB: 0.00 dB;PSNR_Y: 23.74 dB; SSIM_Y: 0.7403; PSNRB_Y: 0.00 dB.
+Testing 5 face                 - PSNR: 29.47 dB; SSIM: 0.6899; PSNRB: 0.00 dB;PSNR_Y: 32.58 dB; SSIM_Y: 0.7841; PSNRB_Y: 0.00 dB.
+Testing 6 flowers              - PSNR: 26.25 dB; SSIM: 0.7783; PSNRB: 0.00 dB;PSNR_Y: 28.34 dB; SSIM_Y: 0.8141; PSNRB_Y: 0.00 dB.
+Testing 7 foreman              - PSNR: 31.24 dB; SSIM: 0.8830; PSNRB: 0.00 dB;PSNR_Y: 33.11 dB; SSIM_Y: 0.9166; PSNRB_Y: 0.00 dB.
+Testing 8 lenna                - PSNR: 29.95 dB; SSIM: 0.7660; PSNRB: 0.00 dB;PSNR_Y: 32.20 dB; SSIM_Y: 0.8530; PSNRB_Y: 0.00 dB.
+Testing 9 man                  - PSNR: 25.95 dB; SSIM: 0.7113; PSNRB: 0.00 dB;PSNR_Y: 27.36 dB; SSIM_Y: 0.7488; PSNRB_Y: 0.00 dB.
+Testing 10 monarch              - PSNR: 31.25 dB; SSIM: 0.9036; PSNRB: 0.00 dB;PSNR_Y: 32.99 dB; SSIM_Y: 0.9348; PSNRB_Y: 0.00 dB.
+Testing 11 pepper               - PSNR: 30.83 dB; SSIM: 0.7698; PSNRB: 0.00 dB;PSNR_Y: 33.98 dB; SSIM_Y: 0.8701; PSNRB_Y: 0.00 dB.
+Testing 12 ppt3                 - PSNR: 25.23 dB; SSIM: 0.9242; PSNRB: 0.00 dB;PSNR_Y: 26.82 dB; SSIM_Y: 0.9482; PSNRB_Y: 0.00 dB.
+Testing 13 zebra                - PSNR: 26.18 dB; SSIM: 0.7631; PSNRB: 0.00 dB;PSNR_Y: 27.66 dB; SSIM_Y: 0.7858; PSNRB_Y: 0.00 dB.
+
+results/swinir_classical_sr_x4 
+-- Average PSNR/SSIM(RGB): 26.64 dB; 0.7307
+-- Average PSNR_Y/SSIM_Y: 28.54 dB; 0.7784
+/home/mayanze/anaconda3/envs/yolov5/lib/python3.10/site-packages/torch/functional.py:504: UserWarning: torch.meshgrid: in an upcoming release, it will be required to pass the indexing argument. (Triggered internally at ../aten/src/ATen/native/TensorShape.cpp:3483.)
+  return _VF.meshgrid(tensors, **kwargs)  # type: ignore[attr-defined]
+loading model from /home/mayanze/PycharmProjects/SwinTF/001_classicalSR_DIV2K_s48w8_SwinIR-M_x4.pth
+loading model from /home/mayanze/PycharmProjects/SwinTF/001_classicalSR_DIV2K_s48w8_SwinIR-M_x4.pth
+Testing 0 baboon               - PSNR: 20.90 dB; SSIM: 0.4608; PSNRB: 0.00 dB;PSNR_Y: 22.98 dB; SSIM_Y: 0.5307; PSNRB_Y: 0.00 dB.
+Testing 1 barbara              - PSNR: 24.46 dB; SSIM: 0.6845; PSNRB: 0.00 dB;PSNR_Y: 26.12 dB; SSIM_Y: 0.7405; PSNRB_Y: 0.00 dB.
+Testing 2 bridge               - PSNR: 23.84 dB; SSIM: 0.6029; PSNRB: 0.00 dB;PSNR_Y: 25.30 dB; SSIM_Y: 0.6355; PSNRB_Y: 0.00 dB.
+Testing 3 coastguard           - PSNR: 24.47 dB; SSIM: 0.5047; PSNRB: 0.00 dB;PSNR_Y: 25.94 dB; SSIM_Y: 0.5564; PSNRB_Y: 0.00 dB.
+Testing 4 comic                - PSNR: 22.02 dB; SSIM: 0.7020; PSNRB: 0.00 dB;PSNR_Y: 23.57 dB; SSIM_Y: 0.7285; PSNRB_Y: 0.00 dB.
+Testing 5 face                 - PSNR: 28.96 dB; SSIM: 0.6566; PSNRB: 0.00 dB;PSNR_Y: 32.23 dB; SSIM_Y: 0.7722; PSNRB_Y: 0.00 dB.
+Testing 6 flowers              - PSNR: 25.82 dB; SSIM: 0.7486; PSNRB: 0.00 dB;PSNR_Y: 27.99 dB; SSIM_Y: 0.7985; PSNRB_Y: 0.00 dB.
+Testing 7 foreman              - PSNR: 30.49 dB; SSIM: 0.8483; PSNRB: 0.00 dB;PSNR_Y: 32.69 dB; SSIM_Y: 0.9022; PSNRB_Y: 0.00 dB.
+Testing 8 lenna                - PSNR: 29.39 dB; SSIM: 0.7363; PSNRB: 0.00 dB;PSNR_Y: 31.84 dB; SSIM_Y: 0.8383; PSNRB_Y: 0.00 dB.
+Testing 9 man                  - PSNR: 25.70 dB; SSIM: 0.6876; PSNRB: 0.00 dB;PSNR_Y: 27.22 dB; SSIM_Y: 0.7385; PSNRB_Y: 0.00 dB.
+Testing 10 monarch              - PSNR: 30.29 dB; SSIM: 0.8633; PSNRB: 0.00 dB;PSNR_Y: 32.33 dB; SSIM_Y: 0.9161; PSNRB_Y: 0.00 dB.
+Testing 11 pepper               - PSNR: 30.11 dB; SSIM: 0.7382; PSNRB: 0.00 dB;PSNR_Y: 33.43 dB; SSIM_Y: 0.8551; PSNRB_Y: 0.00 dB.
+Testing 12 ppt3                 - PSNR: 24.85 dB; SSIM: 0.8932; PSNRB: 0.00 dB;PSNR_Y: 26.50 dB; SSIM_Y: 0.9341; PSNRB_Y: 0.00 dB.
+Testing 13 zebra                - PSNR: 25.91 dB; SSIM: 0.7488; PSNRB: 0.00 dB;PSNR_Y: 27.52 dB; SSIM_Y: 0.7795; PSNRB_Y: 0.00 dB.
+
+results/swinir_classical_sr_x4 
+-- Average PSNR/SSIM(RGB): 26.23 dB; 0.7054
+-- Average PSNR_Y/SSIM_Y: 28.26 dB; 0.7662
+/home/mayanze/anaconda3/envs/yolov5/lib/python3.10/site-packages/torch/functional.py:504: UserWarning: torch.meshgrid: in an upcoming release, it will be required to pass the indexing argument. (Triggered internally at ../aten/src/ATen/native/TensorShape.cpp:3483.)
+  return _VF.meshgrid(tensors, **kwargs)  # type: ignore[attr-defined]
+loading model from /home/mayanze/PycharmProjects/SwinTF/001_classicalSR_DIV2K_s48w8_SwinIR-M_x4.pth
+loading model from /home/mayanze/PycharmProjects/SwinTF/001_classicalSR_DIV2K_s48w8_SwinIR-M_x4.pth
+Testing 0 baboon               - PSNR: 20.76 dB; SSIM: 0.4476; PSNRB: 0.00 dB;PSNR_Y: 22.89 dB; SSIM_Y: 0.5208; PSNRB_Y: 0.00 dB.
+Testing 1 barbara              - PSNR: 24.27 dB; SSIM: 0.6555; PSNRB: 0.00 dB;PSNR_Y: 26.05 dB; SSIM_Y: 0.7257; PSNRB_Y: 0.00 dB.
+Testing 2 bridge               - PSNR: 23.61 dB; SSIM: 0.5868; PSNRB: 0.00 dB;PSNR_Y: 25.17 dB; SSIM_Y: 0.6276; PSNRB_Y: 0.00 dB.
+Testing 3 coastguard           - PSNR: 24.17 dB; SSIM: 0.4845; PSNRB: 0.00 dB;PSNR_Y: 25.77 dB; SSIM_Y: 0.5475; PSNRB_Y: 0.00 dB.
+Testing 4 comic                - PSNR: 21.74 dB; SSIM: 0.6788; PSNRB: 0.00 dB;PSNR_Y: 23.36 dB; SSIM_Y: 0.7120; PSNRB_Y: 0.00 dB.
+Testing 5 face                 - PSNR: 28.33 dB; SSIM: 0.6203; PSNRB: 0.00 dB;PSNR_Y: 31.73 dB; SSIM_Y: 0.7539; PSNRB_Y: 0.00 dB.
+Testing 6 flowers              - PSNR: 25.38 dB; SSIM: 0.7169; PSNRB: 0.00 dB;PSNR_Y: 27.65 dB; SSIM_Y: 0.7805; PSNRB_Y: 0.00 dB.
+Testing 7 foreman              - PSNR: 29.72 dB; SSIM: 0.8074; PSNRB: 0.00 dB;PSNR_Y: 32.26 dB; SSIM_Y: 0.8821; PSNRB_Y: 0.00 dB.
+Testing 8 lenna                - PSNR: 28.65 dB; SSIM: 0.6986; PSNRB: 0.00 dB;PSNR_Y: 31.34 dB; SSIM_Y: 0.8188; PSNRB_Y: 0.00 dB.
+Testing 9 man                  - PSNR: 25.29 dB; SSIM: 0.6582; PSNRB: 0.00 dB;PSNR_Y: 26.96 dB; SSIM_Y: 0.7236; PSNRB_Y: 0.00 dB.
+Testing 10 monarch              - PSNR: 29.35 dB; SSIM: 0.8183; PSNRB: 0.00 dB;PSNR_Y: 31.70 dB; SSIM_Y: 0.8952; PSNRB_Y: 0.00 dB.
+Testing 11 pepper               - PSNR: 29.24 dB; SSIM: 0.6995; PSNRB: 0.00 dB;PSNR_Y: 32.68 dB; SSIM_Y: 0.8348; PSNRB_Y: 0.00 dB.
+Testing 12 ppt3                 - PSNR: 24.62 dB; SSIM: 0.8577; PSNRB: 0.00 dB;PSNR_Y: 26.39 dB; SSIM_Y: 0.9158; PSNRB_Y: 0.00 dB.
+Testing 13 zebra                - PSNR: 25.26 dB; SSIM: 0.7257; PSNRB: 0.00 dB;PSNR_Y: 26.97 dB; SSIM_Y: 0.7659; PSNRB_Y: 0.00 dB.
+
+results/swinir_classical_sr_x4 
+-- Average PSNR/SSIM(RGB): 25.74 dB; 0.6754
+-- Average PSNR_Y/SSIM_Y: 27.92 dB; 0.7503
+/home/mayanze/anaconda3/envs/yolov5/lib/python3.10/site-packages/torch/functional.py:504: UserWarning: torch.meshgrid: in an upcoming release, it will be required to pass the indexing argument. (Triggered internally at ../aten/src/ATen/native/TensorShape.cpp:3483.)
+  return _VF.meshgrid(tensors, **kwargs)  # type: ignore[attr-defined]
+loading model from /home/mayanze/PycharmProjects/SwinTF/001_classicalSR_DIV2K_s48w8_SwinIR-M_x4.pth
+loading model from /home/mayanze/PycharmProjects/SwinTF/001_classicalSR_DIV2K_s48w8_SwinIR-M_x4.pth
+Testing 0 baboon               - PSNR: 20.59 dB; SSIM: 0.4310; PSNRB: 0.00 dB;PSNR_Y: 22.77 dB; SSIM_Y: 0.5097; PSNRB_Y: 0.00 dB.
+Testing 1 barbara              - PSNR: 23.97 dB; SSIM: 0.6223; PSNRB: 0.00 dB;PSNR_Y: 25.89 dB; SSIM_Y: 0.7080; PSNRB_Y: 0.00 dB.
+Testing 2 bridge               - PSNR: 23.37 dB; SSIM: 0.5686; PSNRB: 0.00 dB;PSNR_Y: 25.02 dB; SSIM_Y: 0.6172; PSNRB_Y: 0.00 dB.
+Testing 3 coastguard           - PSNR: 23.94 dB; SSIM: 0.4646; PSNRB: 0.00 dB;PSNR_Y: 25.68 dB; SSIM_Y: 0.5375; PSNRB_Y: 0.00 dB.
+Testing 4 comic                - PSNR: 21.52 dB; SSIM: 0.6565; PSNRB: 0.00 dB;PSNR_Y: 23.23 dB; SSIM_Y: 0.6990; PSNRB_Y: 0.00 dB.
+Testing 5 face                 - PSNR: 27.65 dB; SSIM: 0.5806; PSNRB: 0.00 dB;PSNR_Y: 31.17 dB; SSIM_Y: 0.7324; PSNRB_Y: 0.00 dB.
+Testing 6 flowers              - PSNR: 24.87 dB; SSIM: 0.6811; PSNRB: 0.00 dB;PSNR_Y: 27.27 dB; SSIM_Y: 0.7592; PSNRB_Y: 0.00 dB.
+Testing 7 foreman              - PSNR: 28.70 dB; SSIM: 0.7606; PSNRB: 0.00 dB;PSNR_Y: 31.53 dB; SSIM_Y: 0.8586; PSNRB_Y: 0.00 dB.
+Testing 8 lenna                - PSNR: 27.88 dB; SSIM: 0.6602; PSNRB: 0.00 dB;PSNR_Y: 30.79 dB; SSIM_Y: 0.7970; PSNRB_Y: 0.00 dB.
+Testing 9 man                  - PSNR: 24.89 dB; SSIM: 0.6259; PSNRB: 0.00 dB;PSNR_Y: 26.70 dB; SSIM_Y: 0.7057; PSNRB_Y: 0.00 dB.
+Testing 10 monarch              - PSNR: 28.35 dB; SSIM: 0.7687; PSNRB: 0.00 dB;PSNR_Y: 31.00 dB; SSIM_Y: 0.8705; PSNRB_Y: 0.00 dB.
+Testing 11 pepper               - PSNR: 28.39 dB; SSIM: 0.6608; PSNRB: 0.00 dB;PSNR_Y: 31.99 dB; SSIM_Y: 0.8128; PSNRB_Y: 0.00 dB.
+Testing 12 ppt3                 - PSNR: 24.18 dB; SSIM: 0.8169; PSNRB: 0.00 dB;PSNR_Y: 26.05 dB; SSIM_Y: 0.8921; PSNRB_Y: 0.00 dB.
+Testing 13 zebra                - PSNR: 24.92 dB; SSIM: 0.7051; PSNRB: 0.00 dB;PSNR_Y: 26.82 dB; SSIM_Y: 0.7567; PSNRB_Y: 0.00 dB.
+
+results/swinir_classical_sr_x4 
+-- Average PSNR/SSIM(RGB): 25.23 dB; 0.6431
+-- Average PSNR_Y/SSIM_Y: 27.57 dB; 0.7326
+/home/mayanze/anaconda3/envs/yolov5/lib/python3.10/site-packages/torch/functional.py:504: UserWarning: torch.meshgrid: in an upcoming release, it will be required to pass the indexing argument. (Triggered internally at ../aten/src/ATen/native/TensorShape.cpp:3483.)
+  return _VF.meshgrid(tensors, **kwargs)  # type: ignore[attr-defined]
+loading model from /home/mayanze/PycharmProjects/SwinTF/001_classicalSR_DIV2K_s48w8_SwinIR-M_x4.pth
+loading model from /home/mayanze/PycharmProjects/SwinTF/001_classicalSR_DIV2K_s48w8_SwinIR-M_x4.pth
+Testing 0 baboon               - PSNR: 19.44 dB; SSIM: 0.3495; PSNRB: 0.00 dB;PSNR_Y: 22.04 dB; SSIM_Y: 0.4462; PSNRB_Y: 0.00 dB.
+Testing 1 barbara              - PSNR: 21.97 dB; SSIM: 0.4573; PSNRB: 0.00 dB;PSNR_Y: 24.67 dB; SSIM_Y: 0.5920; PSNRB_Y: 0.00 dB.
+Testing 2 bridge               - PSNR: 21.57 dB; SSIM: 0.4572; PSNRB: 0.00 dB;PSNR_Y: 24.01 dB; SSIM_Y: 0.5489; PSNRB_Y: 0.00 dB.
+Testing 3 coastguard           - PSNR: 21.88 dB; SSIM: 0.3375; PSNRB: 0.00 dB;PSNR_Y: 24.52 dB; SSIM_Y: 0.4543; PSNRB_Y: 0.00 dB.
+Testing 4 comic                - PSNR: 19.91 dB; SSIM: 0.5382; PSNRB: 0.00 dB;PSNR_Y: 22.11 dB; SSIM_Y: 0.6119; PSNRB_Y: 0.00 dB.
+Testing 5 face                 - PSNR: 24.10 dB; SSIM: 0.4063; PSNRB: 0.00 dB;PSNR_Y: 28.23 dB; SSIM_Y: 0.6104; PSNRB_Y: 0.00 dB.
+Testing 6 flowers              - PSNR: 22.38 dB; SSIM: 0.5151; PSNRB: 0.00 dB;PSNR_Y: 25.51 dB; SSIM_Y: 0.6490; PSNRB_Y: 0.00 dB.
+Testing 7 foreman              - PSNR: 24.20 dB; SSIM: 0.5305; PSNRB: 0.00 dB;PSNR_Y: 27.90 dB; SSIM_Y: 0.6949; PSNRB_Y: 0.00 dB.
+Testing 8 lenna                - PSNR: 24.01 dB; SSIM: 0.4580; PSNRB: 0.00 dB;PSNR_Y: 27.85 dB; SSIM_Y: 0.6497; PSNRB_Y: 0.00 dB.
+Testing 9 man                  - PSNR: 22.47 dB; SSIM: 0.4751; PSNRB: 0.00 dB;PSNR_Y: 25.16 dB; SSIM_Y: 0.6112; PSNRB_Y: 0.00 dB.
+Testing 10 monarch              - PSNR: 24.07 dB; SSIM: 0.5389; PSNRB: 0.00 dB;PSNR_Y: 27.74 dB; SSIM_Y: 0.7143; PSNRB_Y: 0.00 dB.
+Testing 11 pepper               - PSNR: 24.27 dB; SSIM: 0.4651; PSNRB: 0.00 dB;PSNR_Y: 28.37 dB; SSIM_Y: 0.6649; PSNRB_Y: 0.00 dB.
+Testing 12 ppt3                 - PSNR: 21.91 dB; SSIM: 0.6304; PSNRB: 0.00 dB;PSNR_Y: 24.31 dB; SSIM_Y: 0.7554; PSNRB_Y: 0.00 dB.
+Testing 13 zebra                - PSNR: 21.91 dB; SSIM: 0.5670; PSNRB: 0.00 dB;PSNR_Y: 24.49 dB; SSIM_Y: 0.6674; PSNRB_Y: 0.00 dB.
+
+results/swinir_classical_sr_x4 
+-- Average PSNR/SSIM(RGB): 22.44 dB; 0.4804
+-- Average PSNR_Y/SSIM_Y: 25.49 dB; 0.6193
+/home/mayanze/anaconda3/envs/yolov5/lib/python3.10/site-packages/torch/functional.py:504: UserWarning: torch.meshgrid: in an upcoming release, it will be required to pass the indexing argument. (Triggered internally at ../aten/src/ATen/native/TensorShape.cpp:3483.)
+  return _VF.meshgrid(tensors, **kwargs)  # type: ignore[attr-defined]
+loading model from /home/mayanze/PycharmProjects/SwinTF/001_classicalSR_DIV2K_s48w8_SwinIR-M_x4.pth
+loading model from /home/mayanze/PycharmProjects/SwinTF/001_classicalSR_DIV2K_s48w8_SwinIR-M_x4.pth
+Testing 0 baboon               - PSNR: 16.50 dB; SSIM: 0.2220; PSNRB: 0.00 dB;PSNR_Y: 19.85 dB; SSIM_Y: 0.3169; PSNRB_Y: 0.00 dB.
+Testing 1 barbara              - PSNR: 17.67 dB; SSIM: 0.2471; PSNRB: 0.00 dB;PSNR_Y: 21.29 dB; SSIM_Y: 0.3721; PSNRB_Y: 0.00 dB.
+Testing 2 bridge               - PSNR: 17.48 dB; SSIM: 0.2768; PSNRB: 0.00 dB;PSNR_Y: 21.02 dB; SSIM_Y: 0.3947; PSNRB_Y: 0.00 dB.
+Testing 3 coastguard           - PSNR: 17.73 dB; SSIM: 0.1759; PSNRB: 0.00 dB;PSNR_Y: 21.57 dB; SSIM_Y: 0.2992; PSNRB_Y: 0.00 dB.
+Testing 4 comic                - PSNR: 16.63 dB; SSIM: 0.3581; PSNRB: 0.00 dB;PSNR_Y: 19.59 dB; SSIM_Y: 0.4485; PSNRB_Y: 0.00 dB.
+Testing 5 face                 - PSNR: 18.98 dB; SSIM: 0.2087; PSNRB: 0.00 dB;PSNR_Y: 23.43 dB; SSIM_Y: 0.3786; PSNRB_Y: 0.00 dB.
+Testing 6 flowers              - PSNR: 17.94 dB; SSIM: 0.3020; PSNRB: 0.00 dB;PSNR_Y: 21.76 dB; SSIM_Y: 0.4370; PSNRB_Y: 0.00 dB.
+Testing 7 foreman              - PSNR: 18.59 dB; SSIM: 0.2833; PSNRB: 0.00 dB;PSNR_Y: 22.76 dB; SSIM_Y: 0.4245; PSNRB_Y: 0.00 dB.
+Testing 8 lenna                - PSNR: 18.43 dB; SSIM: 0.2281; PSNRB: 0.00 dB;PSNR_Y: 22.74 dB; SSIM_Y: 0.3884; PSNRB_Y: 0.00 dB.
+Testing 9 man                  - PSNR: 18.03 dB; SSIM: 0.2724; PSNRB: 0.00 dB;PSNR_Y: 21.61 dB; SSIM_Y: 0.4100; PSNRB_Y: 0.00 dB.
+Testing 10 monarch              - PSNR: 18.29 dB; SSIM: 0.2749; PSNRB: 0.00 dB;PSNR_Y: 22.47 dB; SSIM_Y: 0.4299; PSNRB_Y: 0.00 dB.
+Testing 11 pepper               - PSNR: 18.61 dB; SSIM: 0.2326; PSNRB: 0.00 dB;PSNR_Y: 23.03 dB; SSIM_Y: 0.4048; PSNRB_Y: 0.00 dB.
+Testing 12 ppt3                 - PSNR: 18.16 dB; SSIM: 0.4186; PSNRB: 0.00 dB;PSNR_Y: 21.20 dB; SSIM_Y: 0.5300; PSNRB_Y: 0.00 dB.
+Testing 13 zebra                - PSNR: 17.58 dB; SSIM: 0.3567; PSNRB: 0.00 dB;PSNR_Y: 21.11 dB; SSIM_Y: 0.4815; PSNRB_Y: 0.00 dB.
+
+results/swinir_classical_sr_x4 
+-- Average PSNR/SSIM(RGB): 17.90 dB; 0.2755
+-- Average PSNR_Y/SSIM_Y: 21.67 dB; 0.4083
+Traceback (most recent call last):
+  File "/home/mayanze/PycharmProjects/SwinTF/main_test_swinir.py", line 363, in <module>
+    with open(config_path, 'r') as f:
+FileNotFoundError: [Errno 2] No such file or directory: 'dataset/testsets/Set14/LRbic/home/mayanze/PycharmProjects/SwinTF/wandbx4/noise_sig_0.0_noise_30.0_quality_0_noise_0.0_noise_30.0_quality_0.yaml'
+/home/mayanze/anaconda3/envs/yolov5/lib/python3.10/site-packages/torch/functional.py:504: UserWarning: torch.meshgrid: in an upcoming release, it will be required to pass the indexing argument. (Triggered internally at ../aten/src/ATen/native/TensorShape.cpp:3483.)
+  return _VF.meshgrid(tensors, **kwargs)  # type: ignore[attr-defined]
+loading model from /home/mayanze/PycharmProjects/SwinTF/001_classicalSR_DIV2K_s48w8_SwinIR-M_x4.pth
+loading model from /home/mayanze/PycharmProjects/SwinTF/001_classicalSR_DIV2K_s48w8_SwinIR-M_x4.pth
+Testing 0 baboon               - PSNR: 12.50 dB; SSIM: 0.1079; PSNRB: 0.00 dB;PSNR_Y: 16.39 dB; SSIM_Y: 0.1704; PSNRB_Y: 0.00 dB.
+Testing 1 barbara              - PSNR: 12.67 dB; SSIM: 0.1038; PSNRB: 0.00 dB;PSNR_Y: 16.69 dB; SSIM_Y: 0.1766; PSNRB_Y: 0.00 dB.
+Testing 2 bridge               - PSNR: 12.61 dB; SSIM: 0.1213; PSNRB: 0.00 dB;PSNR_Y: 16.69 dB; SSIM_Y: 0.2072; PSNRB_Y: 0.00 dB.
+Testing 3 coastguard           - PSNR: 12.64 dB; SSIM: 0.0709; PSNRB: 0.00 dB;PSNR_Y: 16.81 dB; SSIM_Y: 0.1362; PSNRB_Y: 0.00 dB.
+Testing 4 comic                - PSNR: 12.44 dB; SSIM: 0.1923; PSNRB: 0.00 dB;PSNR_Y: 16.08 dB; SSIM_Y: 0.2698; PSNRB_Y: 0.00 dB.
+Testing 5 face                 - PSNR: 13.80 dB; SSIM: 0.0932; PSNRB: 0.00 dB;PSNR_Y: 18.17 dB; SSIM_Y: 0.1813; PSNRB_Y: 0.00 dB.
+Testing 6 flowers              - PSNR: 13.14 dB; SSIM: 0.1492; PSNRB: 0.00 dB;PSNR_Y: 17.30 dB; SSIM_Y: 0.2413; PSNRB_Y: 0.00 dB.
+Testing 7 foreman              - PSNR: 13.36 dB; SSIM: 0.1313; PSNRB: 0.00 dB;PSNR_Y: 17.63 dB; SSIM_Y: 0.2134; PSNRB_Y: 0.00 dB.
+Testing 8 lenna                - PSNR: 13.01 dB; SSIM: 0.0948; PSNRB: 0.00 dB;PSNR_Y: 17.38 dB; SSIM_Y: 0.1812; PSNRB_Y: 0.00 dB.
+Testing 9 man                  - PSNR: 13.08 dB; SSIM: 0.1254; PSNRB: 0.00 dB;PSNR_Y: 17.13 dB; SSIM_Y: 0.2133; PSNRB_Y: 0.00 dB.
+Testing 10 monarch              - PSNR: 12.96 dB; SSIM: 0.1216; PSNRB: 0.00 dB;PSNR_Y: 17.16 dB; SSIM_Y: 0.2032; PSNRB_Y: 0.00 dB.
+Testing 11 pepper               - PSNR: 13.25 dB; SSIM: 0.0990; PSNRB: 0.00 dB;PSNR_Y: 17.48 dB; SSIM_Y: 0.1850; PSNRB_Y: 0.00 dB.
+Testing 12 ppt3                 - PSNR: 13.94 dB; SSIM: 0.2488; PSNRB: 0.00 dB;PSNR_Y: 17.42 dB; SSIM_Y: 0.3173; PSNRB_Y: 0.00 dB.
+Testing 13 zebra                - PSNR: 12.70 dB; SSIM: 0.1883; PSNRB: 0.00 dB;PSNR_Y: 16.64 dB; SSIM_Y: 0.2797; PSNRB_Y: 0.00 dB.
+
+results/swinir_classical_sr_x4 
+-- Average PSNR/SSIM(RGB): 13.01 dB; 0.1320
+-- Average PSNR_Y/SSIM_Y: 17.07 dB; 0.2126
+/home/mayanze/anaconda3/envs/yolov5/lib/python3.10/site-packages/torch/functional.py:504: UserWarning: torch.meshgrid: in an upcoming release, it will be required to pass the indexing argument. (Triggered internally at ../aten/src/ATen/native/TensorShape.cpp:3483.)
+  return _VF.meshgrid(tensors, **kwargs)  # type: ignore[attr-defined]
+loading model from /home/mayanze/PycharmProjects/SwinTF/001_classicalSR_DIV2K_s48w8_SwinIR-M_x4.pth
+loading model from /home/mayanze/PycharmProjects/SwinTF/001_classicalSR_DIV2K_s48w8_SwinIR-M_x4.pth
+Testing 0 baboon               - PSNR: 11.31 dB; SSIM: 0.0852; PSNRB: 0.00 dB;PSNR_Y: 15.28 dB; SSIM_Y: 0.1365; PSNRB_Y: 0.00 dB.
+Testing 1 barbara              - PSNR: 11.44 dB; SSIM: 0.0813; PSNRB: 0.00 dB;PSNR_Y: 15.61 dB; SSIM_Y: 0.1454; PSNRB_Y: 0.00 dB.
+Testing 2 bridge               - PSNR: 11.37 dB; SSIM: 0.0951; PSNRB: 0.00 dB;PSNR_Y: 15.61 dB; SSIM_Y: 0.1706; PSNRB_Y: 0.00 dB.
+Testing 3 coastguard           - PSNR: 11.35 dB; SSIM: 0.0543; PSNRB: 0.00 dB;PSNR_Y: 15.61 dB; SSIM_Y: 0.1072; PSNRB_Y: 0.00 dB.
+Testing 4 comic                - PSNR: 11.24 dB; SSIM: 0.1574; PSNRB: 0.00 dB;PSNR_Y: 15.16 dB; SSIM_Y: 0.2387; PSNRB_Y: 0.00 dB.
+Testing 5 face                 - PSNR: 12.48 dB; SSIM: 0.0732; PSNRB: 0.00 dB;PSNR_Y: 16.87 dB; SSIM_Y: 0.1450; PSNRB_Y: 0.00 dB.
+Testing 6 flowers              - PSNR: 12.02 dB; SSIM: 0.1202; PSNRB: 0.00 dB;PSNR_Y: 16.25 dB; SSIM_Y: 0.1993; PSNRB_Y: 0.00 dB.
+Testing 7 foreman              - PSNR: 11.98 dB; SSIM: 0.1044; PSNRB: 0.00 dB;PSNR_Y: 16.28 dB; SSIM_Y: 0.1675; PSNRB_Y: 0.00 dB.
+Testing 8 lenna                - PSNR: 11.68 dB; SSIM: 0.0742; PSNRB: 0.00 dB;PSNR_Y: 16.12 dB; SSIM_Y: 0.1456; PSNRB_Y: 0.00 dB.
+Testing 9 man                  - PSNR: 11.75 dB; SSIM: 0.0972; PSNRB: 0.00 dB;PSNR_Y: 15.92 dB; SSIM_Y: 0.1726; PSNRB_Y: 0.00 dB.
+Testing 10 monarch              - PSNR: 11.66 dB; SSIM: 0.0988; PSNRB: 0.00 dB;PSNR_Y: 15.90 dB; SSIM_Y: 0.1669; PSNRB_Y: 0.00 dB.
+Testing 11 pepper               - PSNR: 11.94 dB; SSIM: 0.0767; PSNRB: 0.00 dB;PSNR_Y: 16.33 dB; SSIM_Y: 0.1515; PSNRB_Y: 0.00 dB.
+Testing 12 ppt3                 - PSNR: 12.66 dB; SSIM: 0.2052; PSNRB: 0.00 dB;PSNR_Y: 16.31 dB; SSIM_Y: 0.2681; PSNRB_Y: 0.00 dB.
+Testing 13 zebra                - PSNR: 11.46 dB; SSIM: 0.1520; PSNRB: 0.00 dB;PSNR_Y: 15.51 dB; SSIM_Y: 0.2337; PSNRB_Y: 0.00 dB.
+
+results/swinir_classical_sr_x4 
+-- Average PSNR/SSIM(RGB): 11.74 dB; 0.1054
+-- Average PSNR_Y/SSIM_Y: 15.91 dB; 0.1749
+/home/mayanze/anaconda3/envs/yolov5/lib/python3.10/site-packages/torch/functional.py:504: UserWarning: torch.meshgrid: in an upcoming release, it will be required to pass the indexing argument. (Triggered internally at ../aten/src/ATen/native/TensorShape.cpp:3483.)
+  return _VF.meshgrid(tensors, **kwargs)  # type: ignore[attr-defined]
+loading model from /home/mayanze/PycharmProjects/SwinTF/001_classicalSR_DIV2K_s48w8_SwinIR-M_x4.pth
+loading model from /home/mayanze/PycharmProjects/SwinTF/001_classicalSR_DIV2K_s48w8_SwinIR-M_x4.pth
+Testing 0 baboon               - PSNR: 14.17 dB; SSIM: 0.1479; PSNRB: 0.00 dB;PSNR_Y: 17.92 dB; SSIM_Y: 0.2237; PSNRB_Y: 0.00 dB.
+Testing 1 barbara              - PSNR: 14.62 dB; SSIM: 0.1514; PSNRB: 0.00 dB;PSNR_Y: 18.55 dB; SSIM_Y: 0.2469; PSNRB_Y: 0.00 dB.
+Testing 2 bridge               - PSNR: 14.55 dB; SSIM: 0.1760; PSNRB: 0.00 dB;PSNR_Y: 18.50 dB; SSIM_Y: 0.2792; PSNRB_Y: 0.00 dB.
+Testing 3 coastguard           - PSNR: 14.73 dB; SSIM: 0.1048; PSNRB: 0.00 dB;PSNR_Y: 18.72 dB; SSIM_Y: 0.1906; PSNRB_Y: 0.00 dB.
+Testing 4 comic                - PSNR: 14.17 dB; SSIM: 0.2575; PSNRB: 0.00 dB;PSNR_Y: 17.53 dB; SSIM_Y: 0.3456; PSNRB_Y: 0.00 dB.
+Testing 5 face                 - PSNR: 15.82 dB; SSIM: 0.1266; PSNRB: 0.00 dB;PSNR_Y: 20.15 dB; SSIM_Y: 0.2440; PSNRB_Y: 0.00 dB.
+Testing 6 flowers              - PSNR: 14.96 dB; SSIM: 0.1953; PSNRB: 0.00 dB;PSNR_Y: 18.92 dB; SSIM_Y: 0.3034; PSNRB_Y: 0.00 dB.
+Testing 7 foreman              - PSNR: 15.26 dB; SSIM: 0.1790; PSNRB: 0.00 dB;PSNR_Y: 19.52 dB; SSIM_Y: 0.2830; PSNRB_Y: 0.00 dB.
+Testing 8 lenna                - PSNR: 15.02 dB; SSIM: 0.1345; PSNRB: 0.00 dB;PSNR_Y: 19.29 dB; SSIM_Y: 0.2430; PSNRB_Y: 0.00 dB.
+Testing 9 man                  - PSNR: 15.02 dB; SSIM: 0.1719; PSNRB: 0.00 dB;PSNR_Y: 19.00 dB; SSIM_Y: 0.2858; PSNRB_Y: 0.00 dB.
+Testing 10 monarch              - PSNR: 14.94 dB; SSIM: 0.1691; PSNRB: 0.00 dB;PSNR_Y: 19.18 dB; SSIM_Y: 0.2766; PSNRB_Y: 0.00 dB.
+Testing 11 pepper               - PSNR: 15.25 dB; SSIM: 0.1364; PSNRB: 0.00 dB;PSNR_Y: 19.49 dB; SSIM_Y: 0.2522; PSNRB_Y: 0.00 dB.
+Testing 12 ppt3                 - PSNR: 15.64 dB; SSIM: 0.3117; PSNRB: 0.00 dB;PSNR_Y: 18.96 dB; SSIM_Y: 0.3983; PSNRB_Y: 0.00 dB.
+Testing 13 zebra                - PSNR: 14.61 dB; SSIM: 0.2452; PSNRB: 0.00 dB;PSNR_Y: 18.35 dB; SSIM_Y: 0.3468; PSNRB_Y: 0.00 dB.
+
+results/swinir_classical_sr_x4 
+-- Average PSNR/SSIM(RGB): 14.91 dB; 0.1791
+-- Average PSNR_Y/SSIM_Y: 18.86 dB; 0.2799

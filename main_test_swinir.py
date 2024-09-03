@@ -103,7 +103,6 @@ def main():
         output = (output * 255.0).round().astype(np.uint8)  # float32 to uint8
 
         cv2.imwrite(f'{save_dir}/{imgname}_SwinIR.png', output)
-        break
         # evaluate psnr/ssim/psnr_b
         if img_gt is not None:
             img_gt = (img_gt * 255.0).round().astype(np.uint8)  # float32 to uint8
@@ -330,7 +329,7 @@ def test_main(config_path, model, test_swinir, save_img=False):
                 output = output[:img_gt.shape[0], :img_gt.shape[1], :]
 
             psnr = util.calculate_psnr(output, img_gt, crop_border=border, test_y_channel=True)
-            print(f"PSNR: {psnr}")
+            # print(f"PSNR: {psnr}")
             test_results['psnr'].append(psnr)
 
     if img_gt is not None:
@@ -372,6 +371,9 @@ if __name__ == '__main__':
     config['test']['tile_overlap'] = tile_overlap
     config['network']['swinir_test'] = test_swinir
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+
+
     # set up model
     if os.path.exists(model_path):
         print(f'loading model from {model_path}')

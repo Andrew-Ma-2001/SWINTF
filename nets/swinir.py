@@ -1075,9 +1075,24 @@ class SwinIRAdapter(nn.Module):
         # XXX 这里把 self_attention 的大小写死了
         self.y_adapt_feature_size = y_adapt_feature
         self.yadapt_batch_norm = nn.BatchNorm2d(180)
-        self.self_attention = SelfAttention(180)  
+
+        self.self_attention = nn.ModuleList([
+            SelfAttention(180),
+            SelfAttention(180),
+            SelfAttention(180),
+            SelfAttention(180),
+            SelfAttention(180),
+            SelfAttention(180),
+        ])
         #################### modified 2024/03/28  原view有问题（不能跟原图pixel level对齐），改用pixelshuffle，
-        self.adapt_conv = nn.Conv2d(3840, 180, kernel_size=1)
+        self.adapt_conv = nn.ModuleList([
+            nn.Conv2d(3840, 180, kernel_size=1),
+            nn.Conv2d(3840, 180, kernel_size=1),
+            nn.Conv2d(3840, 180, kernel_size=1),
+            nn.Conv2d(3840, 180, kernel_size=1),
+            nn.Conv2d(3840, 180, kernel_size=1),
+            nn.Conv2d(3840, 180, kernel_size=1),
+        ])
 
         # build the last conv layer in deep feature extraction
         if resi_connection == '1conv':
@@ -1152,7 +1167,8 @@ class SwinIRAdapter(nn.Module):
             x = x + self.absolute_pos_embed
         x = self.pos_drop(x)
 
-        for layer in self.layers:
+        # idx = 0
+        for idx, layer in enumerate(self.layers):
             x = layer(x, x_size) # torch.Size([1, 4096, 256])
 
             # ===========================================================================
@@ -1162,12 +1178,12 @@ class SwinIRAdapter(nn.Module):
                 x = self.patch_unembed(x, x_size)  # torch.Size([1, 180, 48, 48])
 
                 if self.training:
-                    y_adapt = self.adapt_conv(y_adapt_feature) # B, 180, 3, 3
-                    x = self.self_attention(y_adapt, x)
+                    y_adapt = self.adapt_conv[idx](y_adapt_feature) # B, 180, 3, 3
+                    x = self.self_attention[idx](y_adapt, x)
 
                 else:
-                    y_adapt = self.adapt_conv(y_adapt_feature)
-                    x = self.self_attention(y_adapt, x)
+                    y_adapt = self.adapt_conv[idx](y_adapt_feature)
+                    x = self.self_attention[idx](y_adapt, x)
 
                     # y_adapt = y_adapt.view(-1, 180, 48, 48)
                     # y_adapt = self.yadapt_batch_norm(y_adapt)
@@ -1175,12 +1191,11 @@ class SwinIRAdapter(nn.Module):
                     # y_adapt1 = y_adapt.view(1, 10, 10, 180, 48, 48)
                     # y_adapt2 = y_adapt1.permute(0, 3, 1, 4, 2, 5).contiguous().view(1, 180, 10*48, 10*48)
 
-                    
-
-            ################ 2024-03-23 ####################
-            ## x = self.patch_embed(x)
+                ################ 2024-03-23 ####################
+                ## x = self.patch_embed(x)
                 x = x.flatten(2).transpose(1, 2)  # B Ph*Pw C Avoiding having batch norm
-            ## ===========================================================================
+                ## ===========================================================================
+                # idx += 1
 
         x = self.norm(x)  # B L C
         x = self.patch_unembed(x, x_size)

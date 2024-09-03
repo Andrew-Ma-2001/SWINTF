@@ -107,17 +107,12 @@ mask_generator = SamAutomaticMaskGenerator(sam)
 
 mask_generator_2 = SamAutomaticMaskGenerator(
     model=sam,
-    points_per_side=32,
-    pred_iou_thresh=0.86,
-    stability_score_thresh=0.92,
-    crop_n_layers=1,
-    crop_n_points_downscale_factor=2,
-    min_mask_region_area=100,  # Requires open-cv to run post-processing
+    points_per_side=8 # Requires open-cv to run post-processing
 )
 
-# predictor = SamPredictor(sam)
+predictor = SamPredictor(sam)
 
-image = cv2.imread('/home/mayanze/PycharmProjects/SwinTF/nets/img_019.png')
+image = cv2.imread('/home/mayanze/PycharmProjects/SwinTF/dataset/testsets/Set14/LRbicx2/noise_sig_0.0_noise_50.0_quality_0/zebra.png')
 image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
 tg_size = get_img_target_size(image)
@@ -129,16 +124,16 @@ tg_size = get_img_target_size(image)
 
 # Save the img as a npy file
 # np.save('img.npy', img.numpy())
-masks = mask_generator.generate(image)
-# predictor.set_image(image)
-# masks = mask_generator_2.generate(image)
+# masks = mask_generator.generate(image)
+predictor.set_image(image)
+masks = mask_generator_2.generate(image)
 
 plt.figure(figsize=(20, 20))
 plt.imshow(image)
 show_anns(masks)
 plt.axis('off')
 plt.show()
-plt.savefig('sam.png')
+plt.savefig('sam_noise.png')
 
 # # Gerate a random image
 # import numpy as np

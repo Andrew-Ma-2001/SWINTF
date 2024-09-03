@@ -11,6 +11,7 @@ from data.dataloader import SuperResolutionYadaptDataset
 # from torch.distributed.elastic.multiprocessing.errors import record
 from torch.utils.data import DataLoader
 from torch.utils.data.distributed import DistributedSampler
+from torch.nn.utils import clip_grad_norm_
 from nets.swinir import SwinIRAdapter, SwinIR
 from utils.utils_dist import *
 from utils.utils_data import print_config_as_table, load_config
@@ -35,6 +36,7 @@ args = parser.parse_args()
 
 DEBUG = args.debug
 train_swinir = args.train_swinir
+# max_grad_norm = 1.0
 
 print('Using train_swinir: {}'.format(train_swinir))
 
@@ -96,10 +98,11 @@ def main():
     # config_path = '/home/mayanze/PycharmProjects/SwinTF/config/set5_mode1.yaml'
     # config_path = '/home/mayanze/PycharmProjects/SwinTF/config/set5_mode2.yaml'
     # config_path = '/home/mayanze/PycharmProjects/SwinTF/config/set5_mode3.yaml'
-    # config_path = '/home/mayanze/PycharmProjects/SwinTF/config/Set5_ddp.yaml'
-    config_path = '/home/mayanze/PycharmProjects/SwinTF/config/set5_x4.yaml'
+    config_path = '/home/mayanze/PycharmProjects/SwinTF/config/Set5_ddp.yaml'
+    # config_path = '/home/mayanze/PycharmProjects/SwinTF/config/set5_x4.yaml'
 
     # config_path = '/home/mayanze/PycharmProjects/SwinTF/config/set5_debug.yaml'
+    # config_path = '/home/mayanze/PycharmProjects/SwinTF/config/set5_freeze.yaml'
 
 
 
@@ -219,7 +222,12 @@ def main():
                 )
 
     # 加载预训练 SwinIR 模型
-    model_path = '/home/mayanze/PycharmProjects/SwinTF/001_classicalSR_DIV2K_s48w8_SwinIR-M_x2.pth'
+    if config['network']['upsacle'] == 2:
+        model_path = '/home/mayanze/PycharmProjects/SwinTF/001_classicalSR_DIV2K_s48w8_SwinIR-M_x2.pth'
+    elif config['network']['upsacle'] == 4:
+        model_path = '/home/mayanze/PycharmProjects/SwinTF/001_classicalSR_DIV2K_s48w8_SwinIR-M_x4.pth'
+
+
     # Use strict = True to check the model
     pretrained_model = torch.load(model_path)
     param_key_g = 'params'
@@ -370,8 +378,8 @@ def main():
 
             loss = criterion(output, train_HR)
             loss.backward()
+            # clip_grad_norm_(model.parameters(), max_norm=max_grad_norm)
             optimizer.step()
-            
             running_loss += loss.item()
             smooth_loss.append(loss.item())
             if len(smooth_loss) > 100:

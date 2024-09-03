@@ -30,7 +30,7 @@ warnings.filterwarnings("ignore", message="Leaking Caffe2 thread-pool after fork
 # DEBUG = args.debug
 # train_swinir = args.train_swinir
 
-DEBUG = False
+DEBUG = True
 train_swinir = False
 
 print('Using train_swinir: {}'.format(train_swinir))
@@ -215,13 +215,18 @@ else:
             y_adapt_feature=torch.randn(1, 1, 1, 1)
             )
 
+if config['network']['upsacle'] == 2:
+    model_path = '/home/mayanze/PycharmProjects/SwinTF/001_classicalSR_DIV2K_s48w8_SwinIR-M_x2.pth'
+elif config['network']['upsacle'] == 4:
+    model_path = '/home/mayanze/PycharmProjects/SwinTF/001_classicalSR_DIV2K_s48w8_SwinIR-M_x4.pth'
+else:
+    raise ValueError(f"Invalid upsacle value: {config['network']['freeze_network']}")
 
 # 加载预训练 SwinIR 模型
-model_path = '/home/mayanze/PycharmProjects/SwinTF/001_classicalSR_DIV2K_s48w8_SwinIR-M_x2.pth'
 # Use strict = True to check the model
 pretrained_model = torch.load(model_path)
 param_key_g = 'params'
-model.load_state_dict(pretrained_model[param_key_g] if param_key_g in pretrained_model.keys() else pretrained_model, strict=False)
+model.load_state_dict(pretrained_model[param_key_g], strict=False)
 # ================================================
 # 4 Loss, Optimizer 和 Scheduler 部分
 # ================================================

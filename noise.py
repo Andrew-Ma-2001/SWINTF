@@ -522,6 +522,28 @@ def main_noise_processing(config, scale_factor, sig, noise, quality_factor):
     
     return input_folder, output_folder
 
+def process_single_image(image, scale_factor, sig, noise, quality_factor):
+    preprocess = SRMDPreprocessing(scale=scale_factor, sig=sig, noise=noise)
+
+    # Convert image to tensor
+    image_tensor = torch.from_numpy(image.copy()).permute(2, 0, 1).unsqueeze(0).cuda()
+
+    # Process the image
+    lr_blured, b_kernels = preprocess(image_tensor, random=False)
+
+    # Convert processed image back to numpy array
+    lr_blured = lr_blured.squeeze(0).permute(1, 2, 0).cpu().numpy()
+
+    # Apply JPEG compression if quality_factor is not 0
+    if quality_factor != 0:
+        lr_noisy = add_JPEG_noise(lr_blured, quality_factor)
+        processed_image = lr_noisy
+    else:
+        processed_image = lr_blured
+
+    return processed_image
+
+
 def noise_and_test(config_path, model, noise_settings, test_swinir):
     base_config = config_path
 
@@ -547,22 +569,22 @@ def noise_and_test(config_path, model, noise_settings, test_swinir):
 
 # Example usage
 if __name__ == "__main__":
-    input_folder = '/home/mayanze/PycharmProjects/SwinTF/dataset/testsets/manga109'
-    output_folder = '/home/mayanze/PycharmProjects/SwinTF/dataset/testsets/manga109_test/blur_iso'
-    output_folder_aniso = '/home/mayanze/PycharmProjects/SwinTF/dataset/testsets/manga109_test/blur_aniso'
-    output_folder_jpeg = '/home/mayanze/PycharmProjects/SwinTF/dataset/testsets/manga109_test/jpeg'
-    output_folder_noise = '/home/mayanze/PycharmProjects/SwinTF/dataset/testsets/manga109_test/noise'
-    output_folder_degrade = '/home/mayanze/PycharmProjects/SwinTF/dataset/testsets/manga109_test/degrade'
+    # input_folder = '/home/mayanze/PycharmProjects/SwinTF/dataset/testsets/manga109'
+    # output_folder = '/home/mayanze/PycharmProjects/SwinTF/dataset/testsets/manga109_test/blur_iso'
+    # output_folder_aniso = '/home/mayanze/PycharmProjects/SwinTF/dataset/testsets/manga109_test/blur_aniso'
+    # output_folder_jpeg = '/home/mayanze/PycharmProjects/SwinTF/dataset/testsets/manga109_test/jpeg'
+    # output_folder_noise = '/home/mayanze/PycharmProjects/SwinTF/dataset/testsets/manga109_test/noise'
+    # output_folder_degrade = '/home/mayanze/PycharmProjects/SwinTF/dataset/testsets/manga109_test/degrade'
 
     scale_factor = 2  # or 4
     
-    # process_images(input_folder, output_folder, apply_isotropic_gaussian_blur, scale_factor)
-    # process_images(input_folder, output_folder_aniso, apply_anisotropic_gaussian_blur, scale_factor)
-    # process_images(input_folder, output_folder_jpeg, add_jpeg_noise, scale_factor)
-    # process_images(input_folder, output_folder_noise, add_gaussian_noise, scale_factor)
-    # process_images(input_folder, output_folder_degrade, degrade_image, scale_factor)
-    # config_path = '/home/mayanze/PycharmProjects/SwinTF/config/test_config/Set14test.yaml'
-    config_path = '/home/mayanze/PycharmProjects/SwinTF/config/test_config/urban100test.yaml'
+    # # process_images(input_folder, output_folder, apply_isotropic_gaussian_blur, scale_factor)
+    # # process_images(input_folder, output_folder_aniso, apply_anisotropic_gaussian_blur, scale_factor)
+    # # process_images(input_folder, output_folder_jpeg, add_jpeg_noise, scale_factor)
+    # # process_images(input_folder, output_folder_noise, add_gaussian_noise, scale_factor)
+    # # process_images(input_folder, output_folder_degrade, degrade_image, scale_factor)
+    # # config_path = '/home/mayanze/PycharmProjects/SwinTF/config/test_config/Set14test.yaml'
+    config_path = '/home/mayanze/PycharmProjects/SwinTF/config/X2/Set14test.yaml'
     # model_path = 'experiments/SwinIR_20240803080852/500000_model.pth'
     model_path = '/home/mayanze/PycharmProjects/SwinTF/001_classicalSR_DIV2K_s48w8_SwinIR-M_x2.pth'
     test_swinir = True
@@ -587,11 +609,12 @@ if __name__ == "__main__":
         # {'sig': 0.0, 'noise': 3.0, 'quality_factor': 0},
         # {'sig': 0.0, 'noise': 4.0, 'quality_factor': 0},
         # {'sig': 0.0, 'noise': 5.0, 'quality_factor': 0},
-        {'sig': 0.0, 'noise': 10.0, 'quality_factor': 0},
-        {'sig': 0.0, 'noise': 20.0, 'quality_factor': 0},
-        {'sig': 0.0, 'noise': 30.0, 'quality_factor': 0},
-        {'sig': 0.0, 'noise': 40.0, 'quality_factor': 0},
-        {'sig': 0.0, 'noise': 50.0, 'quality_factor': 0},
+        # {'sig': 0.0, 'noise': 10.0, 'quality_factor': 0},
+        # {'sig': 0.0, 'noise': 20.0, 'quality_factor': 0},
+        # {'sig': 0.0, 'noise': 30.0, 'quality_factor': 0},
+        # {'sig': 0.0, 'noise': 40.0, 'quality_factor': 0},
+        # {'sig': 0.0, 'noise': 50.0, 'quality_factor': 0},
+        {'sig': 3.0, 'noise': 25.0, 'quality_factor': 50},
     ]
 
     with open(config_path, 'r') as f:
@@ -667,3 +690,12 @@ if __name__ == "__main__":
     #     # Save the noisy image
     #     noisy_image_path = os.path.join(output_dir, f'noisy_image_sigma_{s:.6f}.jpg')
     #     Image.fromarray((new_img * 255).astype(np.uint8)).save(noisy_image_path)
+
+
+    # image = np.asarray(Image.open('/home/mayanze/PycharmProjects/SwinTF/nets/0901x2.png').convert('RGB'))
+    # scale_factor = 1
+    # sig = 5
+    # noise = 10
+    # quality_factor = 80
+    # processed_image = process_single_image(image, scale_factor, sig, noise, quality_factor)
+    # Image.fromarray((processed_image).astype(np.uint8)).save('processed_image.jpg')
