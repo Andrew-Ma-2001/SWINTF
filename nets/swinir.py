@@ -648,7 +648,7 @@ class SelfAttention(nn.Module):
         self.q = nn.Linear(in_channels, in_channels)
         self.kv = nn.Linear(in_channels, in_channels*2)
         self.proj = nn.Linear(in_channels, in_channels)
-        # self.tau = nn.Parameter(torch.zeros(1))
+        self.tau = nn.Parameter(torch.zeros(1))
         # self.mlp = nn.Sequential(
         #     nn.Linear(in_channels, in_channels),
         #     nn.ReLU(),
@@ -699,11 +699,11 @@ class SelfAttention(nn.Module):
 
        ################### 2024-08-07 ##########################
         # mode 0: no hyperparameter exit
-        out = self.proj(out).transpose(-1, -2).reshape(batch_size, -1, height, width) + x
+        # out = self.proj(out).transpose(-1, -2).reshape(batch_size, -1, height, width) + x
 
         
         # mode 1: static hyperparameter
-        # out = self.tau * self.proj(out).transpose(-1, -2).reshape(batch_size, -1, height, width) + x
+        out = self.tau * self.proj(out).transpose(-1, -2).reshape(batch_size, -1, height, width) + x
 
         # mode 2: dynamic hyperparameter
         # tau = self.mlp(q.mean(1, keepdim=True))
