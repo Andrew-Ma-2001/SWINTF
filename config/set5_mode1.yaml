@@ -26,7 +26,7 @@ train:
   weight_decay: 0.0
   resume_optimizer: null
   step_save: 5000
-  step_test: 1000 
+  step_test: 5000 
   step_print: 200
   # ==================
   # Training scheduler
@@ -62,6 +62,7 @@ test:
   yadapt_use_cuda: False
   
 network:
+  mode: '1'
   upsacle: 2
   in_channels: 3
   image_size: 48  # 照抄的，不知道是什么意思  1024 // 4 //  8 = 32

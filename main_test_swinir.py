@@ -23,14 +23,6 @@ from utils.utils_image import imresize_np
 
 
 def main():
-    # config_path = '/home/mayanze/PycharmProjects/SwinTF/config/test_config/urban100test.yaml'
-
-    # model_path = '/home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20240803080852/500000_model.pth'
-    # test_swinir = False
-
-    # model_path = '/home/mayanze/PycharmProjects/SwinTF/001_classicalSR_DIV2K_s48w8_SwinIR-M_x2.pth'
-    # test_swinir = True
-
     with open(config_path, 'r') as f:
         config = yaml.safe_load(f)
 
@@ -176,7 +168,11 @@ def define_sam_model(model_path, image_size):
 
 def setup(config):
     # 001 classical image sr/ 002 lightweight image sr
-    save_dir = f'results/swinir_classical_sr_x{config["test"]["scale"]}'
+    noise_setting = config['test']['test_LR'].split('/')[-1]
+    if test_swinir:
+        save_dir = f'results/swinir_classical_sr_x{config["test"]["scale"]}_{noise_setting}'
+    else:
+        save_dir = f'results/swinir_adapter_sr_x{config["test"]["scale"]}_{noise_setting}'
     folder = config["test"]["test_HR"]
     border = config["test"]["scale"]
     window_size = 8 * 2 
@@ -270,14 +266,7 @@ def test_main(config_path, model, test_swinir, save_img=False):
     config['network']['swinir_test'] = test_swinir
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    # if os.path.exists(model_path):
-    #     print(f'loading model from {model_path}')
-    # else:
-    #     raise ValueError(f'model path {model_path} does not exist')
 
-    # model = define_model(scale, training_patch_size, model_path, config)
-    # model.eval()
-    # model = model.to(device)
 
     if not test_swinir:
         sam_model, preprocessor = define_sam_model(model_path=None, image_size=48)
@@ -329,7 +318,7 @@ def test_main(config_path, model, test_swinir, save_img=False):
                 output = output[:img_gt.shape[0], :img_gt.shape[1], :]
 
             psnr = util.calculate_psnr(output, img_gt, crop_border=border, test_y_channel=True)
-            # print(f"PSNR: {psnr}")
+            print(f"PSNR: {psnr}")
             test_results['psnr'].append(psnr)
 
     if img_gt is not None:
@@ -347,6 +336,7 @@ if __name__ == '__main__':
         parser.add_argument('--model', type=str, required=True, help='Path to the model file')
         parser.add_argument('--test_swinir', action='store_true', help='Whether to test SwinIR model')
         parser.add_argument('--gpu', type=str, default='0', help='GPU id(s) to use (comma-separated, e.g., "0,1,2,3")')
+        parser.add_argument('--save_img', action='store_true', help='Whether to save the output image')
         return parser.parse_args()
 
     args = parse_args()
@@ -357,7 +347,7 @@ if __name__ == '__main__':
     config_path = args.config
     model_path = args.model
     test_swinir = args.test_swinir
-
+    save_img = args.save_img
     import time
     start_time = time.time()
     with open(config_path, 'r') as f:
@@ -389,5 +379,14 @@ if __name__ == '__main__':
     # print(test_main(config_path, model, test_swinir))
     # end_time = time.time()
     # print(f"Time taken: {end_time - start_time} seconds")
+
     # test_main(config_path, model, test_swinir)
+
+    # del model
+    # print("Testing SwinIR model")
+    # model = define_model(scale, training_patch_size, model_path, config)
+    # model.eval()
+    # model = model.to(device)
     # test_main(config_path, model, test_swinir)
+
+    # /home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20240813062655/50000_model.pth

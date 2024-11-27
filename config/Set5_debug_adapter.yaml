@@ -6,16 +6,16 @@ train:
   type: 'SwinIR'
   mode: 'train'
   scale: 2
-  patch_size: 96 # 48x2 
+  patch_size: 96
 
   train_HR: 'dataset/trainsets/trainH/DIV2K'
   train_LR: 'dataset/trainsets/trainL/DIV2K/DIV2K_train_LR_bicubic'
   
-  batch_size: 32 # 4x8
+  batch_size: 8 # 4x8
   shuffle: True
-  num_workers: 16
+  num_workers: 0
 
-  gpu_ids: [4,5,6,7]
+  gpu_ids: [1]
 
   # ==================
   # Training parameters
@@ -24,10 +24,11 @@ train:
   optimizer: 'adam'
   lr: 0.0002 # 2e-4
   weight_decay: 0.0
-  resume_optimizer: null
-  # resume_optimizer: '/home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20240928082058/490000_optimizer.pth'
+  # resume_optimizer: '/home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20240803080852/500000_optimizer.pth'
+  resume_optimizer: '/home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20240813062655/110000_optimizer.pth'
+  # resume_optimizer: null
   step_save: 5000
-  step_test: 5000 
+  step_test: 1000 
   step_print: 200
   # ==================
   # Training scheduler
@@ -43,33 +44,28 @@ train:
 
   precomputed: True # 如果是 True，则默认保存在 train_LR 的文件夹下
   yadapt_use_cuda: False
-
-  # 断点续训练
-  # best_model: True
-  # seed: 192248
-  # wandb_name: '4卡SwinIRAdapter_0928'
-  # wandb_id: '20240928082058'
+  wandb_id: '20240711131824'
+  wandb_name: "4\u5361SwinIRAdapter_0711"
+  seed: 2024
 
 test:
   mode: 'test'
   scale: 2
   patch_size: 96 # 32*2
 
-  test_HR: 'dataset/testsets/Set5/GTmod12'
-  test_LR: 'dataset/testsets/Set5/LRbicx2' # 这里要注意在数据读入的时候要有＋号，不然不知道是放大多少倍
+  test_HR: '/home/mayanze/PycharmProjects/SwinTF/debug/hr'
+  test_LR: '/home/mayanze/PycharmProjects/SwinTF/debug/noise_sigma_0_150_general'
 
   batch_size: 1
   shuffle: False
-  num_workers: 1
+  num_workers: 0
 
   pretrained_sam: '/home/mayanze/PycharmProjects/SwinTF/sam_vit_h_4b8939.pth'
   pretrained_sam_img_size: 48
 
   precomputed: True # 如果是 True，则默认保存在 test_LR 的文件夹下
   yadapt_use_cuda: False
-
-  # 断点续测试
-  # seed: 192248
+  seed: 2024
   
 network:
   upsacle: 2
@@ -83,10 +79,8 @@ network:
   mlp_ratio: 2
   upsampler: 'pixelshuffle'
   resi_connection: '1conv'
-
-  
-
   # 断点续训练
-  resume_network: null
-  # resume_network: '/home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20240928082058/490000_model.pth'
+  # resume_network: '/home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20240803080852/500000_model.pth'
+  resume_network: '/home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20240813062655/110000_model.pth'
+  # resume_network: null
   freeze_network: False

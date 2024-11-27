@@ -75,7 +75,7 @@ def check_config_consistency(config):
 # =================================================
 # 0 Config，Global Parameters 部分
 # =================================================
-config_path = 'config/example.yaml'
+config_path = '/home/mayanze/PycharmProjects/SwinTF/config/Set5_debug_swinir.yaml'
 with open(config_path, 'r') as file:
     config = yaml.safe_load(file)
 
@@ -94,7 +94,7 @@ np.random.seed(seed)
 torch.manual_seed(seed)
 torch.cuda.manual_seed_all(seed)
 
-wandb.init(project='SwinIR', config=config)
+# wandb.init(project='SwinIR', config=config)
 # =================================================
 # 1 Dataset 部分
 # =================================================
