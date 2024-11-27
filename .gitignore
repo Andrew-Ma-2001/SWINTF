@@ -9,3 +9,5 @@ output/
 .idea/
 .vscode/
 results/
+debug/
+wandb_offline/
