@@ -11,11 +11,11 @@ train:
   train_HR: 'dataset/trainsets/trainH/DIV2K'
   train_LR: 'dataset/trainsets/trainL/DIV2K/DIV2K_train_LR_bicubic'
   
-  batch_size: 64 # 4x8
+  batch_size: 32 # 4x8
   shuffle: True
   num_workers: 16
 
-  gpu_ids: [0,1,2,3]
+  gpu_ids: [4,5,6,7]
 
   # ==================
   # Training parameters
@@ -25,6 +25,7 @@ train:
   lr: 0.0002 # 2e-4
   weight_decay: 0.0
   resume_optimizer: null
+  # resume_optimizer: '/home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20241127081357/180000_optimizer.pth'
   step_save: 5000
   step_test: 5000 
   step_print: 200
@@ -42,6 +43,12 @@ train:
 
   precomputed: True # 如果是 True，则默认保存在 train_LR 的文件夹下
   yadapt_use_cuda: False
+  
+  # 断点续训练
+  # best_model: True
+  # seed: 251986
+  # wandb_id: '20241127081357'
+  # wandb_name: "4\u5361SwinIRAdapter_1127"
 
 test:
   mode: 'test'
@@ -60,6 +67,8 @@ test:
 
   precomputed: True # 如果是 True，则默认保存在 test_LR 的文件夹下
   yadapt_use_cuda: False
+
+  # seed: 251986
   
 network:
   mode: '1'
@@ -79,4 +88,6 @@ network:
 
   # 断点续训练
   resume_network: null
+  # resume_network: '/home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20241127081357/180000_model.pth'
+
   freeze_network: False
