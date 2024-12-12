@@ -8,18 +8,19 @@ import sys
 sys.path.append("/home/mayanze/PycharmProjects/SwinTF/")
 
 
-config_path_list = [
-    '/home/mayanze/PycharmProjects/SwinTF/config/Set5.yaml',
-    '/home/mayanze/PycharmProjects/SwinTF/config/urban100test.yaml',
-    '/home/mayanze/PycharmProjects/SwinTF/config/manga109test.yaml',
-    '/home/mayanze/PycharmProjects/SwinTF/config/BSDS100.yaml',
-    '/home/mayanze/PycharmProjects/SwinTF/config/Set14test.yaml'
-]
+# config_path_list = [
+#     '/home/mayanze/PycharmProjects/SwinTF/config/Set5.yaml',
+#     '/home/mayanze/PycharmProjects/SwinTF/config/urban100test.yaml',
+#     '/home/mayanze/PycharmProjects/SwinTF/config/manga109test.yaml',
+#     '/home/mayanze/PycharmProjects/SwinTF/config/BSDS100.yaml',
+#     '/home/mayanze/PycharmProjects/SwinTF/config/Set14test.yaml'
+# ]
 # 还是用 yaml 控制
-# config_path = sys.argv[1]
+config_path = sys.argv[1]
 # config_path = '/home/mayanze/PycharmProjects/SwinTF/config/urban100test.yaml'
 
-config_path = config_path_list[0]
+# config_path = config_path_list[0]
+config_path_list = [config_path]
 with open(config_path, 'r') as file:
     config = yaml.safe_load(file)
 

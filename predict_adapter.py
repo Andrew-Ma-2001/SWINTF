@@ -266,24 +266,28 @@ if __name__ == '__main__':
 
     os.environ['CUDA_VISIBLE_DEVICES'] = '4,5,6,7'
 
-    config_path_list = [
-        '/home/mayanze/PycharmProjects/SwinTF/config/test_config/set5.yaml',
-        '/home/mayanze/PycharmProjects/SwinTF/config/test_config/Set14test.yaml',
-        '/home/mayanze/PycharmProjects/SwinTF/config/test_config/urban100test.yaml',
-        '/home/mayanze/PycharmProjects/SwinTF/config/test_config/manga109test.yaml',
-        '/home/mayanze/PycharmProjects/SwinTF/config/test_config/BSDS100.yaml',
-    ]
+    # config_path_list = [
+    #     '/home/mayanze/PycharmProjects/SwinTF/config/test_config/set5.yaml',
+    #     '/home/mayanze/PycharmProjects/SwinTF/config/test_config/Set14test.yaml',
+    #     '/home/mayanze/PycharmProjects/SwinTF/config/test_config/urban100test.yaml',
+    #     '/home/mayanze/PycharmProjects/SwinTF/config/test_config/manga109test.yaml',
+    #     '/home/mayanze/PycharmProjects/SwinTF/config/test_config/BSDS100.yaml',
+    # ]
 
-    # model_path = '/home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20240803080852/500000_model.pth'
+    config_path = '/home/mayanze/PycharmProjects/SwinTF/config/urban100_test/noise/noise_sigma_0_150_general.yaml'
+    config_path_list = [config_path]
 
-    model_paths = [
-        '/home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20240803080852/525000_model.pth',
-        '/home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20240803080852/520000_model.pth',
-        '/home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20240803080852/455000_model.pth',
-        '/home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20240803080852/450000_model.pth',
-        '/home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20240803080852/445000_model.pth',
-        '/home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20240803080852/440000_model.pth',
-    ]
+    model_path = '/home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20241204110254/500000_model.pth'
+    model_paths = [model_path]
+    
+    # model_paths = [
+    #     '/home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20240803080852/525000_model.pth',
+    #     '/home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20240803080852/520000_model.pth',
+    #     '/home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20240803080852/455000_model.pth',
+    #     '/home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20240803080852/450000_model.pth',
+    #     '/home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20240803080852/445000_model.pth',
+    #     '/home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20240803080852/440000_model.pth',
+    # ]
     gpu_ids = '4,5'
     yadapt = 'True'
 
