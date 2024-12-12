@@ -169,7 +169,7 @@ def define_sam_model(model_path, image_size):
 def setup(config):
     # 001 classical image sr/ 002 lightweight image sr
     noise_setting = config['test']['test_LR'].split('/')[-1]
-    if test_swinir:
+    if config['network']['swinir_test'] is True:
         save_dir = f'results/swinir_classical_sr_x{config["test"]["scale"]}_{noise_setting}'
     else:
         save_dir = f'results/swinir_adapter_sr_x{config["test"]["scale"]}_{noise_setting}'

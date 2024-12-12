@@ -21,6 +21,7 @@ import warnings
 from main_test_swinir import test_main
 # Filter out the specific warning
 warnings.filterwarnings("ignore", message="Leaking Caffe2 thread-pool after fork. (function pthreadpool)")
+import requests
 
 import argparse
 
@@ -34,20 +35,14 @@ parser.add_argument('--local-rank', type=int, default=0)
 args = parser.parse_args()
 
 
-DEBUG = args.debug
+# DEBUG = args.debug
+DEBUG = False
 train_swinir = args.train_swinir
-# max_grad_norm = 1.0
+
+mode = 2 # TODO: 修改 mode
 
 print('Using train_swinir: {}'.format(train_swinir))
 
-# from torch.utils.data._utils.collate import default_collate
-# def custom_collate_fn(batch):
-#     try:
-#         return default_collate(batch)
-#     except RuntimeError as e:
-#         print(f"Collate error: {e}")
-#         # Handle the error or skip the batch
-#         return None
     
 def process_config(config):
     config['train']['resume'] = config['train'].get('resume_optimizer') is not None and config['network'].get('resume_network') is not None
@@ -64,7 +59,6 @@ def process_config(config):
         wandb_name = config['train']['wandb_name']
         wandb_id = config['train']['wandb_id']
         print('Using seed: {}'.format(seed))
-        
 
     else:
         if train_swinir:
@@ -96,9 +90,9 @@ def main():
     # train_swinir = True
 
     # config_path = '/home/mayanze/PycharmProjects/SwinTF/config/set5_mode1.yaml'
-    # config_path = '/home/mayanze/PycharmProjects/SwinTF/config/set5_mode2.yaml'
+    config_path = '/home/mayanze/PycharmProjects/SwinTF/config/set5_mode2.yaml'
     # config_path = '/home/mayanze/PycharmProjects/SwinTF/config/set5_mode3.yaml'
-    config_path = '/home/mayanze/PycharmProjects/SwinTF/config/Set5_ddp.yaml'
+    # config_path = '/home/mayanze/PycharmProjects/SwinTF/config/Set5_ddp.yaml'
     # config_path = '/home/mayanze/PycharmProjects/SwinTF/config/set5_x4.yaml'
 
     # config_path = '/home/mayanze/PycharmProjects/SwinTF/config/set5_debug.yaml'
@@ -110,6 +104,11 @@ def main():
     config = process_config(config)
 
     config['train']['dist'] = True
+    config['network']['mode'] = mode
+    if 'best_model' in config['train']:
+        config['train']['best_model'] = True
+    else:
+        config['train']['best_model'] = False
 
     if config['train']['dist']:
         # init_dist('pytorch')
@@ -127,14 +126,33 @@ def main():
             yaml.dump(config, file)
 
         if not DEBUG:
-            wandb.init(
-                project='SwinIR',
-                id=config['train']['wandb_id'],
-                name=config['train']['wandb_name'],
-                config=config,
-                resume='allow'
-            )
+            # Test connection to wandb server
+            try:
+                # Attempt to connect with a 10 second timeout
+                requests.get('https://api.wandb.ai', timeout=10)
+                wandb_mode = 'online'
+            except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
+                print('Could not connect to wandb server, running in offline mode')
+                wandb_mode = 'offline'
+                os.environ['WANDB_MODE'] = 'offline'
 
+            if wandb_mode == 'online':
+                wandb.init(
+                    project='SwinIR',
+                    id=config['train']['wandb_id'], 
+                    name=config['train']['wandb_name'],
+                    config=config,
+                    resume='allow'
+                )
+            elif wandb_mode == 'offline':
+                wandb.init(
+                    project='SwinIR',
+                    id=config['train']['wandb_id'], 
+                    name=config['train']['wandb_name'],
+                    config=config,
+                    resume='allow',
+                    dir='wandb_offline/'
+                )
     if train_swinir:
         config['train']['seed'] = 2024
         config['test']['seed'] = 2024
@@ -324,6 +342,7 @@ def main():
     # 5.3 开始训练
     smooth_loss = []
     running_loss = 0.0
+    best_loss = float('inf')
     for epoch in range(10000000000):
         if config['train']['dist']:
             train_sampler.set_epoch(epoch)
@@ -338,25 +357,25 @@ def main():
 
             scheduler.step(current_step)
 
-            if DEBUG:
-                # DEBUG 这里将 HR，LR 都保存出来
-                # 保存 HR
-                from PIL import Image
+            # if DEBUG:
+            #     # DEBUG 这里将 HR，LR 都保存出来
+            #     # 保存 HR
+            #     from PIL import Image
 
-                HR_image = train_HR.cpu().permute(0,2,3,1).numpy()
-                HR_image = HR_image[0]
-                HR_image = HR_image * 255
-                HR_image = HR_image.astype(np.uint8)
-                HR_image = Image.fromarray(HR_image)
-                HR_image.save('HR_image.png')
+            #     HR_image = train_HR.cpu().permute(0,2,3,1).numpy()
+            #     HR_image = HR_image[0]
+            #     HR_image = HR_image * 255
+            #     HR_image = HR_image.astype(np.uint8)
+            #     HR_image = Image.fromarray(HR_image)
+            #     HR_image.save('HR_image.png')
 
-                # 保存 LR
-                LR_image = train_LR.cpu().permute(0,2,3,1).numpy()
-                LR_image = LR_image[0]
-                LR_image = LR_image * 255
-                LR_image = LR_image.astype(np.uint8)
-                LR_image = Image.fromarray(LR_image)
-                LR_image.save('LR_image.png')
+            #     # 保存 LR
+            #     LR_image = train_LR.cpu().permute(0,2,3,1).numpy()
+            #     LR_image = LR_image[0]
+            #     LR_image = LR_image * 255
+            #     LR_image = LR_image.astype(np.uint8)
+            #     LR_image = Image.fromarray(LR_image)
+            #     LR_image.save('LR_image.png')
 
             y_adapt = y_adapt.cuda()
 
@@ -367,14 +386,14 @@ def main():
             else:
                 output = model.forward(train_LR, y_adapt)
 
-            if DEBUG:
-                # DEBUG 保存 output
-                output_img = output.clamp(0, 1).detach().cpu().permute(0,2,3,1).numpy()
-                output_img = output_img[0]
-                output_img = output_img * 255
-                output_img = output_img.astype(np.uint8)
-                output_img = Image.fromarray(output_img)
-                output_img.save('output.png')
+            # if DEBUG:
+            #     # DEBUG 保存 output
+            #     output_img = output.clamp(0, 1).detach().cpu().permute(0,2,3,1).numpy()
+            #     output_img = output_img[0]
+            #     output_img = output_img * 255
+            #     output_img = output_img.astype(np.uint8)
+            #     output_img = Image.fromarray(output_img)
+            #     output_img.save('output.png')
 
             loss = criterion(output, train_HR)
             loss.backward()
@@ -386,36 +405,43 @@ def main():
                 smooth_loss.pop(0)
             loss_smooth = sum(smooth_loss) / len(smooth_loss)
 
-            # 5.3.3 打印训练信息
-            if current_step % config['train']['step_print'] == 0 and config['train']['rank'] == 0:
-                print('Epoch: {:d}, Step: {:d}, Loss: {:.4f}, Smoothed Loss: {:.4f}, LR: {:.8f}'.format(epoch, current_step, loss.item(), loss_smooth, scheduler.get_last_lr()[0]))
-                wandb.log({"Epoch": epoch, "Step": current_step, "Loss": loss.item(), "Smoothed Loss": loss_smooth, "Learning Rate": scheduler.get_last_lr()[0]})
+            if not config['train']['best_model']:
+                # 5.3.3 打印训练信息
+                if current_step % config['train']['step_print'] == 0 and config['train']['rank'] == 0:
+                    print('Epoch: {:d}, Step: {:d}, Loss: {:.4f}, Smoothed Loss: {:.4f}, LR: {:.8f}'.format(epoch, current_step, loss.item(), loss_smooth, scheduler.get_last_lr()[0]))
+                    wandb.log({"Epoch": epoch, "Step": current_step, "Loss": loss.item(), "Smoothed Loss": loss_smooth, "Learning Rate": scheduler.get_last_lr()[0]})
 
-            # 5.3.4 保存模型
-            if current_step % config['train']['step_save'] == 0 and config['train']['rank'] == 0:
-                torch.save(model.state_dict(), os.path.join(config['train']['save_path'], '{:d}_model.pth'.format(current_step)))
-                torch.save(optimizer.state_dict(), os.path.join(config['train']['save_path'], '{:d}_optimizer.pth'.format(current_step)))
-            
-            # 5.3.5 测试模型
-            if current_step % config['train']['step_test'] == 0 and config['train']['rank'] == 0:
-                model.eval()
-                if train_swinir:
-                    if config['test']['test_LR'] == "BIC":
-                        avg_psnr = evaluate_with_hr(config['test']['test_HR'], model, config['train']['scale'])
+                # 5.3.4 保存模型
+                if current_step % config['train']['step_save'] == 0 and config['train']['rank'] == 0:
+                    torch.save(model.state_dict(), os.path.join(config['train']['save_path'], '{:d}_model.pth'.format(current_step)))
+                    torch.save(optimizer.state_dict(), os.path.join(config['train']['save_path'], '{:d}_optimizer.pth'.format(current_step)))
+
+                # 5.3.5 测试模型
+                if current_step % config['train']['step_test'] == 0 and config['train']['rank'] == 0:
+                    model.eval()
+                    if train_swinir:
+                        if config['test']['test_LR'] == "BIC":
+                            avg_psnr = evaluate_with_hr(config['test']['test_HR'], model, config['train']['scale'])
+                        else:
+                            avg_psnr = evaluate_with_lrhr_pair(config['test']['test_HR'], config['test']['test_LR'], model, config['train']['scale'])
+                        print('Epoch: {:d}, Step: {:d}, Avg PSNR: {:.4f}'.format(epoch, current_step, avg_psnr))
+                        wandb.log({"Epoch": epoch, "Step": current_step, "Avg PSNR": avg_psnr})
                     else:
-                        avg_psnr = evaluate_with_lrhr_pair(config['test']['test_HR'], config['test']['test_LR'], model, config['train']['scale'])
-                    print('Epoch: {:d}, Step: {:d}, Avg PSNR: {:.4f}'.format(epoch, current_step, avg_psnr))
-                    wandb.log({"Epoch": epoch, "Step": current_step, "Avg PSNR": avg_psnr})
-                else:
-                    if config['test']['test_LR'] == "BIC":
-                        raise ValueError("BIC is not supported for SwinIRAdapter")
-                    else:
-                        # avg_psnr = calculate_adapter_avg_psnr(test_set, model, yadapt=True, scale=config['train']['scale'], 
-                        #                                       save_img=True, save_name=config['train']['save_path'], save_step=current_step)
-                        avg_psnr = test_main(config_path, model, test_swinir=False)
-                    print('Epoch: {:d}, Step: {:d}, Avg PSNR: {:.4f}'.format(epoch, current_step, avg_psnr))
-                    wandb.log({"Epoch": epoch, "Step": current_step, "Avg PSNR": avg_psnr})
-                model.train()
+                        if config['test']['test_LR'] == "BIC":
+                            raise ValueError("BIC is not supported for SwinIRAdapter")
+                        else:
+                            avg_psnr = test_main(config_path, model, test_swinir=False)
+                        print('Epoch: {:d}, Step: {:d}, Avg PSNR: {:.4f}'.format(epoch, current_step, avg_psnr))
+                        wandb.log({"Epoch": epoch, "Step": current_step, "Avg PSNR": avg_psnr})
+                    model.train()
+            else:
+                if current_step % config['train']['step_print'] == 0 and config['train']['rank'] == 0:
+                    print('Epoch: {:d}, Step: {:d}, Loss: {:.4f}, Smoothed Loss: {:.4f}, LR: {:.8f}'.format(epoch, current_step, loss.item(), loss_smooth, scheduler.get_last_lr()[0]))
+                if loss.item() < best_loss and config['train']['rank'] == 0:
+                    best_loss = loss.item()
+                    torch.save(model.state_dict(), os.path.join(config['train']['save_path'], 'best_model.pth'))
+                    print('Best loss: {:.4f}'.format(best_loss))
+                    print('Best model saved to {}'.format(os.path.join(config['train']['save_path'], 'best_model.pth')))
 
 if __name__ == "__main__":
     main()

@@ -81,7 +81,7 @@ def calculate_adapter_avg_psnr(test_set, model, yadapt, scale, **save_opt):
     avg_psnr = total_psnr / len(test_set)
     return avg_psnr
 
-def evaluate_with_lrhr_pair(gt_path, lr_path, model):
+def evaluate_with_lrhr_pair(gt_path, lr_path, scale, model):
     # 载入测试图片，以及高清原图
     gt_img_path = [os.path.join(gt_path, x) for x in os.listdir(gt_path) if x.endswith('.png')]
     lr_img_path = [os.path.join(lr_path, x) for x in os.listdir(lr_path) if x.endswith('.png')]
@@ -123,7 +123,7 @@ def evaluate_with_lrhr_pair(gt_path, lr_path, model):
 
     print('Avg PSNR: {:.2f}'.format(sum(avg_psnr) / len(avg_psnr)))
 
-def evaluate_with_hr(gt_path, model):
+def evaluate_with_hr(gt_path, scale, model):
     gt_img_path = [os.path.join(gt_path, x) for x in os.listdir(gt_path) if x.endswith('.png')]
  
     gt_img_path = sorted(gt_img_path)
@@ -279,7 +279,7 @@ if __name__ == '__main__':
 
     model_path = '/home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20241204110254/500000_model.pth'
     model_paths = [model_path]
-    
+
     # model_paths = [
     #     '/home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20240803080852/525000_model.pth',
     #     '/home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20240803080852/520000_model.pth',
