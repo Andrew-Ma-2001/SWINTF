@@ -26,7 +26,7 @@ class ImageEncoderViT(nn.Module):
         img_size: int = 1024,
         patch_size: int = 16,
         in_chans: int = 3,
-        embed_dim: int = 768,
+        embed_dim: int = 768, # 1280 SAM 里面是 1280
         depth: int = 12,
         num_heads: int = 12,
         mlp_ratio: float = 4.0,

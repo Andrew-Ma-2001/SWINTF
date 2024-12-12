@@ -686,14 +686,16 @@ class SelfAttention(nn.Module):
         x_flatten = x.flatten(2).transpose(1, 2)    # B, HW, C
 
        ################### 2024-04-16 ##########################
-        q = self.q(self.norm1(x_flatten))  # B, HW, C
-        kv = self.kv(self.norm2(y_adapt_flatten)).view(batch_size, -1, 2, C)
+        # q = self.q(self.norm1(x_flatten))  # B, HW, C
+        # kv = self.kv(self.norm2(y_adapt_flatten)).view(batch_size, -1, 2, C)
+
+       #################### 2024-11-30 不用 norm ##########################
+        q = self.q(x_flatten)  # B, HW, C
+        kv = self.kv(y_adapt_flatten).view(batch_size, -1, 2, C)
         k, v = kv.unbind(2)  # B, HW, C
 
         attn = (q @ k.transpose(-2, -1)) / C #是C还是根号C看经验
         attn = attn.softmax(dim=-1)
-
-        # self.plot_attn(attn)
 
         out = (attn @ v)  # bug here
 
@@ -1159,7 +1161,7 @@ class SwinIRAdapter(nn.Module):
 
     def forward_features(self, x, y_adapt_feature):
         '''
-        y_adapt_feature: B, 2840, 3, 3
+        y_adapt_feature: B, 3840, 3, 3
         '''
         x_size = (x.shape[2], x.shape[3])
         x = self.patch_embed(x)
