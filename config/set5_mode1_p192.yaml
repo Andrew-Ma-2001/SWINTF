@@ -6,7 +6,7 @@ train:
   type: 'SwinIR'
   mode: 'train'
   scale: 2
-  patch_size: 96 # 48x2 
+  patch_size: 144 # 48x2 
 
   train_HR: 'dataset/trainsets/trainH/DIV2K'
   train_LR: 'dataset/trainsets/trainL/DIV2K/DIV2K_train_LR_bicubic'
@@ -15,7 +15,7 @@ train:
   shuffle: True
   num_workers: 16
 
-  gpu_ids: [0,1,2,3]
+  gpu_ids: [4,5,6,7]
 
   # ==================
   # Training parameters
@@ -25,7 +25,7 @@ train:
   lr: 0.0002 # 2e-4
   weight_decay: 0.0
   resume_optimizer: null
-  # resume_optimizer: '/home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20241127081357/180000_optimizer.pth'
+  # resume_optimizer: '/home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20241127065818/200000_optimizer.pth'
   step_save: 5000
   step_test: 5000 
   step_print: 200
@@ -39,21 +39,19 @@ train:
   save_path: 'experiments/'
 
   pretrained_sam: '/home/mayanze/PycharmProjects/SwinTF/sam_vit_h_4b8939.pth'
-  pretrained_sam_img_size: 48
+  pretrained_sam_img_size: 48 # 这个参数现在啥都不影响
 
   precomputed: True # 如果是 True，则默认保存在 train_LR 的文件夹下
   yadapt_use_cuda: False
-  
-  # 断点续训练
-  # best_model: True
-  # seed: 251986
-  # wandb_id: '20241127081357'
+
+  # seed: 297072
+  # wandb_id: '20241127065818'
   # wandb_name: "4\u5361SwinIRAdapter_1127"
 
 test:
   mode: 'test'
   scale: 2
-  patch_size: 96 # 32*2
+  patch_size: 192 # 32*2
 
   test_HR: 'dataset/testsets/Set5/GTmod12'
   test_LR: 'dataset/testsets/Set5/LRbicx2' # 这里要注意在数据读入的时候要有＋号，不然不知道是放大多少倍
@@ -63,22 +61,21 @@ test:
   num_workers: 1
 
   pretrained_sam: '/home/mayanze/PycharmProjects/SwinTF/sam_vit_h_4b8939.pth'
-  pretrained_sam_img_size: 48
+  pretrained_sam_img_size: 48 # 这个参数现在啥都不影响
 
   precomputed: True # 如果是 True，则默认保存在 test_LR 的文件夹下
   yadapt_use_cuda: False
-
-  # seed: 251986
+  # seed: 297072
   
 network:
-  mode: '1'
+  mode: '2'
   upsacle: 2
   in_channels: 3
   image_size: 48  # 照抄的，不知道是什么意思  1024 // 4 //  8 = 32
   window_size: 8
   image_range: 1.0 # 图像是 0-1 还是 0-255
   depths: [6,6,6,6,6,6] # depth 必须为 2 的倍数
-  embed_dim: 180 # 修改的部分
+  embed_dim: 180 
   num_heads: [6,6,6,6,6,6] # num_heads 必须为 2 的倍数
   mlp_ratio: 2
   upsampler: 'pixelshuffle'
@@ -88,6 +85,5 @@ network:
 
   # 断点续训练
   resume_network: null
-  # resume_network: '/home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20241127081357/180000_model.pth'
-
+  # resume_network: '/home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20241127065818/200000_model.pth'
   freeze_network: False

@@ -16,8 +16,8 @@ sys.path.append("/home/mayanze/PycharmProjects/SwinTF/")
 #     '/home/mayanze/PycharmProjects/SwinTF/config/Set14test.yaml'
 # ]
 # 还是用 yaml 控制
-config_path = sys.argv[1]
-# config_path = '/home/mayanze/PycharmProjects/SwinTF/config/urban100test.yaml'
+# config_path = sys.argv[1]
+config_path = '/home/mayanze/PycharmProjects/SwinTF/config/urban100test.yaml'
 
 # config_path = config_path_list[0]
 config_path_list = [config_path]

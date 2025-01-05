@@ -11,3 +11,4 @@ output/
 results/
 debug/
 wandb_offline/
+swanlog/

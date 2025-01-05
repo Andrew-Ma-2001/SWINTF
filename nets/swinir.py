@@ -477,9 +477,34 @@ class RSTB(nn.Module):
         self.patch_unembed = PatchUnEmbed(
             img_size=img_size, patch_size=patch_size, in_chans=0, embed_dim=dim,
             norm_layer=None)
+        
+    # def print_kernel_info(self):
+    #     """Print kernel information for conv layers"""
+    #     print("Conv layer kernel information:")
+    #     print(f"Weight shape: {self.conv.weight.shape}")
+    #     print(f"Weight values:\n{self.conv.weight.data}")
+    #     print(f"Weight statistics:")
+    #     print(f"  Mean: {self.conv.weight.mean():.4f}")
+    #     print(f"  Std:  {self.conv.weight.std():.4f}")
+    #     print(f"  Max:  {self.conv.weight.max():.4f}")
+    #     print(f"  Min:  {self.conv.weight.min():.4f}")
 
     def forward(self, x, x_size):
-        return self.patch_embed(self.conv(self.patch_unembed(self.residual_group(x, x_size), x_size))) + x
+        # return self.patch_embed(self.conv(self.patch_unembed(self.residual_group(x, x_size), x_size))) + x
+        # Step 1: Apply residual group
+        residual = self.residual_group(x, x_size) # 这一步 std 变化不是特别大 0.3 上下
+        
+        # Step 2: Convert from patches back to image
+        residual_img = self.patch_unembed(residual, x_size)
+        
+        # Step 3: Apply convolution
+        residual_conv = self.conv(residual_img) # 主要是这一步，std 变化很大
+        
+        # Step 4: Convert back to patches
+        residual_patches = self.patch_embed(residual_conv)
+        
+        # Step 5: Add residual connection
+        return residual_patches + x
 
     def flops(self):
         flops = 0
@@ -1078,15 +1103,51 @@ class SwinIRAdapter(nn.Module):
         self.y_adapt_feature_size = y_adapt_feature
         self.yadapt_batch_norm = nn.BatchNorm2d(180)
 
-        self.self_attention = nn.ModuleList([
-            SelfAttention(180),
-            SelfAttention(180),
-            SelfAttention(180),
-            SelfAttention(180),
-            SelfAttention(180),
-            SelfAttention(180),
-        ])
-        #################### modified 2024/03/28  原view有问题（不能跟原图pixel level对齐），改用pixelshuffle，
+        # self.self_attention = nn.ModuleList([
+        #     SelfAttention(256),
+        #     SelfAttention(256),
+        #     SelfAttention(256),
+        #     SelfAttention(256),
+        #     SelfAttention(256),
+        #     SelfAttention(256),
+        # ])
+        # #################### modified 2024/03/28  原view有问题（不能跟原图pixel level对齐），改用pixelshuffle，
+        # self.adapt_conv_first = nn.ModuleList([
+        #     nn.Conv2d(3840, 1280, kernel_size=1),
+        #     nn.Conv2d(3840, 1280, kernel_size=1),
+        #     nn.Conv2d(3840, 1280, kernel_size=1),
+        #     nn.Conv2d(3840, 1280, kernel_size=1),
+        #     nn.Conv2d(3840, 1280, kernel_size=1),
+        #     nn.Conv2d(3840, 1280, kernel_size=1),
+        # ])
+
+        # self.adapt_conv_last = nn.ModuleList([
+        #     nn.Conv2d(1280, 256, kernel_size=1),
+        #     nn.Conv2d(1280, 256, kernel_size=1),
+        #     nn.Conv2d(1280, 256, kernel_size=1),
+        #     nn.Conv2d(1280, 256, kernel_size=1),
+        #     nn.Conv2d(1280, 256, kernel_size=1),
+        #     nn.Conv2d(1280, 256, kernel_size=1),
+        # ])
+
+        # self.x_conv_first = nn.ModuleList([
+        #     nn.Conv2d(180, 256, kernel_size=1),
+        #     nn.Conv2d(180, 256, kernel_size=1),
+        #     nn.Conv2d(180, 256, kernel_size=1),
+        #     nn.Conv2d(180, 256, kernel_size=1),
+        #     nn.Conv2d(180, 256, kernel_size=1),
+        #     nn.Conv2d(180, 256, kernel_size=1),
+        # ])
+
+        # self.x_conv_last = nn.ModuleList([
+        #     nn.Conv2d(256, 180, kernel_size=1),
+        #     nn.Conv2d(256, 180, kernel_size=1),
+        #     nn.Conv2d(256, 180, kernel_size=1),
+        #     nn.Conv2d(256, 180, kernel_size=1),
+        #     nn.Conv2d(256, 180, kernel_size=1),
+        #     nn.Conv2d(256, 180, kernel_size=1),
+        # ])
+
         self.adapt_conv = nn.ModuleList([
             nn.Conv2d(3840, 180, kernel_size=1),
             nn.Conv2d(3840, 180, kernel_size=1),
@@ -1094,6 +1155,15 @@ class SwinIRAdapter(nn.Module):
             nn.Conv2d(3840, 180, kernel_size=1),
             nn.Conv2d(3840, 180, kernel_size=1),
             nn.Conv2d(3840, 180, kernel_size=1),
+        ])
+
+        self.adapt_self_attention = nn.ModuleList([
+            SelfAttention(180),
+            SelfAttention(180),
+            SelfAttention(180),
+            SelfAttention(180),
+            SelfAttention(180),
+            SelfAttention(180),
         ])
 
         # build the last conv layer in deep feature extraction
@@ -1169,7 +1239,6 @@ class SwinIRAdapter(nn.Module):
             x = x + self.absolute_pos_embed
         x = self.pos_drop(x)
 
-        # idx = 0
         for idx, layer in enumerate(self.layers):
             x = layer(x, x_size) # torch.Size([1, 4096, 256])
 
@@ -1179,19 +1248,22 @@ class SwinIRAdapter(nn.Module):
             if y_adapt_feature is not None:
                 x = self.patch_unembed(x, x_size)  # torch.Size([1, 180, 48, 48])
 
-                if self.training:
-                    y_adapt = self.adapt_conv[idx](y_adapt_feature) # B, 180, 3, 3
-                    x = self.self_attention[idx](y_adapt, x)
+                # Apply ReLU after the convolution, not before
+                # y_adapt = self.adapt_conv_first[idx](y_adapt_feature)
+                # y_adapt = F.relu(y_adapt)  # Apply ReLU after conv
+                # y_adapt = self.adapt_conv_last[idx](y_adapt)
+                # x = self.x_conv_first[idx](x)
+                # x = self.self_attention[idx](y_adapt, x)
+                # x = self.x_conv_last[idx](x)
 
-                else:
-                    y_adapt = self.adapt_conv[idx](y_adapt_feature)
-                    x = self.self_attention[idx](y_adapt, x)
+                y_adapt = self.adapt_conv[idx](y_adapt_feature)
+                x = self.adapt_self_attention[idx](y_adapt, x)
 
-                    # y_adapt = y_adapt.view(-1, 180, 48, 48)
-                    # y_adapt = self.yadapt_batch_norm(y_adapt)
-                    # Reshape 回去
-                    # y_adapt1 = y_adapt.view(1, 10, 10, 180, 48, 48)
-                    # y_adapt2 = y_adapt1.permute(0, 3, 1, 4, 2, 5).contiguous().view(1, 180, 10*48, 10*48)
+                # y_adapt = y_adapt.view(-1, 180, 48, 48)
+                # y_adapt = self.yadapt_batch_norm(y_adapt)
+                # Reshape 回去
+                # y_adapt1 = y_adapt.view(1, 10, 10, 180, 48, 48)
+                # y_adapt2 = y_adapt1.permute(0, 3, 1, 4, 2, 5).contiguous().view(1, 180, 10*48, 10*48)
 
                 ################ 2024-03-23 ####################
                 ## x = self.patch_embed(x)
