@@ -54,49 +54,29 @@ class SelfAttention(nn.Module):
 class YAdaptPixelShuffle(nn.Module):
     def __init__(self, in_channels=3840, out_channels=180):
         super().__init__()
-        # Stage 1: 3840 -> 3840 -> 960 (6x6)
-        self.conv1 = nn.Conv2d(in_channels, in_channels*2, kernel_size=1)
-        self.pixel_shuffle1 = nn.PixelShuffle(2)  # 3840 -> 960, 3x3 -> 6x6
+        # Stage 1: 3840 -> 3840 -> 960 (12x12) 
+        self.conv1 = nn.Conv2d(in_channels, in_channels, kernel_size=1)
+        self.pixel_shuffle1 = nn.PixelShuffle(2)  # 3840 -> 240, 3x3 -> 12x12
         
-        # Stage 2: 960 -> 960 -> 240 (12x12)
-        self.conv2 = nn.Conv2d(in_channels//2, in_channels, kernel_size=1)
-        self.pixel_shuffle2 = nn.PixelShuffle(2)  # 960 -> 240, 6x6 -> 12x12
-        
-        # Stage 3: 90 -> 240 -> 60 (24x24)
-        self.conv3 = nn.Conv2d(in_channels//4, in_channels//2, kernel_size=1)
-        self.pixel_shuffle3 = nn.PixelShuffle(2)  # 240 -> 60, 12x12 -> 24x24
-        
-        # Final stage: 60 -> 720 -> 180 (48x48)
-        self.conv4 = nn.Conv2d(in_channels//8, out_channels*4, kernel_size=1)
-        self.final_shuffle = nn.PixelShuffle(2)  # 720 -> 180, 24x24 -> 48x48
+        # Final stage: 240 -> 720 -> 180 (48x48)
+        self.conv2 = nn.Conv2d(in_channels//4, out_channels*4, kernel_size=1) 
+        self.final_shuffle = nn.PixelShuffle(2)  # 720 -> 180, 12x12 -> 48x48
         
         # Normalization and activation
         self.norm = nn.BatchNorm2d(out_channels)
         self.act = nn.ReLU(inplace=True)
         
-        # Add intermediate activations
+        # Add intermediate activation
         self.act1 = nn.ReLU(inplace=True)
-        self.act2 = nn.ReLU(inplace=True)
-        self.act3 = nn.ReLU(inplace=True)
 
     def forward(self, x):
-        # Stage 1: 3840 -> 480
-        x = self.conv1(x)  # B, 1920, 3, 3
+        # Stage 1: 3840 -> 240
+        x = self.conv1(x)  # B, 15360, 3, 3
         x = self.act1(x)
-        x = self.pixel_shuffle1(x)  # B, 480, 6, 6
+        x = self.pixel_shuffle1(x)  # B, 240, 12, 12
         
-        # Stage 2: 480 -> 90
-        x = self.conv2(x)  # B, 360, 6, 6
-        x = self.act2(x)
-        x = self.pixel_shuffle2(x)  # B, 90, 12, 12
-        
-        # Stage 3: 90 -> 60
-        x = self.conv3(x)  # B, 240, 12, 12
-        x = self.act3(x)
-        x = self.pixel_shuffle3(x)  # B, 60, 24, 24
-        
-        # Final stage: 60 -> 180
-        x = self.conv4(x)  # B, 720, 24, 24
+        # Final stage: 240 -> 180
+        x = self.conv2(x)  # B, 720, 12, 12
         x = self.final_shuffle(x)  # B, 180, 48, 48
         x = self.norm(x)
         x = self.act(x)
