@@ -12,11 +12,11 @@ from data.dataloader import SuperResolutionYadaptDataset
 from torch.utils.data import DataLoader
 from torch.utils.data.distributed import DistributedSampler
 from torch.nn.utils import clip_grad_norm_
-from nets.swinir import SwinIRAdapter, SwinIR
+from nets.swinir import SwinIR
 from utils.utils_dist import *
 from utils.utils_data import print_config_as_table, load_config
 from predict import evaluate_with_lrhr_pair, evaluate_with_hr
-from predict_adapter import calculate_adapter_avg_psnr
+
 import warnings
 from main_test_swinir import test_main
 # Filter out the specific warning
@@ -31,21 +31,37 @@ parser.add_argument('--train_swinir', action='store_true', default=False, help='
 # parser.add_argument('--launcher', default='pytorch', help='job launcher')
 # parser.add_argument('--dist', default='store_true')
 parser.add_argument('--local-rank', type=int, default=0)
+parser.add_argument('--mode', type=int, default=1, help='Mode for training')
+parser.add_argument('--swinir_mode', type=str, default='swinir', help='Mode for SwinIR model')
+parser.add_argument('--config', type=str, required=True, help='Path to config file')
+parser.add_argument('--gpu', type=str, default='0', help='GPU id(s) to use (comma-separated, e.g., "0,1,2,3")')
 
 args = parser.parse_args()
 
 
-# DEBUG = args.debug
-DEBUG = False
+DEBUG = args.debug
 train_swinir = args.train_swinir
 
-mode = 2 # TODO: 修改 mode
+mode = args.mode # TODO: 修改 mode
+swinir_mode = args.swinir_mode
+config_path = args.config
+gpus = args.gpu
+
+if swinir_mode == 'swinir':
+    from nets.swinir import SwinIRAdapter
+elif swinir_mode == 'strong_norm':
+    from nets.swinir_strongnorm import SwinIRStrongNorm as SwinIRAdapter
+elif swinir_mode == 'pixelshuffle':
+    from nets.swinir_pixelshuffel import SwinIRPixelShuffel as SwinIRAdapter
+
 
 print('Using train_swinir: {}'.format(train_swinir))
 
     
 def process_config(config):
     config['train']['resume'] = config['train'].get('resume_optimizer') is not None and config['network'].get('resume_network') is not None
+    config['train']['gpu_ids'] = [int(x.strip()) for x in gpus.split(',')]
+
 
     os.environ['CUDA_VISIBLE_DEVICES'] = ','.join(str(x) for x in config['train']['gpu_ids'])
 
@@ -90,7 +106,7 @@ def main():
     # train_swinir = True
 
     # config_path = '/home/mayanze/PycharmProjects/SwinTF/config/set5_mode1.yaml'
-    config_path = '/home/mayanze/PycharmProjects/SwinTF/config/set5_mode2.yaml'
+    # config_path = '/home/mayanze/PycharmProjects/SwinTF/config/set5_mode1_p192.yaml'
     # config_path = '/home/mayanze/PycharmProjects/SwinTF/config/set5_mode3.yaml'
     # config_path = '/home/mayanze/PycharmProjects/SwinTF/config/Set5_ddp.yaml'
     # config_path = '/home/mayanze/PycharmProjects/SwinTF/config/set5_x4.yaml'

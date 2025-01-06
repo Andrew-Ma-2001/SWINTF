@@ -15,8 +15,6 @@ train:
   shuffle: True
   num_workers: 0
 
-  gpu_ids: [1]
-
   # ==================
   # Training parameters
   # ==================
@@ -25,11 +23,11 @@ train:
   lr: 0.0002 # 2e-4
   weight_decay: 0.0
   # resume_optimizer: '/home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20240803080852/500000_optimizer.pth'
-  resume_optimizer: '/home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20240813062655/110000_optimizer.pth'
-  # resume_optimizer: null
+  # resume_optimizer: '/home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20240813062655/110000_optimizer.pth'
+  resume_optimizer: null
   step_save: 5000
-  step_test: 1000 
-  step_print: 200
+  step_test: 20 
+  step_print: 1000
   # ==================
   # Training scheduler
   # ==================
@@ -44,9 +42,9 @@ train:
 
   precomputed: True # 如果是 True，则默认保存在 train_LR 的文件夹下
   yadapt_use_cuda: False
-  wandb_id: '20240711131824'
-  wandb_name: "4\u5361SwinIRAdapter_0711"
-  seed: 2024
+  # wandb_id: '20240711131824'
+  # wandb_name: "4\u5361SwinIRAdapter_0711"
+  # seed: 2024
 
 test:
   mode: 'test'
@@ -54,7 +52,7 @@ test:
   patch_size: 96 # 32*2
 
   test_HR: '/home/mayanze/PycharmProjects/SwinTF/debug/hr'
-  test_LR: '/home/mayanze/PycharmProjects/SwinTF/debug/noise_sigma_0_150_general'
+  test_LR: '/home/mayanze/PycharmProjects/SwinTF/debug/lr'
 
   batch_size: 1
   shuffle: False
@@ -81,6 +79,6 @@ network:
   resi_connection: '1conv'
   # 断点续训练
   # resume_network: '/home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20240803080852/500000_model.pth'
-  resume_network: '/home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20240813062655/110000_model.pth'
-  # resume_network: null
+  # resume_network: '/home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20240813062655/110000_model.pth'
+  resume_network: null
   freeze_network: False

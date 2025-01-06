@@ -78,10 +78,16 @@ class ImagePreprocessor:
             # Slice the image into 1024x1024 patches
             patches = self.create_patches(self.pad_img, self.target_size)
             tensor_img = torch.tensor(np.array(patches), device=device).permute(0, 3, 1, 2).contiguous()
+            # Check if image range is 0-1 or 0-255
+            if tensor_img.max() <= 1.0:
+                tensor_img = tensor_img * 255.0
             tensor_img = (tensor_img - self.pixel_mean) / self.pixel_std
             return tensor_img
         else:
             img = torch.tensor(self.pad_img, device=device).permute(2, 0, 1).contiguous()[None, :, :, :]
+            # Check if image range is 0-1 or 0-255 
+            if img.max() <= 1.0:
+                img = img * 255.0
             img = (img - self.pixel_mean) / self.pixel_std
             return img
 

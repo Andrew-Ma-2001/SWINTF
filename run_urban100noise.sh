@@ -9,12 +9,13 @@ config_dir='/home/mayanze/PycharmProjects/SwinTF/config/urban100_test/noise'
 # txt_file="set14_noise_adapter.txt"
 # txt_file="set14_noise_swinir.txt"
 # txt_file="urban100_noise_swinir.txt"
-txt_file="urban100_noise_adapter_mode2.txt"
+txt_file="urban100_noise_adapter_network.txt"
 
 # Mode 1
 # model_path="/home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20241130143441/500000_model.pth"
 # Mode 2
-model_path='/home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20241204110254/500000_model.pth'
+# model_path='/home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20241212143215/500000_model.pth'
+model_path='/home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20241213152340/500000_model.pth'
 
 
 # Set up a mode for different commands
@@ -25,7 +26,7 @@ mode="adapter"
 swinir_path="/home/mayanze/PycharmProjects/SwinTF/001_classicalSR_DIV2K_s48w8_SwinIR-M_x2.pth"
 yaml_files=($(find "$config_dir" -type f -name "*.yaml" | sort))
 # Assign 8 GPUs, split into four groups
-gpu_ids=('4' '5' '6' '7')
+gpu_ids=('0' '1' '2' '3')
 
 # Function to run the command and save the last two lines of output
 run_command() {
