@@ -5,7 +5,7 @@ import os
 import sys
 sys.path.append('/home/mayanze/PycharmProjects/SwinTF/')
 from PIL import Image
-from utils.utils_data import get_all_images, process_batch
+from utils.utils_data import get_all_images
 from data.extract_sam_features import extract_sam_model
 from utils.utils_image import augment_img, imresize_np
 
@@ -68,7 +68,7 @@ class ImagePreprocessor:
     def reshape_yadapt_feature(self, total_yadapt_feature):
         # Now i have a [x, 3840, 64, 64] change it to [3840, 64*x, 64*x]
         x = total_yadapt_feature.shape[0]
-        large_img = np.zeros((3840, 64*x, 64*x))
+        large_img = np.zeros((total_yadapt_feature.shape[1], 64*x, 64*x))
         for i in range(x):
             large_img[:, i*64:i*64+64, i*64:i*64+64] = total_yadapt_feature[i]
         return large_img
@@ -104,13 +104,13 @@ class ImagePreprocessor:
         self.target_size = None
         self.pad_img = None
 
-def train_precompute():
-    os.environ['CUDA_VISIBLE_DEVICES'] = '0,1,6,7'
-    LR_path = '/home/mayanze/PycharmProjects/SwinTF/dataset/trainsets/trainL/DIV2K/DIV2K_train_LR_bicubic/X4'
+def train_precompute(use_vit=False, scale=2):
+    os.environ['CUDA_VISIBLE_DEVICES'] = '5,6,7'
+    LR_path = '/home/mayanze/PycharmProjects/SwinTF/dataset/trainsets/trainL/DIV2K/DIV2K_train_LR_bicubic/X'+str(scale)
     LR_size = 48
     pretrained_sam_img_size = 48
     use_cuda = True
-    save_path = LR_path + '_yadapt_aug_whole_img' 
+    save_path = LR_path + '_yadapt_aug_whole_img_vit' if use_vit else LR_path + '_yadapt_aug_whole_img'  #XXX 改回来
     model = extract_sam_model(model_path='/home/mayanze/PycharmProjects/SwinTF/sam_vit_h_4b8939.pth', image_size = 1024)
     model = model.cuda()
     model.image_encoder = torch.nn.DataParallel(model.image_encoder)
@@ -132,14 +132,21 @@ def train_precompute():
                 LR_image = augment_img(LR_image, mode)
                 preprocessor.set_image(LR_image)
                 torch_img = preprocessor.preprocess_image_v2(device='cuda')
-                _, y1, y2, y3 = model.image_encoder(torch_img)
-                # Concate y1 y2 y3 by torch
-                y = torch.cat([y1, y2, y3], dim=1)
+
+                if use_vit:
+                    x, _, _, _ = model.image_encoder(torch_img)
+                    y = x
+                else:
+                    _, y1, y2, y3 = model.image_encoder(torch_img)
+                    # Concate y1 y2 y3 by torch
+                    y = torch.cat([y1, y2, y3], dim=1)
                 y = y.cpu().numpy()
+                # breakpoint()
                 y = preprocessor.slice_yadapt_features(y)
                 # Save y to the save_path
                 save_name = os.path.join(save_path, os.path.basename(LR_images[idx]).split(".")[0]+'_'+str(mode)+'_yadapt.npy')
                 np.save(save_name, y)
+                # breakpoint()
                 print('Save {}'.format(save_name))
                 preprocessor.clear_image()
 
@@ -378,7 +385,7 @@ def check_test_precompute():
 
 if __name__ == '__main__':
     # test_precompute()
-    train_precompute()
+    train_precompute(use_vit=True)
 #     from PIL import Image
 #     # check_train_precompute()
 #     preprocessor = ImagePreprocessor()
