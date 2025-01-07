@@ -133,14 +133,14 @@ class SuperResolutionYadaptDataset(Dataset):
 
         # 默认数据已经算好了
         if self.LR_path == 'BIC':
-            if config['swinir_mode'] == 'swinir':
+            if config['train']['swinir_mode'] == 'swinir':
                 self.save_path = self.HR_path + '_yadapt_aug_whole_img'
-            elif config['swinir_mode'] == 'newfeature':
+            elif config['train']['swinir_mode'] == 'newfeature':
                 self.save_path = self.HR_path + '_yadapt_aug_whole_img_vit'
         else:
-            if config['swinir_mode'] == 'swinir':
+            if config['train']['swinir_mode'] == 'swinir':
                 self.save_path = self.LR_path + '_yadapt_aug_whole_img'
-            elif config['swinir_mode'] == 'newfeature':
+            elif config['train']['swinir_mode'] == 'newfeature':
                 self.save_path = self.LR_path + '_yadapt_aug_whole_img_vit'
 
         # TODO 把这个参数写在外面
