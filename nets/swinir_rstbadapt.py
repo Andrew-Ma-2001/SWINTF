@@ -9,7 +9,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 # import torch.utils.checkpoint as checkpoint
 from timm.models.layers import trunc_normal_
-from nets.swinir import RSTB, PatchEmbed, PatchUnEmbed, Upsample, UpsampleOneStep
+from swinir import RSTB, PatchEmbed, PatchUnEmbed, Upsample, UpsampleOneStep
 
 
 class SelfAttention(nn.Module):
@@ -21,6 +21,31 @@ class SelfAttention(nn.Module):
         self.kv = nn.Linear(in_channels, in_channels*2)
         self.proj = nn.Linear(in_channels, in_channels)
         self.tau = nn.Parameter(torch.zeros(1))
+        # self.mlp = nn.Sequential(
+        #     nn.Linear(in_channels, in_channels),
+        #     nn.ReLU(),
+        #     nn.Linear(in_channels, 1),
+        # )
+        # # self.mlp[-1].weight.zero_()
+        # self.mlp[-1].weight = nn.Parameter(torch.zeros_like(self.mlp[-1].weight))
+        # # self.mlp[-1].bias.zero_()
+        # self.mlp[-1].bias = nn.Parameter(torch.zeros_like(self.mlp[-1].bias))
+
+    def plot_attn(self, attn):
+        import matplotlib.pyplot as plt
+        # PLot attn
+        attn_avg = attn[0].detach().cpu().numpy() # Select the first exampl
+        # Reshape the attention map to the original spatial dimensions
+        # Assuming the original spatial dimensions are 48x48
+        H, W = 48, 48
+        attn_map = attn_avg.reshape(H, W, H, W).mean(axis=2).mean(axis=0)
+        # Plot the heatmap
+        plt.figure(figsize=(10, 10))
+        plt.imshow(attn_map, cmap='viridis')
+        plt.colorbar()
+        plt.title('Attention Heatmap')
+        plt.show()
+        plt.savefig('attn.png')
 
     def forward(self, y_adapt, x):
         '''
@@ -43,15 +68,44 @@ class SelfAttention(nn.Module):
 
         attn = (q @ k.transpose(-2, -1)) / C #是C还是根号C看经验
         attn = attn.softmax(dim=-1)
+        breakpoint()
         out = (attn @ v)  # bug here
 
        ################### 2024-08-07 ##########################
+        # mode 0: no hyperparameter exit
+        # out = self.proj(out).transpose(-1, -2).reshape(batch_size, -1, height, width) + x
+
+        
         # mode 1: static hyperparameter
         out = self.tau * self.proj(out).transpose(-1, -2).reshape(batch_size, -1, height, width) + x
+
+        # mode 2: dynamic hyperparameter
+        # tau = self.mlp(q.mean(1, keepdim=True))
+        # out = (tau * self.proj(out)).transpose(-1, -2).reshape(batch_size, -1, height, width) + x
+
+        # mode 3: pixel-wise hyperparameter
+        # tau = self.mlp(q)
+        # out = (tau * self.proj(out)).transpose(-1, -2).reshape(batch_size, -1, height, width) + x
+
+        # self.proj(out).shape
+        # torch.Size([8, 2304, 180])
+        # x.shape
+        # torch.Size([8, 180, 48, 48])
+
+        # mode 2
+        # batch_size, C, width, height = x.size()
+        # query = self.query_conv(x).view(batch_size, -1, width * height).permute(0, 2, 1)
+        # key = self.key_conv(y_adapt).view(batch_size, -1, width * height)
+        # energy = torch.bmm(query, key) / math.sqrt(C)
+        # attention = self.softmax(energy)
+        # value = self.value_conv(y_adapt).view(batch_size, -1, width * height)
+        # out = torch.bmm(value, attention.permute(0, 2, 1))
+        # out = out.view(batch_size, C, width, height)
+
         return out
 
 
-class SwinIRNewFeature(nn.Module):
+class SwinIRAdapter(nn.Module):
     r""" SwinIR
         A PyTorch impl of : `SwinIR: Image Restoration Using Swin Transformer`, based on Swin Transformer.
 
@@ -86,7 +140,7 @@ class SwinIRNewFeature(nn.Module):
                  norm_layer=nn.LayerNorm, ape=False, patch_norm=True,
                  use_checkpoint=False, upscale=2, img_range=1., upsampler='', resi_connection='1conv', y_adapt_feature=None,
                  **kwargs):
-        super(SwinIRNewFeature, self).__init__()
+        super(SwinIRAdapter, self).__init__()
         num_in_ch = in_chans
         num_out_ch = in_chans
         num_feat = 64
@@ -163,14 +217,58 @@ class SwinIRNewFeature(nn.Module):
         self.y_adapt_feature_size = y_adapt_feature
         self.yadapt_batch_norm = nn.BatchNorm2d(180)
 
+        # self.self_attention = nn.ModuleList([
+        #     SelfAttention(256),
+        #     SelfAttention(256),
+        #     SelfAttention(256),
+        #     SelfAttention(256),
+        #     SelfAttention(256),
+        #     SelfAttention(256),
+        # ])
         # #################### modified 2024/03/28  原view有问题（不能跟原图pixel level对齐），改用pixelshuffle，
+        # self.adapt_conv_first = nn.ModuleList([
+        #     nn.Conv2d(3840, 1280, kernel_size=1),
+        #     nn.Conv2d(3840, 1280, kernel_size=1),
+        #     nn.Conv2d(3840, 1280, kernel_size=1),
+        #     nn.Conv2d(3840, 1280, kernel_size=1),
+        #     nn.Conv2d(3840, 1280, kernel_size=1),
+        #     nn.Conv2d(3840, 1280, kernel_size=1),
+        # ])
+
+        # self.adapt_conv_last = nn.ModuleList([
+        #     nn.Conv2d(1280, 256, kernel_size=1),
+        #     nn.Conv2d(1280, 256, kernel_size=1),
+        #     nn.Conv2d(1280, 256, kernel_size=1),
+        #     nn.Conv2d(1280, 256, kernel_size=1),
+        #     nn.Conv2d(1280, 256, kernel_size=1),
+        #     nn.Conv2d(1280, 256, kernel_size=1),
+        # ])
+
+        # self.x_conv_first = nn.ModuleList([
+        #     nn.Conv2d(180, 256, kernel_size=1),
+        #     nn.Conv2d(180, 256, kernel_size=1),
+        #     nn.Conv2d(180, 256, kernel_size=1),
+        #     nn.Conv2d(180, 256, kernel_size=1),
+        #     nn.Conv2d(180, 256, kernel_size=1),
+        #     nn.Conv2d(180, 256, kernel_size=1),
+        # ])
+
+        # self.x_conv_last = nn.ModuleList([
+        #     nn.Conv2d(256, 180, kernel_size=1),
+        #     nn.Conv2d(256, 180, kernel_size=1),
+        #     nn.Conv2d(256, 180, kernel_size=1),
+        #     nn.Conv2d(256, 180, kernel_size=1),
+        #     nn.Conv2d(256, 180, kernel_size=1),
+        #     nn.Conv2d(256, 180, kernel_size=1),
+        # ])
+
         self.adapt_conv = nn.ModuleList([
-            nn.Conv2d(256, 180, kernel_size=1),
-            nn.Conv2d(256, 180, kernel_size=1),
-            nn.Conv2d(256, 180, kernel_size=1),
-            nn.Conv2d(256, 180, kernel_size=1),
-            nn.Conv2d(256, 180, kernel_size=1),
-            nn.Conv2d(256, 180, kernel_size=1),
+            nn.Conv2d(3840, 180, kernel_size=1),
+            nn.Conv2d(3840, 180, kernel_size=1),
+            nn.Conv2d(3840, 180, kernel_size=1),
+            nn.Conv2d(3840, 180, kernel_size=1),
+            nn.Conv2d(3840, 180, kernel_size=1),
+            nn.Conv2d(3840, 180, kernel_size=1),
         ])
 
         self.adapt_self_attention = nn.ModuleList([
@@ -273,7 +371,6 @@ class SwinIRNewFeature(nn.Module):
                 # x = self.x_conv_last[idx](x)
 
                 y_adapt = self.adapt_conv[idx](y_adapt_feature)
-                y_adapt = F.relu(y_adapt)
                 x = self.adapt_self_attention[idx](y_adapt, x)
 
                 # y_adapt = y_adapt.view(-1, 180, 48, 48)

@@ -9,7 +9,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 # import torch.utils.checkpoint as checkpoint
 from timm.models.layers import trunc_normal_
-from swinir import RSTB, PatchEmbed, PatchUnEmbed, Upsample, UpsampleOneStep
+from nets.swinir import RSTB, PatchEmbed, PatchUnEmbed, Upsample, UpsampleOneStep
 
 
 class SelfAttention(nn.Module):
