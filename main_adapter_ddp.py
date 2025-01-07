@@ -87,7 +87,7 @@ def process_config(config):
         config['test']['seed'] = seed
         print('Using seed: {}'.format(seed))
         date = time.strftime('%m%d', time.localtime()) 
-        wandb_name = f'{len(config["train"]["gpu_ids"])}卡SwinIRAdapter_{date}'
+        wandb_name = f'{len(config["train"]["gpu_ids"])}卡SA_{date}' + '_' + config['train']['swinir_mode']
         detail_date = time.strftime('%Y%m%d%H%M%S', time.localtime())
         wandb_id = f'{detail_date}'
         config['train']['wandb_name'] = wandb_name
