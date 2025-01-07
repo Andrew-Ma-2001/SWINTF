@@ -63,7 +63,7 @@ def process_config(config):
     config['train']['resume'] = config['train'].get('resume_optimizer') is not None and config['network'].get('resume_network') is not None
     config['train']['gpu_ids'] = [int(x.strip()) for x in gpus.split(',')]
     config['train']['swinir_mode'] = swinir_mode
-
+    config['test']['swinir_mode'] = swinir_mode
     os.environ['CUDA_VISIBLE_DEVICES'] = ','.join(str(x) for x in config['train']['gpu_ids'])
 
     if torch.cuda.is_available():
