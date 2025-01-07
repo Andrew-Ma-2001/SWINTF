@@ -109,17 +109,6 @@ class SuperResolutionYadaptDataset(Dataset):
             self.model = self.model.cuda()
             self.model.image_encoder = torch.nn.DataParallel(self.model.image_encoder)
 
-        # 默认数据已经算好了
-        if self.LR_path == 'BIC':
-            if config['swinir_mode'] == 'swinir':
-                self.save_path = self.HR_path + '_yadapt_aug_whole_img'
-            elif config['swinir_mode'] == 'newfeature':
-                self.save_path = self.HR_path + '_yadapt_aug_whole_img_vit'
-        else:
-            if config['swinir_mode'] == 'swinir':
-                self.save_path = self.LR_path + '_yadapt_aug_whole_img'
-            elif config['swinir_mode'] == 'newfeature':
-                self.save_path = self.LR_path + '_yadapt_aug_whole_img_vit'
 
         if self.mode == 'train':
             self.HR_path = config['train_HR'] # 'dataset/trainsets/trainH/DIV2K'
@@ -141,6 +130,18 @@ class SuperResolutionYadaptDataset(Dataset):
             self.LR_path = config['pred_LR']
 
             assert os.path.exists(self.LR_path), "LR_path should exist"
+
+        # 默认数据已经算好了
+        if self.LR_path == 'BIC':
+            if config['swinir_mode'] == 'swinir':
+                self.save_path = self.HR_path + '_yadapt_aug_whole_img'
+            elif config['swinir_mode'] == 'newfeature':
+                self.save_path = self.HR_path + '_yadapt_aug_whole_img_vit'
+        else:
+            if config['swinir_mode'] == 'swinir':
+                self.save_path = self.LR_path + '_yadapt_aug_whole_img'
+            elif config['swinir_mode'] == 'newfeature':
+                self.save_path = self.LR_path + '_yadapt_aug_whole_img_vit'
 
         # TODO 把这个参数写在外面
         self.overlap = 0
