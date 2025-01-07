@@ -109,6 +109,18 @@ class SuperResolutionYadaptDataset(Dataset):
             self.model = self.model.cuda()
             self.model.image_encoder = torch.nn.DataParallel(self.model.image_encoder)
 
+        # 默认数据已经算好了
+        if self.LR_path == 'BIC':
+            if config['swinir_mode'] == 'swinir':
+                self.save_path = self.HR_path + '_yadapt_aug_whole_img'
+            elif config['swinir_mode'] == 'newfeature':
+                self.save_path = self.HR_path + '_yadapt_aug_whole_img_vit'
+        else:
+            if config['swinir_mode'] == 'swinir':
+                self.save_path = self.LR_path + '_yadapt_aug_whole_img'
+            elif config['swinir_mode'] == 'newfeature':
+                self.save_path = self.LR_path + '_yadapt_aug_whole_img_vit'
+
         if self.mode == 'train':
             self.HR_path = config['train_HR'] # 'dataset/trainsets/trainH/DIV2K'
             self.LR_path = config['train_LR'] # 'dataset/trainsets/trainL/DIV2K/DIV2K_train_LR_bicubic'
@@ -212,17 +224,10 @@ class SuperResolutionYadaptDataset(Dataset):
             rnd_h_H, rnd_w_H = int(rnd_h * self.scale), int(rnd_w * self.scale)
             HR_image = HR_image[rnd_h_H:rnd_h_H + self.patch_size, rnd_w_H:rnd_w_H + self.patch_size, :]
 
-            
-            # 默认数据已经算好了
-            if self.LR_path == 'BIC':
-                save_path = self.HR_path + '_yadapt_aug_whole_img'
-            else:
-                save_path = self.LR_path + '_yadapt_aug_whole_img'
-
             # i 是 patch 的 index
             try:
                 # yadapt_feature_path = os.path.join(save_path, os.path.basename(self.LR_images[idx]).split(".")[0]+'_'+str(i)+'_'+str(mode)+'_yadapt.npy')
-                yadapt_feature_path = os.path.join(save_path, os.path.basename(self.LR_images[idx]).split(".")[0]+'_'+str(mode)+'_yadapt.npy')
+                yadapt_feature_path = os.path.join(self.save_path, os.path.basename(self.LR_images[idx]).split(".")[0]+'_'+str(mode)+'_yadapt.npy')
                 yadapt_features = np.load(yadapt_feature_path)
 
                 if rnd_w//self.LR_size+self.LR_size // 16 > yadapt_features.shape[2]:
@@ -277,12 +282,8 @@ class SuperResolutionYadaptDataset(Dataset):
             for i, (patch, _, _) in enumerate(patches):
                 batch_LR_image[i] = patch.transpose(2, 0, 1)
 
-            if self.LR_path == 'BIC':
-                save_path = self.HR_path + '_yadapt_aug_whole_img'
-            else:
-                save_path = self.LR_path + '_yadapt_aug_whole_img'
 
-            yadapt_feature_path = os.path.join(save_path, os.path.basename(self.LR_images[idx]).split(".")[0]+'_yadapt.npy')
+            yadapt_feature_path = os.path.join(self.save_path, os.path.basename(self.LR_images[idx]).split(".")[0]+'_yadapt.npy')
             yadapt_features = np.load(yadapt_feature_path) # [C, h // 16, w // 16]
 
             batch_yadapt_features = np.zeros(((padded_height*padded_width) // (48*48), yadapt_features.shape[0], 3,3))
@@ -316,12 +317,8 @@ class SuperResolutionYadaptDataset(Dataset):
             for i, (patch, _, _) in enumerate(patches):
                 batch_LR_image[i] = patch.transpose(2, 0, 1)
 
-            if self.LR_path == 'BIC':
-                save_path = self.HR_path + '_yadapt_aug'
-            else:
-                save_path = self.LR_path + '_yadapt_aug'
 
-            yadapt_feature_path = os.path.join(save_path, os.path.basename(self.LR_images[idx]).split(".")[0]+'_yadapt.npy')
+            yadapt_feature_path = os.path.join(self.save_path, os.path.basename(self.LR_images[idx]).split(".")[0]+'_yadapt.npy')
             yadapt_features = np.load(yadapt_feature_path)
             
             batch_yadapt_features = torch.from_numpy(yadapt_features).float()

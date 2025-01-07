@@ -53,7 +53,8 @@ elif swinir_mode == 'strong_norm':
     from nets.swinir_strongnorm import SwinIRStrongNorm as SwinIRAdapter
 elif swinir_mode == 'pixelshuffle':
     from nets.swinir_pixelshuffel import SwinIRPixelShuffel as SwinIRAdapter
-
+elif swinir_mode == 'newfeature':
+    from nets.swinir_newfeature import SwinIRNewFeature as SwinIRAdapter
 
 print('Using train_swinir: {}'.format(train_swinir))
 
@@ -61,7 +62,7 @@ print('Using train_swinir: {}'.format(train_swinir))
 def process_config(config):
     config['train']['resume'] = config['train'].get('resume_optimizer') is not None and config['network'].get('resume_network') is not None
     config['train']['gpu_ids'] = [int(x.strip()) for x in gpus.split(',')]
-
+    config['train']['swinir_mode'] = swinir_mode
 
     os.environ['CUDA_VISIBLE_DEVICES'] = ','.join(str(x) for x in config['train']['gpu_ids'])
 
