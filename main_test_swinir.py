@@ -8,7 +8,6 @@ import torch
 import requests
 
 from nets.swinir import SwinIR as net
-from nets.swinir import SwinIRAdapter as net_adapter
 from utils import util_calculate_psnr_ssim as util
 
 import yaml
@@ -22,10 +21,7 @@ from utils.utils_image import imresize_np
 
 
 
-def main():
-    with open(config_path, 'r') as f:
-        config = yaml.safe_load(f)
-
+def main(config):
     scale = config['train']['scale']
     training_patch_size = config['train']['patch_size'] // scale
     # tile = training_patch_size
@@ -135,6 +131,21 @@ def main():
 
 
 def define_model(scale, patch_size, model_path, config):
+    breakpoint()
+    swinir_mode = config['network']['swinir_mode']
+
+    if swinir_mode == 'swinir':
+        from nets.swinir import SwinIRAdapter
+    elif swinir_mode == 'strong_norm':
+        from nets.swinir_strongnorm import SwinIRStrongNorm as SwinIRAdapter
+    elif swinir_mode == 'pixelshuffle':
+        from nets.swinir_pixelshuffel import SwinIRPixelShuffel as SwinIRAdapter
+    elif swinir_mode == 'newfeature':
+        from nets.swinir_newfeature import SwinIRNewFeature as SwinIRAdapter
+    else:
+        raise ValueError(f"Invalid swinir_mode: {swinir_mode}")
+
+
     if config['network']['swinir_test'] is True:
         model = net(upscale=scale, in_chans=3, img_size=patch_size, window_size=8,
                 img_range=1., depths=[6, 6, 6, 6, 6, 6], embed_dim=180, num_heads=[6, 6, 6, 6, 6, 6],
@@ -144,7 +155,7 @@ def define_model(scale, patch_size, model_path, config):
         model.load_state_dict(pretrained_model[param_key_g] if param_key_g in pretrained_model.keys() else pretrained_model, strict=True)
         return model
     else:   
-        model = net_adapter(upscale=scale, in_chans=3, img_size=patch_size, window_size=8,
+        model = SwinIRAdapter(upscale=scale, in_chans=3, img_size=patch_size, window_size=8,
             img_range=1., depths=[6, 6, 6, 6, 6, 6], embed_dim=180, num_heads=[6, 6, 6, 6, 6, 6],
             mlp_ratio=2, upsampler='pixelshuffle', resi_connection='1conv', y_adapt_feature=torch.zeros(1, 1, 1, 1))
         
@@ -327,9 +338,6 @@ def test_main(config_path, model, test_swinir, save_img=False):
 
 
 if __name__ == '__main__':
-    import os
-    os.environ['CUDA_VISIBLE_DEVICES'] = '4,5,6,7'
-
     def parse_args():
         parser = argparse.ArgumentParser(description='Test SwinIR model')
         parser.add_argument('--config', type=str, required=True, help='Path to the config file')
@@ -337,6 +345,7 @@ if __name__ == '__main__':
         parser.add_argument('--test_swinir', action='store_true', help='Whether to test SwinIR model')
         parser.add_argument('--gpu', type=str, default='0', help='GPU id(s) to use (comma-separated, e.g., "0,1,2,3")')
         parser.add_argument('--save_img', action='store_true', help='Whether to save the output image')
+        parser.add_argument('--swinir_mode', type=str, default='swinir', help='Mode for SwinIR model')
         return parser.parse_args()
 
     args = parse_args()
@@ -348,10 +357,13 @@ if __name__ == '__main__':
     model_path = args.model
     test_swinir = args.test_swinir
     save_img = args.save_img
+
     import time
     start_time = time.time()
+
     with open(config_path, 'r') as f:
         config = yaml.safe_load(f)
+
     scale = config['train']['scale']
     training_patch_size = config['train']['patch_size'] // scale
     # tile = training_patch_size
@@ -360,6 +372,7 @@ if __name__ == '__main__':
     config['test']['tile'] = tile
     config['test']['tile_overlap'] = tile_overlap
     config['network']['swinir_test'] = test_swinir
+    config['network']['swinir_mode'] = args.swinir_mode
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
@@ -369,7 +382,8 @@ if __name__ == '__main__':
         print(f'loading model from {model_path}')
     else:
         raise ValueError(f'model path {model_path} does not exist')
-    main()
+    breakpoint()
+    main(config)
 
     # For testing test_main function
     # model = define_model(scale, training_patch_size, model_path, config)

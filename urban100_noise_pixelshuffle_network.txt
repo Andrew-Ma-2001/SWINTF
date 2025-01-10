@@ -1,0 +1,24 @@
+Running: python main_test_swinir.py --config /home/mayanze/PycharmProjects/SwinTF/config/urban100_test/noise/noise_01_channel.yaml --model /home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20250106143929/500000_model.pth --gpu 4 --swinir_mode pixelshuffle
+loading model from /home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20250106143929/500000_model.pth
+Running: python main_test_swinir.py --config /home/mayanze/PycharmProjects/SwinTF/config/urban100_test/noise/noise_10_channel.yaml --model /home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20250106143929/500000_model.pth --gpu 4 --swinir_mode pixelshuffle
+loading model from /home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20250106143929/500000_model.pth
+Running: python main_test_swinir.py --config /home/mayanze/PycharmProjects/SwinTF/config/urban100_test/noise/noise_sigma_0_010_general.yaml --model /home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20250106143929/500000_model.pth --gpu 4 --swinir_mode pixelshuffle
+loading model from /home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20250106143929/500000_model.pth
+Running: python main_test_swinir.py --config /home/mayanze/PycharmProjects/SwinTF/config/urban100_test/noise/noise_01_gray.yaml --model /home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20250106143929/500000_model.pth --gpu 5 --swinir_mode pixelshuffle
+loading model from /home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20250106143929/500000_model.pth
+Running: python main_test_swinir.py --config /home/mayanze/PycharmProjects/SwinTF/config/urban100_test/noise/noise_10_gray.yaml --model /home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20250106143929/500000_model.pth --gpu 5 --swinir_mode pixelshuffle
+loading model from /home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20250106143929/500000_model.pth
+Running: python main_test_swinir.py --config /home/mayanze/PycharmProjects/SwinTF/config/urban100_test/noise/noise_sigma_0_050_general.yaml --model /home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20250106143929/500000_model.pth --gpu 5 --swinir_mode pixelshuffle
+loading model from /home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20250106143929/500000_model.pth
+Running: python main_test_swinir.py --config /home/mayanze/PycharmProjects/SwinTF/config/urban100_test/noise/noise_05_channel.yaml --model /home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20250106143929/500000_model.pth --gpu 6 --swinir_mode pixelshuffle
+loading model from /home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20250106143929/500000_model.pth
+Running: python main_test_swinir.py --config /home/mayanze/PycharmProjects/SwinTF/config/urban100_test/noise/noise_15_channel.yaml --model /home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20250106143929/500000_model.pth --gpu 6 --swinir_mode pixelshuffle
+loading model from /home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20250106143929/500000_model.pth
+Running: python main_test_swinir.py --config /home/mayanze/PycharmProjects/SwinTF/config/urban100_test/noise/noise_sigma_0_100_general.yaml --model /home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20250106143929/500000_model.pth --gpu 6 --swinir_mode pixelshuffle
+loading model from /home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20250106143929/500000_model.pth
+Running: python main_test_swinir.py --config /home/mayanze/PycharmProjects/SwinTF/config/urban100_test/noise/noise_05_gray.yaml --model /home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20250106143929/500000_model.pth --gpu 7 --swinir_mode pixelshuffle
+loading model from /home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20250106143929/500000_model.pth
+Running: python main_test_swinir.py --config /home/mayanze/PycharmProjects/SwinTF/config/urban100_test/noise/noise_15_gray.yaml --model /home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20250106143929/500000_model.pth --gpu 7 --swinir_mode pixelshuffle
+loading model from /home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20250106143929/500000_model.pth
+Running: python main_test_swinir.py --config /home/mayanze/PycharmProjects/SwinTF/config/urban100_test/noise/noise_sigma_0_150_general.yaml --model /home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20250106143929/500000_model.pth --gpu 7 --swinir_mode pixelshuffle
+loading model from /home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20250106143929/500000_model.pth

@@ -9,24 +9,24 @@ config_dir='/home/mayanze/PycharmProjects/SwinTF/config/urban100_test/noise'
 # txt_file="set14_noise_adapter.txt"
 # txt_file="set14_noise_swinir.txt"
 # txt_file="urban100_noise_swinir.txt"
-txt_file="urban100_noise_adapter_network.txt"
+txt_file="urban100_noise_pixelshuffle_network.txt"
 
 # Mode 1
 # model_path="/home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20241130143441/500000_model.pth"
 # Mode 2
 # model_path='/home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20241212143215/500000_model.pth'
-model_path='/home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20241213152340/500000_model.pth'
-
+# model_path='/home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20241213152340/500000_model.pth'
+model_path='/home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20250106143929/500000_model.pth'
 
 # Set up a mode for different commands
 mode="adapter"
 # mode="swinir"
 
-
+swinir_mode='pixelshuffle'
 swinir_path="/home/mayanze/PycharmProjects/SwinTF/001_classicalSR_DIV2K_s48w8_SwinIR-M_x2.pth"
 yaml_files=($(find "$config_dir" -type f -name "*.yaml" | sort))
 # Assign 8 GPUs, split into four groups
-gpu_ids=('0' '1' '2' '3')
+gpu_ids=('4' '5' '6' '7')
 
 # Function to run the command and save the last two lines of output
 run_command() {
@@ -34,7 +34,7 @@ run_command() {
     local gpu_id=$2
     local temp_file=$3
     if [ "$mode" == "adapter" ]; then
-        local command="python main_test_swinir.py --config $yaml_file --model $model_path --gpu $gpu_id"
+        local command="python main_test_swinir.py --config $yaml_file --model $model_path --gpu $gpu_id --swinir_mode $swinir_mode"
     else
         local command="python main_test_swinir.py --config $yaml_file --model $swinir_path --gpu $gpu_id --test_swinir"
     fi
