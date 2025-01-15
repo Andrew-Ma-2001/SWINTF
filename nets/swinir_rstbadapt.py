@@ -135,7 +135,7 @@ class SelfAttention(nn.Module):
         return out
 
 
-class SwinIRAdapter(nn.Module):
+class SwinIRRSTBAdapt(nn.Module):
     r""" SwinIR
         A PyTorch impl of : `SwinIR: Image Restoration Using Swin Transformer`, based on Swin Transformer.
 
@@ -170,7 +170,7 @@ class SwinIRAdapter(nn.Module):
                  norm_layer=nn.LayerNorm, ape=False, patch_norm=True,
                  use_checkpoint=False, upscale=2, img_range=1., upsampler='', resi_connection='1conv', y_adapt_feature=None,
                  **kwargs):
-        super(SwinIRAdapter, self).__init__()
+        super(SwinIRRSTBAdapt, self).__init__()
         num_in_ch = in_chans
         num_out_ch = in_chans
         num_feat = 64
