@@ -9,9 +9,102 @@ import torch.nn as nn
 import torch.nn.functional as F
 # import torch.utils.checkpoint as checkpoint
 from timm.models.layers import trunc_normal_
-from swinir import RSTB, PatchEmbed, PatchUnEmbed, Upsample, UpsampleOneStep
+from nets.swinir import PatchEmbed, PatchUnEmbed, Upsample, UpsampleOneStep, BasicLayer
+
+class RSTB(nn.Module):
+    """Residual Swin Transformer Block (RSTB).
+
+    Args:
+        dim (int): Number of input channels.
+        input_resolution (tuple[int]): Input resolution.
+        depth (int): Number of blocks.
+        num_heads (int): Number of attention heads.
+        window_size (int): Local window size.
+        mlp_ratio (float): Ratio of mlp hidden dim to embedding dim.
+        qkv_bias (bool, optional): If True, add a learnable bias to query, key, value. Default: True
+        qk_scale (float | None, optional): Override default qk scale of head_dim ** -0.5 if set.
+        drop (float, optional): Dropout rate. Default: 0.0
+        attn_drop (float, optional): Attention dropout rate. Default: 0.0
+        drop_path (float | tuple[float], optional): Stochastic depth rate. Default: 0.0
+        norm_layer (nn.Module, optional): Normalization layer. Default: nn.LayerNorm
+        downsample (nn.Module | None, optional): Downsample layer at the end of the layer. Default: None
+        use_checkpoint (bool): Whether to use checkpointing to save memory. Default: False.
+        img_size: Input image size.
+        patch_size: Patch size.
+        resi_connection: The convolutional block before residual connection.
+    """
+
+    def __init__(self, dim, input_resolution, depth, num_heads, window_size,
+                 mlp_ratio=4., qkv_bias=True, qk_scale=None, drop=0., attn_drop=0.,
+                 drop_path=0., norm_layer=nn.LayerNorm, downsample=None, use_checkpoint=False,
+                 img_size=224, patch_size=4, resi_connection='1conv'):
+        super(RSTB, self).__init__()
+
+        self.dim = dim
+        self.input_resolution = input_resolution
+
+        self.residual_group = BasicLayer(dim=dim,
+                                         input_resolution=input_resolution,
+                                         depth=depth,
+                                         num_heads=num_heads,
+                                         window_size=window_size,
+                                         mlp_ratio=mlp_ratio,
+                                         qkv_bias=qkv_bias, qk_scale=qk_scale,
+                                         drop=drop, attn_drop=attn_drop,
+                                         drop_path=drop_path,
+                                         norm_layer=norm_layer,
+                                         downsample=downsample,
+                                         use_checkpoint=use_checkpoint)
+
+        if resi_connection == '1conv':
+            self.conv = nn.Conv2d(dim, dim, 3, 1, 1)
+        elif resi_connection == '3conv':
+            # to save parameters and memory
+            self.conv = nn.Sequential(nn.Conv2d(dim, dim // 4, 3, 1, 1), nn.LeakyReLU(negative_slope=0.2, inplace=True),
+                                      nn.Conv2d(dim // 4, dim // 4, 1, 1, 0),
+                                      nn.LeakyReLU(negative_slope=0.2, inplace=True),
+                                      nn.Conv2d(dim // 4, dim, 3, 1, 1))
+
+        self.patch_embed = PatchEmbed(
+            img_size=img_size, patch_size=patch_size, in_chans=0, embed_dim=dim,
+            norm_layer=None)
+
+        self.patch_unembed = PatchUnEmbed(
+            img_size=img_size, patch_size=patch_size, in_chans=0, embed_dim=dim,
+            norm_layer=None)
+
+        self.adapt_conv = nn.Conv2d(3840, 180, kernel_size=1),
+        self.attention = SelfAttention(180)
+
+    def forward(self, x, x_size, y_adapt):
+        # return self.patch_embed(self.conv(self.patch_unembed(self.residual_group(x, x_size), x_size))) + x
+        # Step 1: Apply residual group
+        residual = self.residual_group(x, x_size) # 这一步 std 变化不是特别大 0.3 上下
+        
+        # Step 2: Convert from patches back to image
+        residual_img = self.patch_unembed(residual, x_size)
+        
+        # Add in adapter part
+        y_adapt = self.adapt_conv(y_adapt)
+        residual_img = self.attention(y_adapt, residual_img)
 
 
+        # Step 3: Apply convolution
+        residual_conv = self.conv(residual_img) # 主要是这一步，std 变化很大
+        residual_patches = self.patch_embed(residual_conv)
+        
+        return residual_patches + x
+
+    def flops(self):
+        flops = 0
+        flops += self.residual_group.flops()
+        H, W = self.input_resolution
+        flops += H * W * self.dim * self.dim * 9
+        flops += self.patch_embed.flops()
+        flops += self.patch_unembed.flops()
+
+        return flops
+    
 class SelfAttention(nn.Module):
     def __init__(self, in_channels):
         super().__init__()
@@ -21,31 +114,6 @@ class SelfAttention(nn.Module):
         self.kv = nn.Linear(in_channels, in_channels*2)
         self.proj = nn.Linear(in_channels, in_channels)
         self.tau = nn.Parameter(torch.zeros(1))
-        # self.mlp = nn.Sequential(
-        #     nn.Linear(in_channels, in_channels),
-        #     nn.ReLU(),
-        #     nn.Linear(in_channels, 1),
-        # )
-        # # self.mlp[-1].weight.zero_()
-        # self.mlp[-1].weight = nn.Parameter(torch.zeros_like(self.mlp[-1].weight))
-        # # self.mlp[-1].bias.zero_()
-        # self.mlp[-1].bias = nn.Parameter(torch.zeros_like(self.mlp[-1].bias))
-
-    def plot_attn(self, attn):
-        import matplotlib.pyplot as plt
-        # PLot attn
-        attn_avg = attn[0].detach().cpu().numpy() # Select the first exampl
-        # Reshape the attention map to the original spatial dimensions
-        # Assuming the original spatial dimensions are 48x48
-        H, W = 48, 48
-        attn_map = attn_avg.reshape(H, W, H, W).mean(axis=2).mean(axis=0)
-        # Plot the heatmap
-        plt.figure(figsize=(10, 10))
-        plt.imshow(attn_map, cmap='viridis')
-        plt.colorbar()
-        plt.title('Attention Heatmap')
-        plt.show()
-        plt.savefig('attn.png')
 
     def forward(self, y_adapt, x):
         '''
@@ -56,51 +124,13 @@ class SelfAttention(nn.Module):
         batch_size, C, height, width = x.size()
         y_adapt_flatten = y_adapt.flatten(2).transpose(1, 2)    # B, MN, C
         x_flatten = x.flatten(2).transpose(1, 2)    # B, HW, C
-
-       ################### 2024-04-16 ##########################
-        # q = self.q(self.norm1(x_flatten))  # B, HW, C
-        # kv = self.kv(self.norm2(y_adapt_flatten)).view(batch_size, -1, 2, C)
-
-       #################### 2024-11-30 不用 norm ##########################
         q = self.q(x_flatten)  # B, HW, C
         kv = self.kv(y_adapt_flatten).view(batch_size, -1, 2, C)
         k, v = kv.unbind(2)  # B, HW, C
-
         attn = (q @ k.transpose(-2, -1)) / C #是C还是根号C看经验
         attn = attn.softmax(dim=-1)
-        breakpoint()
         out = (attn @ v)  # bug here
-
-       ################### 2024-08-07 ##########################
-        # mode 0: no hyperparameter exit
-        # out = self.proj(out).transpose(-1, -2).reshape(batch_size, -1, height, width) + x
-
-        
-        # mode 1: static hyperparameter
         out = self.tau * self.proj(out).transpose(-1, -2).reshape(batch_size, -1, height, width) + x
-
-        # mode 2: dynamic hyperparameter
-        # tau = self.mlp(q.mean(1, keepdim=True))
-        # out = (tau * self.proj(out)).transpose(-1, -2).reshape(batch_size, -1, height, width) + x
-
-        # mode 3: pixel-wise hyperparameter
-        # tau = self.mlp(q)
-        # out = (tau * self.proj(out)).transpose(-1, -2).reshape(batch_size, -1, height, width) + x
-
-        # self.proj(out).shape
-        # torch.Size([8, 2304, 180])
-        # x.shape
-        # torch.Size([8, 180, 48, 48])
-
-        # mode 2
-        # batch_size, C, width, height = x.size()
-        # query = self.query_conv(x).view(batch_size, -1, width * height).permute(0, 2, 1)
-        # key = self.key_conv(y_adapt).view(batch_size, -1, width * height)
-        # energy = torch.bmm(query, key) / math.sqrt(C)
-        # attention = self.softmax(energy)
-        # value = self.value_conv(y_adapt).view(batch_size, -1, width * height)
-        # out = torch.bmm(value, attention.permute(0, 2, 1))
-        # out = out.view(batch_size, C, width, height)
 
         return out
 
@@ -213,73 +243,6 @@ class SwinIRAdapter(nn.Module):
             self.layers.append(layer)
         self.norm = norm_layer(self.num_features)
 
-        # XXX 这里把 self_attention 的大小写死了
-        self.y_adapt_feature_size = y_adapt_feature
-        self.yadapt_batch_norm = nn.BatchNorm2d(180)
-
-        # self.self_attention = nn.ModuleList([
-        #     SelfAttention(256),
-        #     SelfAttention(256),
-        #     SelfAttention(256),
-        #     SelfAttention(256),
-        #     SelfAttention(256),
-        #     SelfAttention(256),
-        # ])
-        # #################### modified 2024/03/28  原view有问题（不能跟原图pixel level对齐），改用pixelshuffle，
-        # self.adapt_conv_first = nn.ModuleList([
-        #     nn.Conv2d(3840, 1280, kernel_size=1),
-        #     nn.Conv2d(3840, 1280, kernel_size=1),
-        #     nn.Conv2d(3840, 1280, kernel_size=1),
-        #     nn.Conv2d(3840, 1280, kernel_size=1),
-        #     nn.Conv2d(3840, 1280, kernel_size=1),
-        #     nn.Conv2d(3840, 1280, kernel_size=1),
-        # ])
-
-        # self.adapt_conv_last = nn.ModuleList([
-        #     nn.Conv2d(1280, 256, kernel_size=1),
-        #     nn.Conv2d(1280, 256, kernel_size=1),
-        #     nn.Conv2d(1280, 256, kernel_size=1),
-        #     nn.Conv2d(1280, 256, kernel_size=1),
-        #     nn.Conv2d(1280, 256, kernel_size=1),
-        #     nn.Conv2d(1280, 256, kernel_size=1),
-        # ])
-
-        # self.x_conv_first = nn.ModuleList([
-        #     nn.Conv2d(180, 256, kernel_size=1),
-        #     nn.Conv2d(180, 256, kernel_size=1),
-        #     nn.Conv2d(180, 256, kernel_size=1),
-        #     nn.Conv2d(180, 256, kernel_size=1),
-        #     nn.Conv2d(180, 256, kernel_size=1),
-        #     nn.Conv2d(180, 256, kernel_size=1),
-        # ])
-
-        # self.x_conv_last = nn.ModuleList([
-        #     nn.Conv2d(256, 180, kernel_size=1),
-        #     nn.Conv2d(256, 180, kernel_size=1),
-        #     nn.Conv2d(256, 180, kernel_size=1),
-        #     nn.Conv2d(256, 180, kernel_size=1),
-        #     nn.Conv2d(256, 180, kernel_size=1),
-        #     nn.Conv2d(256, 180, kernel_size=1),
-        # ])
-
-        self.adapt_conv = nn.ModuleList([
-            nn.Conv2d(3840, 180, kernel_size=1),
-            nn.Conv2d(3840, 180, kernel_size=1),
-            nn.Conv2d(3840, 180, kernel_size=1),
-            nn.Conv2d(3840, 180, kernel_size=1),
-            nn.Conv2d(3840, 180, kernel_size=1),
-            nn.Conv2d(3840, 180, kernel_size=1),
-        ])
-
-        self.adapt_self_attention = nn.ModuleList([
-            SelfAttention(180),
-            SelfAttention(180),
-            SelfAttention(180),
-            SelfAttention(180),
-            SelfAttention(180),
-            SelfAttention(180),
-        ])
-
         # build the last conv layer in deep feature extraction
         if resi_connection == '1conv':
             self.conv_after_body = nn.Conv2d(embed_dim, embed_dim, 3, 1, 1)
@@ -354,37 +317,8 @@ class SwinIRAdapter(nn.Module):
         x = self.pos_drop(x)
 
         for idx, layer in enumerate(self.layers):
-            x = layer(x, x_size) # torch.Size([1, 4096, 256])
-
-            # ===========================================================================
-            # ========================  加入 adapter 机制  ===============================
-            # ===========================================================================
-            if y_adapt_feature is not None:
-                x = self.patch_unembed(x, x_size)  # torch.Size([1, 180, 48, 48])
-
-                # Apply ReLU after the convolution, not before
-                # y_adapt = self.adapt_conv_first[idx](y_adapt_feature)
-                # y_adapt = F.relu(y_adapt)  # Apply ReLU after conv
-                # y_adapt = self.adapt_conv_last[idx](y_adapt)
-                # x = self.x_conv_first[idx](x)
-                # x = self.self_attention[idx](y_adapt, x)
-                # x = self.x_conv_last[idx](x)
-
-                y_adapt = self.adapt_conv[idx](y_adapt_feature)
-                x = self.adapt_self_attention[idx](y_adapt, x)
-
-                # y_adapt = y_adapt.view(-1, 180, 48, 48)
-                # y_adapt = self.yadapt_batch_norm(y_adapt)
-                # Reshape 回去
-                # y_adapt1 = y_adapt.view(1, 10, 10, 180, 48, 48)
-                # y_adapt2 = y_adapt1.permute(0, 3, 1, 4, 2, 5).contiguous().view(1, 180, 10*48, 10*48)
-
-                ################ 2024-03-23 ####################
-                ## x = self.patch_embed(x)
-                x = x.flatten(2).transpose(1, 2)  # B Ph*Pw C Avoiding having batch norm
-                ## ===========================================================================
-                # idx += 1
-
+            # 加入 Adapter 机制在 RSTB 中
+            x = layer(x, x_size, y_adapt_feature) # torch.Size([1, 4096, 256])
         x = self.norm(x)  # B L C
         x = self.patch_unembed(x, x_size)
 

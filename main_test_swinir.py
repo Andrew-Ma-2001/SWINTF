@@ -142,6 +142,8 @@ def define_model(scale, patch_size, model_path, config):
         from nets.swinir_pixelshuffel import SwinIRPixelShuffel as SwinIRAdapter
     elif swinir_mode == 'newfeature':
         from nets.swinir_newfeature import SwinIRNewFeature as SwinIRAdapter
+    elif swinir_mode == 'rstbadapt':
+        from nets.swinir_rstbadapt import SwinIRRSTBAdapt as SwinIRAdapter
     else:
         raise ValueError(f"Invalid swinir_mode: {swinir_mode}")
 

@@ -55,6 +55,8 @@ elif swinir_mode == 'pixelshuffle':
     from nets.swinir_pixelshuffel import SwinIRPixelShuffel as SwinIRAdapter
 elif swinir_mode == 'newfeature':
     from nets.swinir_newfeature import SwinIRNewFeature as SwinIRAdapter
+elif swinir_mode == 'rstbadapt':
+    from nets.swinir_rstbadapt import SwinIRRSTBAdapt as SwinIRAdapter
 
 print('Using train_swinir: {}'.format(train_swinir))
 
