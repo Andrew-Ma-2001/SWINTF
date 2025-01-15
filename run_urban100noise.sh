@@ -1,6 +1,6 @@
 # config_dir="/home/mayanze/PycharmProjects/SwinTF/config/manga109_test/noise"
-# config_dir='/home/mayanze/PycharmProjects/SwinTF/dataset/testsets/Set14/LRbicx2'
-config_dir='/home/mayanze/PycharmProjects/SwinTF/config/urban100_test/noise'
+config_dir='/home/mayanze/PycharmProjects/SwinTF/dataset/testsets/Set14/LRbicx2'
+# config_dir='/home/mayanze/PycharmProjects/SwinTF/config/urban100_test/noise'
 # config_dir='/home/mayanze/PycharmProjects/SwinTF/dataset/testsets/urban100_lrx2'
 # config_dir='/home/mayanze/PycharmProjects/SwinTF/config/manga109_test/noise'
 
@@ -9,7 +9,7 @@ config_dir='/home/mayanze/PycharmProjects/SwinTF/config/urban100_test/noise'
 # txt_file="set14_noise_adapter.txt"
 # txt_file="set14_noise_swinir.txt"
 # txt_file="urban100_noise_swinir.txt"
-txt_file="urban100_noise_pixelshuffle_network.txt"
+txt_file="set14_noise_pixelshuffle_network.txt"
 
 # Mode 1
 # model_path="/home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20241130143441/500000_model.pth"

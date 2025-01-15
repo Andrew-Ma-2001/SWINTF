@@ -131,7 +131,7 @@ def main(config):
 
 
 def define_model(scale, patch_size, model_path, config):
-    breakpoint()
+
     swinir_mode = config['network']['swinir_mode']
 
     if swinir_mode == 'swinir':
@@ -382,7 +382,7 @@ if __name__ == '__main__':
         print(f'loading model from {model_path}')
     else:
         raise ValueError(f'model path {model_path} does not exist')
-    breakpoint()
+
     main(config)
 
     # For testing test_main function

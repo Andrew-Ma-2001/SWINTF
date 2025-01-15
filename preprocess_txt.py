@@ -8,7 +8,7 @@ def load_text_file(file_path):
         return file.read()
 
 # Load the text from a file
-file_path = '/home/mayanze/PycharmProjects/SwinTF/urban100_noise_swinir_lrx2.txt'
+file_path = '/home/mayanze/PycharmProjects/SwinTF/set14_noise_pixelshuffle_network.txt'
 text = load_text_file(file_path)
 
 # Regular expression to match the config file and PSNR_Y value
