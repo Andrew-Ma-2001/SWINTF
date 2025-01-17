@@ -206,19 +206,26 @@ def get_image_pair(config, path, **kwargs):
         # Calculate the yadapt features
         sam_model = kwargs.get('sam_model', None)
         preprocessor = kwargs.get('preprocessor', None)
-        y_adapt_features = calculate_yadapt_features(img_lq, sam_model, preprocessor)
+        swinir_mode = kwargs.get('swinir_mode', None)
+        y_adapt_features = calculate_yadapt_features(img_lq, sam_model, preprocessor, swinir_mode)
         # Change y_adapt_features to tensor
         y_adapt_features = torch.tensor(y_adapt_features).float()
         y_adapt_features = y_adapt_features.unsqueeze(0)
         return imgname, img_lq, img_gt, y_adapt_features
 
-def calculate_yadapt_features(img_lq, sam_model, preprocessor):
+def calculate_yadapt_features(img_lq, sam_model, preprocessor, swinir_mode):
     preprocessor.set_image(img_lq)
     torch_img = preprocessor.preprocess_image_v2(device='cuda')
     with torch.no_grad():
-        _, y1, y2, y3 = sam_model.image_encoder(torch_img)
-    # Concate y1 y2 y3 by torch
-    y = torch.cat([y1, y2, y3], dim=1)
+        x, y1, y2, y3 = sam_model.image_encoder(torch_img)
+
+        if swinir_mode == 'swinir':
+            y = torch.cat([y1, y2, y3], dim=1)
+        elif swinir_mode == 'newfeature':
+            y = x
+        else:
+            raise ValueError(f"Invalid swinir_mode: {swinir_mode}")
+
     y = y.cpu().numpy()
     y = preprocessor.slice_yadapt_features(y)
     return y
@@ -265,7 +272,7 @@ def test(img_lq, model, config, window_size, **kwargs):
     return output
 
 
-def test_main(config_path, model, test_swinir, save_img=False):
+def test_main(config_path, model, test_swinir, save_img=False, swinir_mode='swinir'):
     with open(config_path, 'r') as f:
         config = yaml.safe_load(f)
 
@@ -293,7 +300,7 @@ def test_main(config_path, model, test_swinir, save_img=False):
         if test_swinir:
             imgname, img_lq, img_gt = get_image_pair(config, path)
         else:
-            imgname, img_lq, img_gt, y_adapt_features = get_image_pair(config, path, sam_model=sam_model, preprocessor=preprocessor)
+            imgname, img_lq, img_gt, y_adapt_features = get_image_pair(config, path, sam_model=sam_model, preprocessor=preprocessor, swinir_mode=swinir_mode)
 
         img_lq = np.transpose(img_lq if img_lq.shape[2] == 1 else img_lq[:, :, [2, 1, 0]], (2, 0, 1))
         img_lq = torch.from_numpy(img_lq).float().unsqueeze(0).to(device)

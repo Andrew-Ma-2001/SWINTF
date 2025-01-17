@@ -444,14 +444,16 @@ def main():
                         else:
                             avg_psnr = evaluate_with_lrhr_pair(config['test']['test_HR'], config['test']['test_LR'], model, config['train']['scale'])
                         print('Epoch: {:d}, Step: {:d}, Avg PSNR: {:.4f}'.format(epoch, current_step, avg_psnr))
-                        wandb.log({"Epoch": epoch, "Step": current_step, "Avg PSNR": avg_psnr})
+                        if not DEBUG:
+                            wandb.log({"Epoch": epoch, "Step": current_step, "Avg PSNR": avg_psnr})
                     else:
                         if config['test']['test_LR'] == "BIC":
                             raise ValueError("BIC is not supported for SwinIRAdapter")
                         else:
-                            avg_psnr = test_main(config_path, model, test_swinir=False)
+                            avg_psnr = test_main(config_path, model, test_swinir=False, swinir_mode=swinir_mode)
                         print('Epoch: {:d}, Step: {:d}, Avg PSNR: {:.4f}'.format(epoch, current_step, avg_psnr))
-                        wandb.log({"Epoch": epoch, "Step": current_step, "Avg PSNR": avg_psnr})
+                        if not DEBUG:
+                            wandb.log({"Epoch": epoch, "Step": current_step, "Avg PSNR": avg_psnr})
                     model.train()
             else:
                 if current_step % config['train']['step_print'] == 0 and config['train']['rank'] == 0:
