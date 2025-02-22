@@ -174,7 +174,7 @@ def define_model(scale, patch_size, model_path, config):
     
 
 def define_sam_model(model_path, image_size):
-    model = extract_sam_model(model_path='/home/mayanze/PycharmProjects/SwinTF/sam_vit_h_4b8939.pth', image_size = 1024)
+    model = extract_sam_model(model_path='sam_vit_h_4b8939.pth', image_size = 1024)
     model = model.cuda()
     model.image_encoder = torch.nn.DataParallel(model.image_encoder)
     preprocessor = ImagePreprocessor()

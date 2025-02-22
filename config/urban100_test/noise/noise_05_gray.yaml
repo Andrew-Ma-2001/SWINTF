@@ -30,12 +30,12 @@ test:
   num_workers: 1
   patch_size: 96
   precomputed: true
-  pretrained_sam: /home/mayanze/PycharmProjects/SwinTF/sam_vit_h_4b8939.pth
+  pretrained_sam: 'sam_vit_h_4b8939.pth'
   pretrained_sam_img_size: 48
   scale: 2
   shuffle: false
-  test_HR: /home/mayanze/PycharmProjects/SwinTF/dataset/testsets/urban100_noise/hr
-  test_LR: /home/mayanze/PycharmProjects/SwinTF/dataset/testsets/urban100_noise/noise_05_gray
+  test_HR: 'dataset/testsets/urban100_noise/hr'
+  test_LR: 'dataset/testsets/urban100_noise/noise_05_gray'
   yadapt_use_cuda: true
 train:
   batch_size: 32
@@ -56,7 +56,7 @@ train:
   optimizer: adam
   patch_size: 96
   precomputed: true
-  pretrained_sam: /home/mayanze/PycharmProjects/SwinTF/sam_vit_h_4b8939.pth
+  pretrained_sam: 'sam_vit_h_4b8939.pth'
   pretrained_sam_img_size: 48
   resume_optimizer: null
   save_path: experiments/

@@ -264,9 +264,9 @@ def main():
 
     # 加载预训练 SwinIR 模型
     if config['network']['upsacle'] == 2:
-        model_path = '/home/mayanze/PycharmProjects/SwinTF/001_classicalSR_DIV2K_s48w8_SwinIR-M_x2.pth'
+        model_path = '001_classicalSR_DIV2K_s48w8_SwinIR-M_x2.pth'
     elif config['network']['upsacle'] == 4:
-        model_path = '/home/mayanze/PycharmProjects/SwinTF/001_classicalSR_DIV2K_s48w8_SwinIR-M_x4.pth'
+        model_path = '001_classicalSR_DIV2K_s48w8_SwinIR-M_x4.pth'
 
 
     # Use strict = True to check the model

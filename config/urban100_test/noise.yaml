@@ -37,7 +37,7 @@ train:
 
   save_path: 'experiments/'
 
-  pretrained_sam: '/home/mayanze/PycharmProjects/SwinTF/sam_vit_h_4b8939.pth'
+  pretrained_sam: 'sam_vit_h_4b8939.pth'
   pretrained_sam_img_size: 48
   
   precomputed: True # 如果是 True，则默认保存在 train_LR 的文件夹下
@@ -48,14 +48,14 @@ test:
   scale: 2
   patch_size: 96 # 32*2
 
-  test_HR: '/home/mayanze/PycharmProjects/SwinTF/dataset/testsets/urban100_test/hr'
-  test_LR: '/home/mayanze/PycharmProjects/SwinTF/dataset/testsets/urban100_test/noise'
+  test_HR: 'dataset/testsets/urban100_test/hr'
+  test_LR: 'dataset/testsets/urban100_test/noise'
 
   batch_size: 1
   shuffle: False
   num_workers: 1
 
-  pretrained_sam: '/home/mayanze/PycharmProjects/SwinTF/sam_vit_h_4b8939.pth'
+  pretrained_sam: 'sam_vit_h_4b8939.pth'
   pretrained_sam_img_size: 48
 
   precomputed: True # 如果是 True，则默认保存在 test_LR 的文件夹下

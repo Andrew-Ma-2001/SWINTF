@@ -1,25 +1,25 @@
-# config_dir="/home/mayanze/PycharmProjects/SwinTF/config/manga109_test/noise"
-# config_dir='/home/mayanze/PycharmProjects/SwinTF/dataset/testsets/Set14/LRbicx2'
-config_dir='/home/mayanze/PycharmProjects/SwinTF/config/urban100_test/noise'
-# config_dir='/home/mayanze/PycharmProjects/SwinTF/dataset/testsets/urban100_lrx2'
-# config_dir='/home/mayanze/PycharmProjects/SwinTF/config/manga109_test/noise'
+# config_dir="config/manga109_test/noise"
+# config_dir='dataset/testsets/Set14/LRbicx2'
+config_dir='config/urban100_test/noise'
+# config_dir='dataset/testsets/urban100_lrx2'
+# config_dir='config/manga109_test/noise'
 
 
 # swinir_mode='pixelshuffle'
-# model_path='/home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20250106143929/500000_model.pth'
+# model_path='experiments/SwinIR_20250106143929/500000_model.pth'
 
 swinir_mode='strongnorm'
-# model_path='/home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20250115064406/500000_model.pth'
-# model_path='/home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20250124161945/500000_model.pth'
+# model_path='experiments/SwinIR_20250115064406/500000_model.pth'
+# model_path='experiments/SwinIR_20250124161945/500000_model.pth'
 
 # swinir_mode='rstbadapt'
-# model_path='/home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20250119150031/500000_model.pth'
+# model_path='experiments/SwinIR_20250119150031/500000_model.pth'
 
 # swinir_mode='newfeature'
-# model_path='/home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20250117044926/500000_model.pth'
+# model_path='experiments/SwinIR_20250117044926/500000_model.pth'
 
 swinir_mode='psnorm'
-model_path='/home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20250218160256/500000_model.pth'
+model_path='experiments/SwinIR_20250218160256/500000_model.pth'
 
 
 # Set up a mode for different commands
@@ -27,7 +27,7 @@ mode="adapter"
 # mode="swinir"
 
 
-swinir_path="/home/mayanze/PycharmProjects/SwinTF/001_classicalSR_DIV2K_s48w8_SwinIR-M_x2.pth"
+swinir_path="001_classicalSR_DIV2K_s48w8_SwinIR-M_x2.pth"
 yaml_files=($(find "$config_dir" -type f -name "*.yaml" | sort))
 # Assign 8 GPUs, split into four groups
 gpu_ids=('4' '5' '6' '7')
