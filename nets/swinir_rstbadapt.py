@@ -10,6 +10,7 @@ import torch.nn.functional as F
 # import torch.utils.checkpoint as checkpoint
 from timm.models.layers import trunc_normal_
 from nets.swinir import PatchEmbed, PatchUnEmbed, Upsample, UpsampleOneStep, BasicLayer
+from utils.utils_image import plot_attention_map
 
 class RSTB(nn.Module):
     """Residual Swin Transformer Block (RSTB).
@@ -73,7 +74,7 @@ class RSTB(nn.Module):
             img_size=img_size, patch_size=patch_size, in_chans=0, embed_dim=dim,
             norm_layer=None)
 
-        self.adapt_conv = nn.Conv2d(3840, 180, kernel_size=1),
+        self.adapt_conv = nn.Conv2d(3840, 180, kernel_size=1)
         self.attention = SelfAttention(180)
 
     def forward(self, x, x_size, y_adapt):
@@ -129,6 +130,7 @@ class SelfAttention(nn.Module):
         k, v = kv.unbind(2)  # B, HW, C
         attn = (q @ k.transpose(-2, -1)) / C #是C还是根号C看经验
         attn = attn.softmax(dim=-1)
+        breakpoint()
         out = (attn @ v)  # bug here
         out = self.tau * self.proj(out).transpose(-1, -2).reshape(batch_size, -1, height, width) + x
 

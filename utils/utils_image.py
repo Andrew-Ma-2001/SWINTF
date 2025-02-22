@@ -305,3 +305,49 @@ def augment_img(img, mode=0):
     elif mode == 7:
         return np.flipud(np.rot90(img, k=3))
 
+def plot_attention_map(attn, output_dir, batch_size, height, width, num_maps=100):
+    """
+    Plot and save attention maps from a tensor.
+    
+    Args:
+        attn: Tensor of shape [batch_size, num_heads, height, width]
+        output_dir: Directory to save the attention maps
+        num_maps: Number of attention maps to save (default: 100)
+    """
+    import matplotlib.pyplot as plt
+    import os
+    
+    # Create output directory if it doesn't exist
+    os.makedirs(output_dir, exist_ok=True)
+    breakpoint()
+    # Get the shape of attention tensor
+    attn = attn.transpose(-1, -2).reshape(batch_size, -1, height, width)
+    batch_size, num_heads, height, width = attn.shape
+    
+    # Ensure num_maps doesn't exceed available heads
+    num_maps = min(num_maps, num_heads)
+    
+    try:
+        for i in range(num_maps):
+            # Clear the current figure
+            plt.clf()
+            
+            # Get attention map for head i
+            attention_map = attn[0][i].cpu()  # Assuming batch_size=1
+            
+            # Create the plot
+            plt.figure(figsize=(10, 10))
+            plt.imshow(attention_map, cmap='viridis')
+            plt.axis('off')
+            
+            # Save with formatted filename
+            save_path = os.path.join(output_dir, f'attention_map_{i:03d}.png')
+            plt.savefig(save_path, bbox_inches='tight', pad_inches=0)
+            plt.close()
+            
+        print(f"Successfully saved {num_maps} attention maps to {output_dir}")
+        
+    except Exception as e:
+        print(f"Error occurred while saving attention maps: {str(e)}")
+    finally:
+        plt.close('all')  # Clean up any remaining figures

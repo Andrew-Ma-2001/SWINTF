@@ -5,7 +5,7 @@ import torch.nn.functional as F
 # import torch.utils.checkpoint as checkpoint
 from timm.models.layers import trunc_normal_
 from nets.swinir import RSTB, PatchEmbed, PatchUnEmbed, Upsample, UpsampleOneStep
-
+from utils.utils_image import plot_attention_map
 # 笔记
 # 1. 注意参照 swinir.py 源文件中注释的代码，有 mode 的选择和 pixelshuffle 等别的选项
 
@@ -43,7 +43,7 @@ class SelfAttention(nn.Module):
         attn = attn.softmax(dim=-1)
 
         out = (attn @ v)  # bug here
-
+        breakpoint()
        ################### 2024-08-07 ##########################
         # mode 1: static hyperparameter
         out = self.tau * self.proj(out).transpose(-1, -2).reshape(batch_size, -1, height, width) + x

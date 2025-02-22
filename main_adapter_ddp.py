@@ -57,6 +57,10 @@ elif swinir_mode == 'newfeature':
     from nets.swinir_newfeature import SwinIRNewFeature as SwinIRAdapter
 elif swinir_mode == 'rstbadapt':
     from nets.swinir_rstbadapt import SwinIRRSTBAdapt as SwinIRAdapter
+elif swinir_mode == 'psnorm':
+    from nets.swinir_psnorm import SwinIRPixelShuffelNorm as SwinIRAdapter
+else:
+    raise ValueError(f"Invalid swinir_mode: {swinir_mode}")
 
 print('Using train_swinir: {}'.format(train_swinir))
 

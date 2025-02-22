@@ -12,3 +12,4 @@ results/
 debug/
 wandb_offline/
 swanlog/
+plots/

@@ -63,7 +63,7 @@ def main(config):
         if test_swinir:
             imgname, img_lq, img_gt = get_image_pair(config, path)  # image to HWC-BGR, float32
         else:
-            imgname, img_lq, img_gt, y_adapt_features = get_image_pair(config, path, sam_model=sam_model, preprocessor=preprocessor)  # image to HWC-BGR, float32
+            imgname, img_lq, img_gt, y_adapt_features = get_image_pair(config, path, sam_model=sam_model, preprocessor=preprocessor, swinir_mode=config['network']['swinir_mode'])  # image to HWC-BGR, float32
 
         img_lq = np.transpose(img_lq if img_lq.shape[2] == 1 else img_lq[:, :, [2, 1, 0]], (2, 0, 1))  # HCW-BGR to CHW-RGB
         img_lq = torch.from_numpy(img_lq).float().unsqueeze(0).to(device)  # CHW-RGB to NCHW-RGB
@@ -136,7 +136,7 @@ def define_model(scale, patch_size, model_path, config):
 
     if swinir_mode == 'swinir':
         from nets.swinir import SwinIRAdapter
-    elif swinir_mode == 'strong_norm':
+    elif swinir_mode == 'strongnorm':
         from nets.swinir_strongnorm import SwinIRStrongNorm as SwinIRAdapter
     elif swinir_mode == 'pixelshuffle':
         from nets.swinir_pixelshuffel import SwinIRPixelShuffel as SwinIRAdapter
@@ -144,6 +144,8 @@ def define_model(scale, patch_size, model_path, config):
         from nets.swinir_newfeature import SwinIRNewFeature as SwinIRAdapter
     elif swinir_mode == 'rstbadapt':
         from nets.swinir_rstbadapt import SwinIRRSTBAdapt as SwinIRAdapter
+    elif swinir_mode == 'psnorm':
+        from nets.swinir_psnorm import SwinIRPixelShuffelNorm as SwinIRAdapter
     else:
         raise ValueError(f"Invalid swinir_mode: {swinir_mode}")
 
@@ -219,12 +221,10 @@ def calculate_yadapt_features(img_lq, sam_model, preprocessor, swinir_mode):
     with torch.no_grad():
         x, y1, y2, y3 = sam_model.image_encoder(torch_img)
 
-        if swinir_mode == 'swinir':
-            y = torch.cat([y1, y2, y3], dim=1)
-        elif swinir_mode == 'newfeature':
+        if swinir_mode == 'newfeature':
             y = x
         else:
-            raise ValueError(f"Invalid swinir_mode: {swinir_mode}")
+            y = torch.cat([y1, y2, y3], dim=1)
 
     y = y.cpu().numpy()
     y = preprocessor.slice_yadapt_features(y)

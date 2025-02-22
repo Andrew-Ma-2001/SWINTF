@@ -10,7 +10,7 @@ import torch.nn.functional as F
 # import torch.utils.checkpoint as checkpoint
 from timm.models.layers import trunc_normal_
 from nets.swinir import RSTB, PatchEmbed, PatchUnEmbed, Upsample, UpsampleOneStep
-
+from utils.utils_image import plot_attention_map
 
 class SelfAttention(nn.Module):
     def __init__(self, in_channels):

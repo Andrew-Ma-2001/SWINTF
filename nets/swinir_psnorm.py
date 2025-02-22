@@ -12,6 +12,7 @@ from timm.models.layers import trunc_normal_
 from nets.swinir import RSTB, PatchEmbed, PatchUnEmbed, Upsample, UpsampleOneStep
 from utils.utils_image import plot_attention_map
 
+
 class MinMaxNorm(nn.Module):
     def __init__(self):
         super().__init__()
@@ -54,10 +55,6 @@ class SelfAttention(nn.Module):
         y_adapt_flatten = y_adapt.flatten(2).transpose(1, 2)    # B, MN, C
         x_flatten = x.flatten(2).transpose(1, 2)    # B, HW, C
 
-       ################### 2024-04-16 ##########################
-        # q = self.q(self.norm1(x_flatten))  # B, HW, C
-        # kv = self.kv(self.norm2(y_adapt_flatten)).view(batch_size, -1, 2, C)
-
        #################### 2024-11-30 不用 norm ##########################
         x_flatten = self.x_norm(x_flatten)
         y_adapt_flatten = self.y_adapt_norm(y_adapt_flatten)
@@ -68,7 +65,6 @@ class SelfAttention(nn.Module):
 
         attn = (q @ k.transpose(-2, -1)) / C #是C还是根号C看经验
         attn = attn.softmax(dim=-1)
-        # breakpoint()
         out = (attn @ v)  # bug here
 
        ################### 2024-08-07 ##########################
@@ -79,7 +75,40 @@ class SelfAttention(nn.Module):
         return out
 
 
-class SwinIRStrongNorm(nn.Module):
+class YAdaptPixelShuffle(nn.Module):
+    def __init__(self, in_channels=3840, out_channels=180):
+        super().__init__()
+        # Stage 1: 3840 -> 3840 -> 960 (12x12) 
+        self.conv1 = nn.Conv2d(in_channels, out_channels*16, kernel_size=1)
+        self.pixel_shuffle1 = nn.PixelShuffle(4)  # 3840 -> 240, 3x3 -> 12x12
+        
+        # Final stage: 240 -> 720 -> 180 (48x48)
+        # self.conv2 = nn.Conv2d(in_channels//4, out_channels*4, kernel_size=1) 
+        # self.final_shuffle = nn.PixelShuffle(2)  # 720 -> 180, 12x12 -> 48x48
+        
+        # Normalization and activation
+        self.norm = nn.BatchNorm2d(out_channels)
+        self.act = nn.ReLU(inplace=True)
+        
+        # Add intermediate activation
+        self.act1 = nn.ReLU(inplace=True)
+
+    def forward(self, x):
+        # Stage 1: 3840 -> 240
+        x = self.conv1(x)  # B, 15360, 3, 3
+        x = self.act1(x)
+        x = self.pixel_shuffle1(x)  # B, 240, 12, 12
+        
+        # Final stage: 240 -> 180
+        # x = self.conv2(x)  # B, 720, 12, 12
+        # x = self.final_shuffle(x)  # B, 180, 48, 48
+        x = self.norm(x)
+        x = self.act(x)
+        
+        return x  # B, 180, 48, 48
+
+
+class SwinIRPixelShuffelNorm(nn.Module):
     r""" SwinIR
         A PyTorch impl of : `SwinIR: Image Restoration Using Swin Transformer`, based on Swin Transformer.
 
@@ -114,7 +143,7 @@ class SwinIRStrongNorm(nn.Module):
                  norm_layer=nn.LayerNorm, ape=False, patch_norm=True,
                  use_checkpoint=False, upscale=2, img_range=1., upsampler='', resi_connection='1conv', y_adapt_feature=None,
                  **kwargs):
-        super(SwinIRStrongNorm, self).__init__()
+        super(SwinIRPixelShuffelNorm, self).__init__()
         num_in_ch = in_chans
         num_out_ch = in_chans
         num_feat = 64
@@ -191,22 +220,12 @@ class SwinIRStrongNorm(nn.Module):
         self.y_adapt_feature_size = y_adapt_feature
         self.yadapt_batch_norm = nn.BatchNorm2d(180)
 
-        self.adapt_conv = nn.ModuleList([
-            nn.Conv2d(3840, 180, kernel_size=1),
-            nn.Conv2d(3840, 180, kernel_size=1),
-            nn.Conv2d(3840, 180, kernel_size=1),
-            nn.Conv2d(3840, 180, kernel_size=1),
-            nn.Conv2d(3840, 180, kernel_size=1),
-            nn.Conv2d(3840, 180, kernel_size=1),
+        self.adapt_layers = nn.ModuleList([
+            YAdaptPixelShuffle(3840, 180) for _ in range(6)
         ])
 
         self.adapt_self_attention = nn.ModuleList([
-            SelfAttention(180),
-            SelfAttention(180),
-            SelfAttention(180),
-            SelfAttention(180),
-            SelfAttention(180),
-            SelfAttention(180),
+            SelfAttention(180) for _ in range(6)
         ])
 
         # build the last conv layer in deep feature extraction
@@ -299,7 +318,7 @@ class SwinIRStrongNorm(nn.Module):
                 # x = self.self_attention[idx](y_adapt, x)
                 # x = self.x_conv_last[idx](x)
 
-                y_adapt = self.adapt_conv[idx](y_adapt_feature)
+                y_adapt = self.adapt_layers[idx](y_adapt_feature)
                 x = self.adapt_self_attention[idx](y_adapt, x)
 
                 # y_adapt = y_adapt.view(-1, 180, 48, 48)
@@ -332,24 +351,6 @@ class SwinIRStrongNorm(nn.Module):
             x = self.conv_after_body(self.forward_features(x, y_adapt_feature)) + x
             x = self.conv_before_upsample(x)
             x = self.conv_last(self.upsample(x))
-        elif self.upsampler == 'pixelshuffledirect':
-            # for lightweight SR
-            x = self.conv_first(x)
-            x = self.conv_after_body(self.forward_features(x, y_adapt_feature)) + x
-            x = self.upsample(x)
-        elif self.upsampler == 'nearest+conv':
-            # for real-world SR
-            x = self.conv_first(x)
-            x = self.conv_after_body(self.forward_features(x, y_adapt_feature)) + x
-            x = self.conv_before_upsample(x)
-            x = self.lrelu(self.conv_up1(torch.nn.functional.interpolate(x, scale_factor=2, mode='nearest')))
-            x = self.lrelu(self.conv_up2(torch.nn.functional.interpolate(x, scale_factor=2, mode='nearest')))
-            x = self.conv_last(self.lrelu(self.conv_hr(x)))
-        else:
-            # for image denoising and JPEG compression artifact reduction
-            x_first = self.conv_first(x)
-            res = self.conv_after_body(self.forward_features(x_first, y_adapt_feature)) + x_first
-            x = x + self.conv_last(res)
 
         x = x / self.img_range + self.mean
 
@@ -365,9 +366,6 @@ class SwinIRStrongNorm(nn.Module):
         flops += H * W * 3 * self.embed_dim * self.embed_dim
         flops += self.upsample.flops()
         return flops
-
-
-
 
 if __name__ == '__main__':
     # upscale = 4
@@ -397,20 +395,20 @@ if __name__ == '__main__':
     # print(x.shape)
     # print(height, width)
 
-    # adapt_conv = nn.Conv2d(3840, 180, kernel_size=1)
-    # attention_model = SelfAttention(180)
-    # y_adapt = torch.randn((1, 3840, 3, 3))
-    # y_adapt = adapt_conv(y_adapt)
-    # # y_adapt_conv = nn.Conv2d(180, 1024, kernel_size=1)
-    # x = torch.randn((1, 180, 64, 64))
-    # x = attention_model(y_adapt, x)
-    # print(x.shape)
+    adapt_conv = YAdaptPixelShuffle(3840, 180)
+    attention_model = SelfAttention(180)
+    y_adapt = torch.randn((1, 3840, 3, 3))
+    y_adapt = adapt_conv(y_adapt)
+    # y_adapt_conv = nn.Conv2d(180, 1024, kernel_size=1)
+    x = torch.randn((1, 180, 64, 64))
+    x = attention_model(y_adapt, x)
+    print(x.shape)
 
-    model = SwinIRStrongNorm(upscale=2, img_size=(48, 48), window_size=8, 
-                          img_range=1., depths=[6,6,6,6,6,6], embed_dim=180, 
-                          num_heads=[6,6,6,6,6,6], mlp_ratio=2, upsampler='pixelshuffledirect')
+    # model = SwinIRAdapter(upscale=2, img_size=(48, 48), window_size=8, 
+    #                       img_range=1., depths=[6,6,6,6,6,6], embed_dim=180, 
+    #                       num_heads=[6,6,6,6,6,6], mlp_ratio=2, upsampler='pixelshuffledirect')
     
-    input_test_image = torch.randn(1, 3, 48, 48)
-    y_adapt_feature = torch.randn(1, 3840, 3, 3)
+    # input_test_image = torch.randn(1, 3, 48, 48)
+    # y_adapt_feature = torch.randn(1, 3840, 3, 3)
 
-    output = model(input_test_image, y_adapt_feature)
+    # output = model(input_test_image, y_adapt_feature)
