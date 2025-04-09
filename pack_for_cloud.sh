@@ -14,6 +14,7 @@ cp 001_classicalSR_DIV2K_s48w8_SwinIR-M_x2.pth temp_pack/
 cp 001_classicalSR_DIV2K_s48w8_SwinIR-M_x4.pth temp_pack/
 
 # Copy experiment model
+# 这里修改模型路径
 cp experiments/SwinIR_20250218160256/500000_model.pth temp_pack/experiments/SwinIR_20250218160256/
 
 # Copy test dataset
@@ -29,7 +30,7 @@ cp main_test_swinir.py temp_pack/
 cp run_urban100noise.sh temp_pack/
 
 # Copy necessary modules
-cp -r nets/swinir*.py temp_pack/nets/
+cp -r nets/*.py temp_pack/nets/
 cp -r data/dataloader.py temp_pack/data/
 cp -r data/extract_sam_features.py temp_pack/data/
 cp -r utils/utils_dist.py temp_pack/utils/

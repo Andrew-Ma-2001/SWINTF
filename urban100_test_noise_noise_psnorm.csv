@@ -1,0 +1,13 @@
+Noise Type,PSNR
+noise_01_channel,32.99
+noise_01_gray,32.8
+noise_05_channel,30.19
+noise_05_gray,28.73
+noise_10_channel,26.99
+noise_10_gray,24.55
+noise_15_channel,24.5
+noise_15_gray,21.53
+noise_sigma_0_010_general,30.95
+noise_sigma_0_050_general,22.51
+noise_sigma_0_100_general,17.88
+noise_sigma_0_150_general,16.05

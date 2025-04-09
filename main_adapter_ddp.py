@@ -59,6 +59,8 @@ elif swinir_mode == 'rstbadapt':
     from nets.swinir_rstbadapt import SwinIRRSTBAdapt as SwinIRAdapter
 elif swinir_mode == 'psnorm':
     from nets.swinir_psnorm import SwinIRPixelShuffelNorm as SwinIRAdapter
+elif swinir_mode == 'difftrans':
+    from nets.swinir_difftrans import SwinIRDiffTrans as SwinIRAdapter
 else:
     raise ValueError(f"Invalid swinir_mode: {swinir_mode}")
 
