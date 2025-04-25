@@ -6,7 +6,7 @@
 import sys
 sys.path.append("/home/mayanze/PycharmProjects/SwinTF/")
 
-from nets.build_sam import ImageEncoderViT_FeatureExtract, ImageEncoderViT
+from nets.build_sam import ImageEncoderViT
 
 
 from functools import partial

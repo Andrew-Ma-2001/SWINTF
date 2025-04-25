@@ -96,7 +96,7 @@ class SuperResolutionYadaptDataset(Dataset):
         self.patch_size = config['patch_size'] if self.config is not None else 96
         self.LR_size = self.patch_size // self.scale 
         
-        self.model = extract_sam_model(model_path=config['pretrained_sam'], image_size = 1024)
+        # self.model = extract_sam_model(model_path=config['pretrained_sam'], image_size = 1024)
         self.preprocessor = ImagePreprocessor()
 
         if not DEBUG:
@@ -104,10 +104,10 @@ class SuperResolutionYadaptDataset(Dataset):
         else:
             self.use_cuda = False
 
-        if self.use_cuda:
-            # Move the model to a specific 
-            self.model = self.model.cuda()
-            self.model.image_encoder = torch.nn.DataParallel(self.model.image_encoder)
+        # if self.use_cuda:
+        #     # Move the model to a specific 
+        #     self.model = self.model.cuda()
+        #     self.model.image_encoder = torch.nn.DataParallel(self.model.image_encoder)
 
 
         if self.mode == 'train':

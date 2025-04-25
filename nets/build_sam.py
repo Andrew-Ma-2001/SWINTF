@@ -5,7 +5,7 @@ from functools import partial
 import sys
 sys.path.append("/home/mayanze/PycharmProjects/SwinTF/")
 
-from nets.image_encoder_vit import ImageEncoderViT, ImageEncoderViT_FeatureExtract
+from nets.image_encoder_vit import ImageEncoderViT
 from nets.mask_decoder import MaskDecoder
 from nets.prompt_encoder import PromptEncoder
 from nets.sam import Sam
@@ -26,6 +26,7 @@ def build_sam_vit_h(checkpoint=None):
         encoder_num_heads=16,
         encoder_global_attn_indexes=[7, 15, 23, 31],
         checkpoint=checkpoint,
+        out_indices=[5, 10, 15, 20, 25, 30],
     )
 
 
@@ -35,6 +36,8 @@ def _build_sam(
     encoder_num_heads,
     encoder_global_attn_indexes,
     checkpoint=None,
+    out_indices=-1,
+    num_tokens=1,
 ):
     prompt_embed_dim = 256
     image_size = 1024
@@ -50,10 +53,13 @@ def _build_sam(
             num_heads=encoder_num_heads,
             patch_size=vit_patch_size,
             qkv_bias=True,
+            use_abs_pos=False,
             use_rel_pos=True,
             global_attn_indexes=encoder_global_attn_indexes,
             window_size=14,
             out_chans=prompt_embed_dim,
+            out_indices=out_indices,
+            num_tokens=num_tokens,
         ),
         prompt_encoder=PromptEncoder(
             embed_dim=prompt_embed_dim,
@@ -76,11 +82,10 @@ def _build_sam(
         pixel_mean=[123.675, 116.28, 103.53],
         pixel_std=[58.395, 57.12, 57.375],
     )
-    sam.eval()
     if checkpoint is not None:
         with open(checkpoint, "rb") as f:
             state_dict = torch.load(f)
-        sam.load_state_dict(state_dict)
+        sam.load_state_dict(state_dict, strict=False)
     return sam
 
 def build_sam_vit_l():
@@ -110,7 +115,7 @@ if __name__ == "__main__":
     vit_patch_size = 16
     image_embedding_size = image_size // vit_patch_size
 
-    image_encoder = ImageEncoderViT_FeatureExtract(
+    image_encoder = ImageEncoderViT(
         depth=encoder_depth,
         embed_dim=encoder_embed_dim,
         img_size=image_size,
@@ -125,7 +130,7 @@ if __name__ == "__main__":
         out_chans=prompt_embed_dim,
     )
     # Create Fake Image
-    fake_image = torch.randn(1, 3, 500, 500)
+    fake_image = torch.randn(32, 3, 48, 48)
     output = image_encoder(fake_image)
     print(output[0].shape)
     print(output[1].shape)

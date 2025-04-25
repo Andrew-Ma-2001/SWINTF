@@ -9,8 +9,9 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from typing import Optional, Tuple, Type
-
-from functools import partial
+import math
+from functools import partial, reduce
+from operator import mul
 import numpy as np
 
 
@@ -39,6 +40,8 @@ class ImageEncoderViT(nn.Module):
         rel_pos_zero_init: bool = True,
         window_size: int = 0,
         global_attn_indexes: Tuple[int, ...] = (),
+        out_indices = -1,
+        num_tokens = 1,
     ) -> None:
         """
         Args:
@@ -109,140 +112,47 @@ class ImageEncoderViT(nn.Module):
             LayerNorm2d(out_chans),
         )
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        x = self.patch_embed(x)
-        if self.pos_embed is not None:
-            x = x + self.pos_embed
+        self.num_tokens = num_tokens
+        if num_tokens > 0:
+            val = math.sqrt(6. / float(3 * reduce(mul, [patch_size, patch_size], 1) + embed_dim))  # noqa
+            self.prompt_embeddings = nn.Parameter(torch.zeros(depth, num_tokens, embed_dim))
+            nn.init.uniform_(self.prompt_embeddings.data, -val, val)
 
-        for blk in self.blocks:
-            x = blk(x)
+        if isinstance(out_indices, int):
+            if out_indices == -1:
+                out_indices = depth - 1
+            self.out_indices = [out_indices]
+        elif isinstance(out_indices, list) or isinstance(out_indices, tuple):
+            self.out_indices = out_indices
+        else:
+            raise TypeError('out_indices must be type of int, list or tuple')
 
-        x = self.neck(x.permute(0, 3, 1, 2))
+        self._freeze()
 
-        return x
-
-
-class ImageEncoderViT_FeatureExtract(nn.Module):
-    def __init__(
-        self,
-        img_size: int = 1024,
-        patch_size: int = 16,
-        in_chans: int = 3,
-        embed_dim: int = 768,
-        depth: int = 12,
-        num_heads: int = 12,
-        mlp_ratio: float = 4.0,
-        out_chans: int = 256,
-        qkv_bias: bool = True,
-        norm_layer: Type[nn.Module] = nn.LayerNorm,
-        act_layer: Type[nn.Module] = nn.GELU,
-        use_abs_pos: bool = True,
-        use_rel_pos: bool = False,
-        rel_pos_zero_init: bool = True,
-        window_size: int = 0,
-        global_attn_indexes: Tuple[int, ...] = (),
-    ) -> None:
-        """
-        Args:
-            img_size (int): Input image size.
-            patch_size (int): Patch size.
-            in_chans (int): Number of input image channels.
-            embed_dim (int): Patch embedding dimension.
-            depth (int): Depth of ViT.
-            num_heads (int): Number of attention heads in each ViT block.
-            mlp_ratio (float): Ratio of mlp hidden dim to embedding dim.
-            qkv_bias (bool): If True, add a learnable bias to query, key, value.
-            norm_layer (nn.Module): Normalization layer.
-            act_layer (nn.Module): Activation layer.
-            use_abs_pos (bool): If True, use absolute positional embeddings.
-            use_rel_pos (bool): If True, add relative positional embeddings to the attention map.
-            rel_pos_zero_init (bool): If True, zero initialize relative positional parameters.
-            window_size (int): Window size for window attention blocks.
-            global_attn_indexes (list): Indexes for blocks using global attention.
-        """
-        super().__init__()
-        self.img_size = img_size # 1024
-
-        self.patch_embed = PatchEmbed(
-            # kernel_size=(16, 16),
-            # stride=(16, 16),
-            # in_chans=3,
-            # embed_dim=1280,
-            kernel_size=(patch_size, patch_size),
-            stride=(patch_size, patch_size),
-            in_chans=in_chans,
-            embed_dim=embed_dim,
-        )
-
-        self.pos_embed: Optional[nn.Parameter] = None
-        if use_abs_pos: # True
-            # Initialize absolute positional embedding with pretrain image size.
-            # self.pos_embed = nn.Parameter(torch.zeros(1, 1024 // 16 = 64, 1024 // 16, 1280))
-            self.pos_embed = nn.Parameter(
-                torch.zeros(1, img_size // patch_size, img_size // patch_size, embed_dim)
-            )
-
-        self.blocks = nn.ModuleList()
-        for i in range(depth):
-            block = Block(
-                dim=embed_dim, # 1280
-                num_heads=num_heads, # 16
-                mlp_ratio=mlp_ratio, # 4
-                qkv_bias=qkv_bias, # True
-                norm_layer=norm_layer, # nn.LayerNorm
-                act_layer=act_layer, # nn.GELU
-                use_rel_pos=use_rel_pos, # True
-                rel_pos_zero_init=rel_pos_zero_init, # True
-                window_size=window_size if i not in global_attn_indexes else 0, # [7, 15, 23 ,31] is 14 else 0
-                input_size=(img_size // patch_size, img_size // patch_size), # (64, 64)
-            )
-            self.blocks.append(block)
-
-        self.neck = nn.Sequential(
-            nn.Conv2d(
-                embed_dim, # 1280
-                out_chans, # 256
-                kernel_size=1,
-                bias=False,
-            ),
-            LayerNorm2d(out_chans),
-            nn.Conv2d(
-                out_chans, # 256
-                out_chans, # 256
-                kernel_size=3,
-                padding=1,
-                bias=False,
-            ),
-            LayerNorm2d(out_chans),
-        )
+    def _freeze(self):
+        for name, param in self.named_parameters():
+            if not any([exclude in name for exclude in ['prompt_embeddings']]):
+                param.requires_grad = False
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         x = self.patch_embed(x)
         if self.pos_embed is not None:
             x = x + self.pos_embed
 
-        i = 0
-        for blk in self.blocks:
+        outs = []
+        for i, blk in enumerate(self.blocks):
+            # eliminate learnable prompt embeddings 25.04.2025
+            # x = blk(torch.cat([
+            #     self.prompt_embeddings, x.reshape(x.shape[0], -1, x.shape[-1])
+            # ], dim=1))
+            # x = x[:, self.num_tokens:, ...]
+            # if i in self.out_indices:
+            #     outs.append(x)
             x = blk(x)
-            i += 1
-            if i == 10:
-                x_10 = x
-                # x_10 = self.neck(x_10.permute(0, 3, 1, 2))
-            if i == 20:
-                x_20 = x
-                # x_20 = self.neck(x_20.permute(0, 3, 1, 2))
-            if i == 30:
-                x_30 = x
-                # x_30 = self.neck(x_30.permute(0, 3, 1, 2))
+            if i in self.out_indices:
+                outs.append(x)
 
-        x = self.neck(x.permute(0, 3, 1, 2))
-
-        # Permute the output to be in the same format as the output of the CNN backbone
-        x_10 = x_10.permute(0, 3, 1, 2)
-        x_20 = x_20.permute(0, 3, 1, 2)
-        x_30 = x_30.permute(0, 3, 1, 2)
-
-        return x, x_10, x_20, x_30
+        return outs
 
 
 class Block(nn.Module):
@@ -307,7 +217,6 @@ class Block(nn.Module):
 
         x = shortcut + x
         x = x + self.mlp(self.norm2(x))
-
         return x
 
 

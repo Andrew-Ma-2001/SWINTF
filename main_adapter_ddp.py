@@ -32,9 +32,9 @@ parser.add_argument('--train_swinir', action='store_true', default=False, help='
 # parser.add_argument('--dist', default='store_true')
 parser.add_argument('--local-rank', type=int, default=0)
 parser.add_argument('--mode', type=int, default=1, help='Mode for training')
-parser.add_argument('--swinir_mode', type=str, default='swinir', help='Mode for SwinIR model')
-parser.add_argument('--config', type=str, required=True, help='Path to config file')
-parser.add_argument('--gpu', type=str, default='0', help='GPU id(s) to use (comma-separated, e.g., "0,1,2,3")')
+parser.add_argument('--swinir_mode', type=str, default='sam', help='Mode for SwinIR model')
+parser.add_argument('--config', type=str, default='/home/mayanze/PycharmProjects/SwinTF/config/set5_mode1.yaml', help='Path to config file')
+parser.add_argument('--gpu', type=str, default='4,5,6,7', help='GPU id(s) to use (comma-separated, e.g., "0,1,2,3")')
 
 args = parser.parse_args()
 
@@ -61,6 +61,8 @@ elif swinir_mode == 'psnorm':
     from nets.swinir_psnorm import SwinIRPixelShuffelNorm as SwinIRAdapter
 elif swinir_mode == 'difftrans':
     from nets.swinir_difftrans import SwinIRDiffTrans as SwinIRAdapter
+elif swinir_mode == 'sam':
+    from nets.swinir_sam import SwinIR_SAM as SwinIRAdapter
 else:
     raise ValueError(f"Invalid swinir_mode: {swinir_mode}")
 
