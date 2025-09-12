@@ -301,7 +301,7 @@ config_save_path = '/home/mayanze/PycharmProjects/SwinTF/config/urban100_test/no
 # 针对 general noise 重新生成，这次生成的图片会把老的覆盖掉
 length = 5
 # sigmas = np.linspace(1, 15, length) / 255.0
-sigmas = np.array([1,5,10,15]) / 100.0
+sigmas = np.array([20,25,30]) / 100.0
 noise_types = ['general']
 configs = []
 for sigma in sigmas:
@@ -313,29 +313,31 @@ for sigma in sigmas:
         generate_config_and_save(LR_dir=output_folder, HR_dir=hr_folder, save_path=config_save_path, config_name=config_name)
         configs.append(os.path.join(config_save_path, config_name))
 # configs = [os.path.join(config_save_path, file) for file in os.listdir(config_save_path) if file.endswith('.yaml')]
-for config in configs:
-    print(config)
-    test_set = load_dataset(config)
-    test_set = None
-    torch.cuda.empty_cache()
+# for config in configs:
+#     print(config)
+#     test_set = load_dataset(config)
+#     test_set = None
+#     torch.cuda.empty_cache()
 
 
-length = 5
-# sigmas = np.linspace(1, 15, length) / 255.0
-sigmas = np.array([1,5,10,15]) / 255.0
-noise_types = ['gray', 'channel']
-configs = []
-for sigma in sigmas:
-    for noise_type in noise_types:
-        sigma_str = str(int(sigma*255)).zfill(2)
-        output_folder = f'/home/mayanze/PycharmProjects/SwinTF/dataset/testsets/urban100_noise/noise_{sigma_str}_{noise_type}'
-        config_name = f'noise_{sigma_str}_{noise_type}.yaml'
-        generate_gaussian_noise_dir_with_params(input_folder, output_folder, sigma, noise_type, None)
-        generate_config_and_save(LR_dir=output_folder, HR_dir=hr_folder, save_path=config_save_path, config_name=config_name)
-        configs.append(os.path.join(config_save_path, config_name))
-# configs = [os.path.join(config_save_path, file) for file in os.listdir(config_save_path) if file.endswith('.yaml')]
-for config in configs:
-    print(config)
-    test_set = load_dataset(config)
-    test_set = None
-    torch.cuda.empty_cache()
+# length = 5
+# # sigmas = np.linspace(1, 15, length) / 255.0
+# sigmas = np.array([1,5,10,15]) / 255.0
+# noise_types = ['gray', 'channel']
+# configs = []
+# for sigma in sigmas:
+#     for noise_type in noise_types:
+#         sigma_str = str(int(sigma*255)).zfill(2)
+#         output_folder = f'/home/mayanze/PycharmProjects/SwinTF/dataset/testsets/urban100_noise/noise_{sigma_str}_{noise_type}'
+#         config_name = f'noise_{sigma_str}_{noise_type}.yaml'
+#         generate_gaussian_noise_dir_with_params(input_folder, output_folder, sigma, noise_type, None)
+#         generate_config_and_save(LR_dir=output_folder, HR_dir=hr_folder, save_path=config_save_path, config_name=config_name)
+#         configs.append(os.path.join(config_save_path, config_name))
+# # configs = [os.path.join(config_save_path, file) for file in os.listdir(config_save_path) if file.endswith('.yaml')]
+# for config in configs:
+#     print(config)
+#     test_set = load_dataset(config)
+#     test_set = None
+#     torch.cuda.empty_cache()
+
+# 接下来要把数据集增强一下

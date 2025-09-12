@@ -7,7 +7,7 @@ import os
 import torch
 import requests
 
-from nets.swinir import SwinIR as net
+from nets.network_swinir import SwinIR as net
 from utils import util_calculate_psnr_ssim as util
 
 import yaml
@@ -44,7 +44,10 @@ def main(config):
     model = model.to(device)
 
     if not test_swinir:
-        sam_model, preprocessor = define_sam_model(model_path, training_patch_size)
+        if config['network']['swinir_mode'] == 'sam':
+            sam_model, preprocessor = None, None
+        else:
+            sam_model, preprocessor = define_sam_model(model_path, training_patch_size)
 
     # setup folder and path
     folder, save_dir, border, window_size = setup(config)
@@ -134,9 +137,7 @@ def define_model(scale, patch_size, model_path, config):
 
     swinir_mode = config['network']['swinir_mode']
 
-    if swinir_mode == 'swinir':
-        from nets.swinir import SwinIRAdapter
-    elif swinir_mode == 'strongnorm':
+    if swinir_mode == 'strongnorm':
         from nets.swinir_strongnorm import SwinIRStrongNorm as SwinIRAdapter
     elif swinir_mode == 'pixelshuffle':
         from nets.swinir_pixelshuffel import SwinIRPixelShuffel as SwinIRAdapter
@@ -148,8 +149,10 @@ def define_model(scale, patch_size, model_path, config):
         from nets.swinir_psnorm import SwinIRPixelShuffelNorm as SwinIRAdapter
     elif swinir_mode == 'difftrans':
         from nets.swinir_difftrans import SwinIRDiffTrans as SwinIRAdapter
-    else:
-        raise ValueError(f"Invalid swinir_mode: {swinir_mode}")
+    elif swinir_mode == 'sam':
+        from nets.swinir_sam import SwinIR_SAM as SwinIRAdapter
+    # else:
+    #     raise ValueError(f"Invalid swinir_mode: {swinir_mode}")
 
 
     if config['network']['swinir_test'] is True:
@@ -211,10 +214,15 @@ def get_image_pair(config, path, **kwargs):
         sam_model = kwargs.get('sam_model', None)
         preprocessor = kwargs.get('preprocessor', None)
         swinir_mode = kwargs.get('swinir_mode', None)
-        y_adapt_features = calculate_yadapt_features(img_lq, sam_model, preprocessor, swinir_mode)
-        # Change y_adapt_features to tensor
-        y_adapt_features = torch.tensor(y_adapt_features).float()
-        y_adapt_features = y_adapt_features.unsqueeze(0)
+
+        if swinir_mode == 'sam':
+            y_adapt_features = None
+        else:
+            y_adapt_features = calculate_yadapt_features(img_lq, sam_model, preprocessor, swinir_mode)
+            # Change y_adapt_features to tensor
+            y_adapt_features = torch.tensor(y_adapt_features).float()
+            y_adapt_features = y_adapt_features.unsqueeze(0)
+
         return imgname, img_lq, img_gt, y_adapt_features
 
 def calculate_yadapt_features(img_lq, sam_model, preprocessor, swinir_mode):

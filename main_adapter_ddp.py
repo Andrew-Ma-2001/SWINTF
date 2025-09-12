@@ -325,7 +325,19 @@ def main():
     # 4.2 Optimizer 定义
     if config['train']['optimizer'] == 'adam':
         optim_params = []
-        for k, v in model.named_parameters():
+        for k, v in model.module.sam.image_encoder.named_parameters():
+            if v.requires_grad:
+                optim_params.append(v)
+            else:
+                print('Params [{:s}] will not optimize.'.format(k))
+
+        for k, v in model.module.proj.named_parameters():
+            if v.requires_grad:
+                optim_params.append(v)
+            else:
+                print('Params [{:s}] will not optimize.'.format(k))
+
+        for k, v in model.module.swinir.named_parameters():
             if v.requires_grad:
                 optim_params.append(v)
             else:

@@ -27,6 +27,7 @@ def build_sam_vit_h(checkpoint=None):
         encoder_global_attn_indexes=[7, 15, 23, 31],
         checkpoint=checkpoint,
         out_indices=[5, 10, 15, 20, 25, 30],
+        num_tokens=16,
     )
 
 

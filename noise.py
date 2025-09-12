@@ -587,38 +587,44 @@ if __name__ == "__main__":
     # # process_images(input_folder, output_folder_degrade, degrade_image, scale_factor)
     # # config_path = '/home/mayanze/PycharmProjects/SwinTF/config/test_config/Set14test.yaml'
     
-    config_path = '/home/mayanze/PycharmProjects/SwinTF/config/X2/manga109test.yaml'
+    config_path = '/home/mayanze/PycharmProjects/SwinTF/config/X2/urban100test.yaml'
     # model_path = 'experiments/SwinIR_20240803080852/500000_model.pth'
     model_path = '/home/mayanze/PycharmProjects/SwinTF/001_classicalSR_DIV2K_s48w8_SwinIR-M_x2.pth'
     test_swinir = True
+    # noise_settings = [
+    #     {'sig': 0.0, 'noise': 0.0, 'quality_factor': 30},
+    #     {'sig': 0.0, 'noise': 0.0, 'quality_factor': 40},
+    #     {'sig': 0.0, 'noise': 0.0, 'quality_factor': 50},
+    #     {'sig': 0.0, 'noise': 0.0, 'quality_factor': 60},
+    #     {'sig': 0.0, 'noise': 0.0, 'quality_factor': 70},
+    #     {'sig': 0.0, 'noise': 0.0, 'quality_factor': 80},
+    #     {'sig': 0.0, 'noise': 0.0, 'quality_factor': 90},
+    #     {'sig': 0.0, 'noise': 0.0, 'quality_factor': 100},
+    #     {'sig': 0.0, 'noise': 0.0, 'quality_factor': 0},
+    #     # # Testing Sig
+    #     {'sig': 1.0, 'noise': 0.0, 'quality_factor': 0},
+    #     {'sig': 2.0, 'noise': 0.0, 'quality_factor': 0},
+    #     {'sig': 3.0, 'noise': 0.0, 'quality_factor': 0},
+    #     {'sig': 4.0, 'noise': 0.0, 'quality_factor': 0},
+    #     {'sig': 5.0, 'noise': 0.0, 'quality_factor': 0},
+    #     {'sig': 0.0, 'noise': 1.0, 'quality_factor': 0},
+    #     {'sig': 0.0, 'noise': 2.0, 'quality_factor': 0},
+    #     {'sig': 0.0, 'noise': 3.0, 'quality_factor': 0},
+    #     {'sig': 0.0, 'noise': 4.0, 'quality_factor': 0},
+    #     {'sig': 0.0, 'noise': 5.0, 'quality_factor': 0},
+    #     {'sig': 0.0, 'noise': 10.0, 'quality_factor': 0},
+    #     {'sig': 0.0, 'noise': 20.0, 'quality_factor': 0},
+    #     {'sig': 0.0, 'noise': 30.0, 'quality_factor': 0},
+    #     {'sig': 0.0, 'noise': 40.0, 'quality_factor': 0},
+    #     {'sig': 0.0, 'noise': 50.0, 'quality_factor': 0},
+    #     # {'sig': 3.0, 'noise': 25.0, 'quality_factor': 50},
+    # ]
+    
+    # HARD MODE
     noise_settings = [
-        {'sig': 0.0, 'noise': 0.0, 'quality_factor': 30},
-        {'sig': 0.0, 'noise': 0.0, 'quality_factor': 40},
-        {'sig': 0.0, 'noise': 0.0, 'quality_factor': 50},
-        {'sig': 0.0, 'noise': 0.0, 'quality_factor': 60},
-        {'sig': 0.0, 'noise': 0.0, 'quality_factor': 70},
-        {'sig': 0.0, 'noise': 0.0, 'quality_factor': 80},
-        {'sig': 0.0, 'noise': 0.0, 'quality_factor': 90},
-        {'sig': 0.0, 'noise': 0.0, 'quality_factor': 100},
-        {'sig': 0.0, 'noise': 0.0, 'quality_factor': 0},
-        # # Testing Sig
-        {'sig': 1.0, 'noise': 0.0, 'quality_factor': 0},
-        {'sig': 2.0, 'noise': 0.0, 'quality_factor': 0},
-        {'sig': 3.0, 'noise': 0.0, 'quality_factor': 0},
-        {'sig': 4.0, 'noise': 0.0, 'quality_factor': 0},
-        {'sig': 5.0, 'noise': 0.0, 'quality_factor': 0},
-        {'sig': 0.0, 'noise': 1.0, 'quality_factor': 0},
-        {'sig': 0.0, 'noise': 2.0, 'quality_factor': 0},
-        {'sig': 0.0, 'noise': 3.0, 'quality_factor': 0},
-        {'sig': 0.0, 'noise': 4.0, 'quality_factor': 0},
-        {'sig': 0.0, 'noise': 5.0, 'quality_factor': 0},
-        {'sig': 0.0, 'noise': 10.0, 'quality_factor': 0},
-        {'sig': 0.0, 'noise': 20.0, 'quality_factor': 0},
-        {'sig': 0.0, 'noise': 30.0, 'quality_factor': 0},
-        {'sig': 0.0, 'noise': 40.0, 'quality_factor': 0},
-        {'sig': 0.0, 'noise': 50.0, 'quality_factor': 0},
-        # {'sig': 3.0, 'noise': 25.0, 'quality_factor': 50},
+        {'sig': 0.0, 'noise': n, 'quality_factor': 0} for n in range(60, 101, 10)
     ]
+    
 
     with open(config_path, 'r') as f:
         config = yaml.safe_load(f)
@@ -631,24 +637,32 @@ if __name__ == "__main__":
     tile_overlap = 32
     config['test']['tile'] = tile
     config['test']['tile_overlap'] = tile_overlap
-    config['network']['swinir_test'] = test_swinir
-    model = define_model(scale, training_patch_size, model_path, config)
+    # config['network']['swinir_test'] = test_swinir
+    # model = define_model(scale, training_patch_size, model_path, config)
+    model = None
 
-    if test_swinir:
-        model = model.cuda()
+    # if test_swinir:
+        # model = model.cuda()
     
+    test_swinir = True
+
     config_name_list = []
     _, output_folder_list = noise_and_test(config_path, model, noise_settings, test_swinir)
     for output_folder, noise_set in zip(output_folder_list, noise_settings):
         sig, noise, quality_factor = noise_set['sig'], noise_set['noise'], noise_set['quality_factor']
-        config_name = f'{output_folder}_noise_{sig}_noise_{noise}_quality_{quality_factor}.yaml'
-        config_name_list.append(config_name)
+        config_name = f'{output_folder}.yaml'
+        config_name_list.append(f'noise_sig_{sig}_noise_{noise}_quality_{quality_factor}.yaml')
         config['test']['test_LR'] = output_folder
         with open(config_name, 'w') as f:
             yaml.dump(config, f)
     
     print(config_name_list)
     
+
+    # Save the config name list to a txt file so that other bash script could directly read it
+    with open('config_hard_name_list.txt', 'w') as f:
+        for config_name in config_name_list:
+            f.write(config_name + '\n')
 
     # # Load your image here
     # image = np.asarray(Image.open('/home/mayanze/PycharmProjects/SwinTF/dataset/testsets/urban100_test/hr/img_020.png').convert('RGB')) / 255.0

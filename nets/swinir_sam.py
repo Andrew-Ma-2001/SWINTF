@@ -20,13 +20,13 @@ class SwinIR_SAM(nn.Module):
             resi_connection=resi_connection
         )
 
-    def forward(self, img, y_adapt=None):
-        feats_sam_list = self.sam.image_encoder(img)
+    def forward(self, x, y_adapt_feature=None):
+        feats_sam_list = self.sam.image_encoder(x)
         B, H, W, C = feats_sam_list[0].shape
         feats_adapt_list = []
         for feats_sam in feats_sam_list:
             feats_adapt = self.proj(feats_sam.permute(0, 3, 1, 2))
             feats_adapt_list.append(feats_adapt)
-        out = self.swinir(img, feats_adapt_list)
+        out = self.swinir(x, feats_adapt_list)
 
         return out

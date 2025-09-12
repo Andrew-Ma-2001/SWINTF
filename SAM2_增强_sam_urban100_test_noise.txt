@@ -1,0 +1,6 @@
+Running: python main_test_swinir.py --config /home/mayanze/PycharmProjects/SwinTF/config/urban100_test/noise/noise_sigma_0_200_general.yaml --model experiments/SwinIR_20250531035209/500000_model.pth --gpu 4 --swinir_mode sam
+-- Average PSNR_Y/SSIM_Y: 15.07 dB; 0.1981
+Running: python main_test_swinir.py --config /home/mayanze/PycharmProjects/SwinTF/config/urban100_test/noise/noise_sigma_0_250_general.yaml --model experiments/SwinIR_20250531035209/500000_model.pth --gpu 5 --swinir_mode sam
+-- Average PSNR_Y/SSIM_Y: 13.47 dB; 0.1483
+Running: python main_test_swinir.py --config /home/mayanze/PycharmProjects/SwinTF/config/urban100_test/noise/noise_sigma_0_300_general.yaml --model experiments/SwinIR_20250531035209/500000_model.pth --gpu 6 --swinir_mode sam
+-- Average PSNR_Y/SSIM_Y: 12.79 dB; 0.1251

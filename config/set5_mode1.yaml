@@ -27,7 +27,7 @@ train:
   resume_optimizer: null
   # resume_optimizer: '/home/mayanze/PycharmProjects/SwinTF/experiments/SwinIR_20241127081357/180000_optimizer.pth'
   step_save: 5000
-  step_test: 5000 
+  step_test: 500000 
   step_print: 200
   # ==================
   # Training scheduler

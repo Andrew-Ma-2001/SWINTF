@@ -1,0 +1,116 @@
+Running: python main_test_swinir.py --config config/urban100_test/noise/noise_01_channel.yaml --model experiments/SwinIR_20250531035209/500000_model.pth --gpu 4 --swinir_mode sam
+loading model from experiments/SwinIR_20250531035209/500000_model.pth
+Running: python main_test_swinir.py --config config/urban100_test/noise/noise_10_channel.yaml --model experiments/SwinIR_20250531035209/500000_model.pth --gpu 4 --swinir_mode sam
+Running: python main_test_swinir.py --config config/urban100_test/noise/noise_01_channel.yaml --model experiments/SwinIR_20250531035209/500000_model.pth --gpu 4 --swinir_mode sam
+Running: python main_test_swinir.py --config config/urban100_test/noise/noise_01_channel.yaml --model experiments/SwinIR_20250531035209/500000_model.pth --gpu 4 --swinir_mode sam
+Running: python main_test_swinir.py --config config/urban100_test/noise/noise_01_channel.yaml --model experiments/SwinIR_20250531035209/500000_model.pth --gpu 4 --swinir_mode sam
+-- Average PSNR_Y/SSIM_Y: 32.95 dB; 0.9351
+Running: python main_test_swinir.py --config config/urban100_test/noise/noise_10_channel.yaml --model experiments/SwinIR_20250531035209/500000_model.pth --gpu 4 --swinir_mode sam
+-- Average PSNR_Y/SSIM_Y: 26.95 dB; 0.7116
+Running: python main_test_swinir.py --config config/urban100_test/noise/noise_sigma_0_010_general.yaml --model experiments/SwinIR_20250531035209/500000_model.pth --gpu 4 --swinir_mode sam
+-- Average PSNR_Y/SSIM_Y: 30.91 dB; 0.8771
+Running: python main_test_swinir.py --config config/urban100_test/noise/noise_01_gray.yaml --model experiments/SwinIR_20250531035209/500000_model.pth --gpu 5 --swinir_mode sam
+loading model from experiments/SwinIR_20250531035209/500000_model.pth
+Running: python main_test_swinir.py --config config/urban100_test/noise/noise_10_gray.yaml --model experiments/SwinIR_20250531035209/500000_model.pth --gpu 5 --swinir_mode sam
+Running: python main_test_swinir.py --config config/urban100_test/noise/noise_01_gray.yaml --model experiments/SwinIR_20250531035209/500000_model.pth --gpu 5 --swinir_mode sam
+Running: python main_test_swinir.py --config config/urban100_test/noise/noise_01_gray.yaml --model experiments/SwinIR_20250531035209/500000_model.pth --gpu 5 --swinir_mode sam
+Running: python main_test_swinir.py --config config/urban100_test/noise/noise_01_gray.yaml --model experiments/SwinIR_20250531035209/500000_model.pth --gpu 5 --swinir_mode sam
+-- Average PSNR_Y/SSIM_Y: 32.75 dB; 0.9309
+Running: python main_test_swinir.py --config config/urban100_test/noise/noise_10_gray.yaml --model experiments/SwinIR_20250531035209/500000_model.pth --gpu 5 --swinir_mode sam
+-- Average PSNR_Y/SSIM_Y: 24.56 dB; 0.5918
+Running: python main_test_swinir.py --config config/urban100_test/noise/noise_sigma_0_050_general.yaml --model experiments/SwinIR_20250531035209/500000_model.pth --gpu 5 --swinir_mode sam
+-- Average PSNR_Y/SSIM_Y: 22.53 dB; 0.5041
+Running: python main_test_swinir.py --config config/urban100_test/noise/noise_05_channel.yaml --model experiments/SwinIR_20250531035209/500000_model.pth --gpu 6 --swinir_mode sam
+loading model from experiments/SwinIR_20250531035209/500000_model.pth
+Running: python main_test_swinir.py --config config/urban100_test/noise/noise_15_channel.yaml --model experiments/SwinIR_20250531035209/500000_model.pth --gpu 6 --swinir_mode sam
+Running: python main_test_swinir.py --config config/urban100_test/noise/noise_05_channel.yaml --model experiments/SwinIR_20250531035209/500000_model.pth --gpu 6 --swinir_mode sam
+Running: python main_test_swinir.py --config config/urban100_test/noise/noise_05_channel.yaml --model experiments/SwinIR_20250531035209/500000_model.pth --gpu 6 --swinir_mode sam
+Running: python main_test_swinir.py --config config/urban100_test/noise/noise_05_channel.yaml --model experiments/SwinIR_20250531035209/500000_model.pth --gpu 6 --swinir_mode sam
+-- Average PSNR_Y/SSIM_Y: 30.13 dB; 0.8546
+Running: python main_test_swinir.py --config config/urban100_test/noise/noise_15_channel.yaml --model experiments/SwinIR_20250531035209/500000_model.pth --gpu 6 --swinir_mode sam
+-- Average PSNR_Y/SSIM_Y: 24.49 dB; 0.5883
+Running: python main_test_swinir.py --config config/urban100_test/noise/noise_sigma_0_100_general.yaml --model experiments/SwinIR_20250531035209/500000_model.pth --gpu 6 --swinir_mode sam
+-- Average PSNR_Y/SSIM_Y: 17.91 dB; 0.3035
+Running: python main_test_swinir.py --config config/urban100_test/noise/noise_05_gray.yaml --model experiments/SwinIR_20250531035209/500000_model.pth --gpu 7 --swinir_mode sam
+loading model from experiments/SwinIR_20250531035209/500000_model.pth
+Running: python main_test_swinir.py --config config/urban100_test/noise/noise_15_gray.yaml --model experiments/SwinIR_20250531035209/500000_model.pth --gpu 7 --swinir_mode sam
+Running: python main_test_swinir.py --config config/urban100_test/noise/noise_05_gray.yaml --model experiments/SwinIR_20250531035209/500000_model.pth --gpu 7 --swinir_mode sam
+Running: python main_test_swinir.py --config config/urban100_test/noise/noise_05_gray.yaml --model experiments/SwinIR_20250531035209/500000_model.pth --gpu 7 --swinir_mode sam
+Running: python main_test_swinir.py --config config/urban100_test/noise/noise_05_gray.yaml --model experiments/SwinIR_20250531035209/500000_model.pth --gpu 7 --swinir_mode sam
+-- Average PSNR_Y/SSIM_Y: 28.72 dB; 0.7889
+Running: python main_test_swinir.py --config config/urban100_test/noise/noise_15_gray.yaml --model experiments/SwinIR_20250531035209/500000_model.pth --gpu 7 --swinir_mode sam
+-- Average PSNR_Y/SSIM_Y: 21.56 dB; 0.4555
+Running: python main_test_swinir.py --config config/urban100_test/noise/noise_sigma_0_150_general.yaml --model experiments/SwinIR_20250531035209/500000_model.pth --gpu 7 --swinir_mode sam
+-- Average PSNR_Y/SSIM_Y: 16.10 dB; 0.2338
+Running: python main_test_swinir.py --config config/urban100_test/noise/noise_01_channel.yaml --model experiments/SwinIR_20250531035209/500000_model.pth --gpu 4 --swinir_mode sam
+-- Average PSNR_Y/SSIM_Y: 32.95 dB; 0.9351
+Running: python main_test_swinir.py --config config/urban100_test/noise/noise_10_channel.yaml --model experiments/SwinIR_20250531035209/500000_model.pth --gpu 4 --swinir_mode sam
+-- Average PSNR_Y/SSIM_Y: 26.95 dB; 0.7116
+Running: python main_test_swinir.py --config config/urban100_test/noise/noise_sigma_0_010_general.yaml --model experiments/SwinIR_20250531035209/500000_model.pth --gpu 4 --swinir_mode sam
+-- Average PSNR_Y/SSIM_Y: 30.91 dB; 0.8771
+Running: python main_test_swinir.py --config config/urban100_test/noise/noise_01_gray.yaml --model experiments/SwinIR_20250531035209/500000_model.pth --gpu 5 --swinir_mode sam
+-- Average PSNR_Y/SSIM_Y: 32.75 dB; 0.9309
+Running: python main_test_swinir.py --config config/urban100_test/noise/noise_10_gray.yaml --model experiments/SwinIR_20250531035209/500000_model.pth --gpu 5 --swinir_mode sam
+-- Average PSNR_Y/SSIM_Y: 24.56 dB; 0.5918
+Running: python main_test_swinir.py --config config/urban100_test/noise/noise_sigma_0_050_general.yaml --model experiments/SwinIR_20250531035209/500000_model.pth --gpu 5 --swinir_mode sam
+-- Average PSNR_Y/SSIM_Y: 22.53 dB; 0.5041
+Running: python main_test_swinir.py --config config/urban100_test/noise/noise_05_channel.yaml --model experiments/SwinIR_20250531035209/500000_model.pth --gpu 6 --swinir_mode sam
+-- Average PSNR_Y/SSIM_Y: 30.13 dB; 0.8546
+Running: python main_test_swinir.py --config config/urban100_test/noise/noise_15_channel.yaml --model experiments/SwinIR_20250531035209/500000_model.pth --gpu 6 --swinir_mode sam
+-- Average PSNR_Y/SSIM_Y: 24.49 dB; 0.5883
+Running: python main_test_swinir.py --config config/urban100_test/noise/noise_sigma_0_100_general.yaml --model experiments/SwinIR_20250531035209/500000_model.pth --gpu 6 --swinir_mode sam
+-- Average PSNR_Y/SSIM_Y: 17.91 dB; 0.3035
+Running: python main_test_swinir.py --config config/urban100_test/noise/noise_05_gray.yaml --model experiments/SwinIR_20250531035209/500000_model.pth --gpu 7 --swinir_mode sam
+-- Average PSNR_Y/SSIM_Y: 28.72 dB; 0.7889
+Running: python main_test_swinir.py --config config/urban100_test/noise/noise_15_gray.yaml --model experiments/SwinIR_20250531035209/500000_model.pth --gpu 7 --swinir_mode sam
+-- Average PSNR_Y/SSIM_Y: 21.56 dB; 0.4555
+Running: python main_test_swinir.py --config config/urban100_test/noise/noise_sigma_0_150_general.yaml --model experiments/SwinIR_20250531035209/500000_model.pth --gpu 7 --swinir_mode sam
+-- Average PSNR_Y/SSIM_Y: 16.10 dB; 0.2338
+Running: python main_test_swinir.py --config config/urban100_test/noise/noise_01_channel.yaml --model experiments/SwinIR_20250531035209/500000_model.pth --gpu 4 --swinir_mode sam
+-- Average PSNR_Y/SSIM_Y: 32.95 dB; 0.9351
+Running: python main_test_swinir.py --config config/urban100_test/noise/noise_10_channel.yaml --model experiments/SwinIR_20250531035209/500000_model.pth --gpu 4 --swinir_mode sam
+-- Average PSNR_Y/SSIM_Y: 26.95 dB; 0.7116
+Running: python main_test_swinir.py --config config/urban100_test/noise/noise_sigma_0_010_general.yaml --model experiments/SwinIR_20250531035209/500000_model.pth --gpu 4 --swinir_mode sam
+-- Average PSNR_Y/SSIM_Y: 30.91 dB; 0.8771
+Running: python main_test_swinir.py --config config/urban100_test/noise/noise_01_gray.yaml --model experiments/SwinIR_20250531035209/500000_model.pth --gpu 5 --swinir_mode sam
+-- Average PSNR_Y/SSIM_Y: 32.75 dB; 0.9309
+Running: python main_test_swinir.py --config config/urban100_test/noise/noise_10_gray.yaml --model experiments/SwinIR_20250531035209/500000_model.pth --gpu 5 --swinir_mode sam
+-- Average PSNR_Y/SSIM_Y: 24.56 dB; 0.5918
+Running: python main_test_swinir.py --config config/urban100_test/noise/noise_sigma_0_050_general.yaml --model experiments/SwinIR_20250531035209/500000_model.pth --gpu 5 --swinir_mode sam
+-- Average PSNR_Y/SSIM_Y: 22.53 dB; 0.5041
+Running: python main_test_swinir.py --config config/urban100_test/noise/noise_05_channel.yaml --model experiments/SwinIR_20250531035209/500000_model.pth --gpu 6 --swinir_mode sam
+-- Average PSNR_Y/SSIM_Y: 30.13 dB; 0.8546
+Running: python main_test_swinir.py --config config/urban100_test/noise/noise_15_channel.yaml --model experiments/SwinIR_20250531035209/500000_model.pth --gpu 6 --swinir_mode sam
+-- Average PSNR_Y/SSIM_Y: 24.49 dB; 0.5883
+Running: python main_test_swinir.py --config config/urban100_test/noise/noise_sigma_0_100_general.yaml --model experiments/SwinIR_20250531035209/500000_model.pth --gpu 6 --swinir_mode sam
+-- Average PSNR_Y/SSIM_Y: 17.91 dB; 0.3035
+Running: python main_test_swinir.py --config config/urban100_test/noise/noise_05_gray.yaml --model experiments/SwinIR_20250531035209/500000_model.pth --gpu 7 --swinir_mode sam
+-- Average PSNR_Y/SSIM_Y: 28.72 dB; 0.7889
+Running: python main_test_swinir.py --config config/urban100_test/noise/noise_15_gray.yaml --model experiments/SwinIR_20250531035209/500000_model.pth --gpu 7 --swinir_mode sam
+-- Average PSNR_Y/SSIM_Y: 21.56 dB; 0.4555
+Running: python main_test_swinir.py --config config/urban100_test/noise/noise_sigma_0_150_general.yaml --model experiments/SwinIR_20250531035209/500000_model.pth --gpu 7 --swinir_mode sam
+-- Average PSNR_Y/SSIM_Y: 16.10 dB; 0.2338
+Running: python main_test_swinir.py --config config/urban100_test/noise/noise_01_channel.yaml --model experiments/SwinIR_20250531035209/500000_model.pth --gpu 4 --swinir_mode sam
+-- Average PSNR_Y/SSIM_Y: 32.95 dB; 0.9351
+Running: python main_test_swinir.py --config config/urban100_test/noise/noise_10_channel.yaml --model experiments/SwinIR_20250531035209/500000_model.pth --gpu 4 --swinir_mode sam
+-- Average PSNR_Y/SSIM_Y: 26.95 dB; 0.7116
+Running: python main_test_swinir.py --config config/urban100_test/noise/noise_sigma_0_010_general.yaml --model experiments/SwinIR_20250531035209/500000_model.pth --gpu 4 --swinir_mode sam
+-- Average PSNR_Y/SSIM_Y: 30.91 dB; 0.8771
+Running: python main_test_swinir.py --config config/urban100_test/noise/noise_01_gray.yaml --model experiments/SwinIR_20250531035209/500000_model.pth --gpu 5 --swinir_mode sam
+-- Average PSNR_Y/SSIM_Y: 32.75 dB; 0.9309
+Running: python main_test_swinir.py --config config/urban100_test/noise/noise_10_gray.yaml --model experiments/SwinIR_20250531035209/500000_model.pth --gpu 5 --swinir_mode sam
+-- Average PSNR_Y/SSIM_Y: 24.56 dB; 0.5918
+Running: python main_test_swinir.py --config config/urban100_test/noise/noise_sigma_0_050_general.yaml --model experiments/SwinIR_20250531035209/500000_model.pth --gpu 5 --swinir_mode sam
+-- Average PSNR_Y/SSIM_Y: 22.53 dB; 0.5041
+Running: python main_test_swinir.py --config config/urban100_test/noise/noise_05_channel.yaml --model experiments/SwinIR_20250531035209/500000_model.pth --gpu 6 --swinir_mode sam
+-- Average PSNR_Y/SSIM_Y: 30.13 dB; 0.8546
+Running: python main_test_swinir.py --config config/urban100_test/noise/noise_15_channel.yaml --model experiments/SwinIR_20250531035209/500000_model.pth --gpu 6 --swinir_mode sam
+-- Average PSNR_Y/SSIM_Y: 24.49 dB; 0.5883
+Running: python main_test_swinir.py --config config/urban100_test/noise/noise_sigma_0_100_general.yaml --model experiments/SwinIR_20250531035209/500000_model.pth --gpu 6 --swinir_mode sam
+-- Average PSNR_Y/SSIM_Y: 17.91 dB; 0.3035
+Running: python main_test_swinir.py --config config/urban100_test/noise/noise_05_gray.yaml --model experiments/SwinIR_20250531035209/500000_model.pth --gpu 7 --swinir_mode sam
+-- Average PSNR_Y/SSIM_Y: 28.72 dB; 0.7889
+Running: python main_test_swinir.py --config config/urban100_test/noise/noise_15_gray.yaml --model experiments/SwinIR_20250531035209/500000_model.pth --gpu 7 --swinir_mode sam
+-- Average PSNR_Y/SSIM_Y: 21.56 dB; 0.4555
+Running: python main_test_swinir.py --config config/urban100_test/noise/noise_sigma_0_150_general.yaml --model experiments/SwinIR_20250531035209/500000_model.pth --gpu 7 --swinir_mode sam
+-- Average PSNR_Y/SSIM_Y: 16.10 dB; 0.2338

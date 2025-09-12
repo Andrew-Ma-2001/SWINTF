@@ -148,7 +148,7 @@ class ImageEncoderViT(nn.Module):
             # x = x[:, self.num_tokens:, ...]
             # if i in self.out_indices:
             #     outs.append(x)
-            x = blk(x)
+            x = blk(x, self.prompt_embeddings[i:i+1])
             if i in self.out_indices:
                 outs.append(x)
 
@@ -202,7 +202,7 @@ class Block(nn.Module):
 
         self.window_size = window_size
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: torch.Tensor, prompt_embeddings) -> torch.Tensor:
         shortcut = x
         x = self.norm1(x)
         # Window partition
@@ -210,7 +210,7 @@ class Block(nn.Module):
             H, W = x.shape[1], x.shape[2]
             x, pad_hw = window_partition(x, self.window_size)
 
-        x = self.attn(x)
+        x = self.attn(x, prompt_embeddings)
         # Reverse window partition
         if self.window_size > 0:
             x = window_unpartition(x, self.window_size, pad_hw, (H, W))
@@ -259,20 +259,27 @@ class Attention(nn.Module):
             self.rel_pos_h = nn.Parameter(torch.zeros(2 * input_size[0] - 1, head_dim))
             self.rel_pos_w = nn.Parameter(torch.zeros(2 * input_size[1] - 1, head_dim))
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: torch.Tensor, prompt_embeddings) -> torch.Tensor:
         B, H, W, _ = x.shape
+        N = prompt_embeddings.shape[1]
         # qkv with shape (3, B, nHead, H * W, C)
         qkv = self.qkv(x).reshape(B, H * W, 3, self.num_heads, -1).permute(2, 0, 3, 1, 4)
         # q, k, v with shape (B * nHead, H * W, C)
         q, k, v = qkv.reshape(3, B * self.num_heads, H * W, -1).unbind(0)
+        qkv_prompt = self.qkv(prompt_embeddings).repeat(B, 1, 1)
+        qkv_prompt = qkv_prompt.reshape(B, N, 3, self.num_heads, -1).permute(2, 0, 3, 1, 4)
+        q_prompt, k_prompt, v_prompt = qkv_prompt.reshape(3, B * self.num_heads, N, -1).unbind(0)
+        q = torch.cat([q, q_prompt], dim=1)
+        k = torch.cat([k, k_prompt], dim=1)
+        v = torch.cat([v, v_prompt], dim=1)
 
         attn = (q * self.scale) @ k.transpose(-2, -1)
 
         if self.use_rel_pos:
-            attn = add_decomposed_rel_pos(attn, q, self.rel_pos_h, self.rel_pos_w, (H, W), (H, W))
+            attn[:, :-N, :-N] = add_decomposed_rel_pos(attn[:, :-N, :-N], q[:, :-N, :], self.rel_pos_h, self.rel_pos_w, (H, W), (H, W))
 
         attn = attn.softmax(dim=-1)
-        x = (attn @ v).view(B, self.num_heads, H, W, -1).permute(0, 2, 3, 1, 4).reshape(B, H, W, -1)
+        x = (attn @ v)[:, :-N, :].view(B, self.num_heads, H, W, -1).permute(0, 2, 3, 1, 4).reshape(B, H, W, -1)
         x = self.proj(x)
 
         return x

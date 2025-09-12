@@ -1,0 +1,25 @@
+Running: python main_test_swinir.py --config dataset/testsets/urban100_lrx2/noise_sig_0.0_noise_60_quality_0.yaml --model 001_classicalSR_DIV2K_s48w8_SwinIR-M_x2.pth --gpu 0 --test_swinir
+Running: python main_test_swinir.py --config dataset/testsets/urban100_lrx2/noise_sig_0.0_noise_100_quality_0.yaml --model 001_classicalSR_DIV2K_s48w8_SwinIR-M_x2.pth --gpu 0 --test_swinir
+Running: python main_test_swinir.py --config dataset/testsets/urban100_lrx2/noise_sig_0.0_noise_70_quality_0.yaml --model 001_classicalSR_DIV2K_s48w8_SwinIR-M_x2.pth --gpu 1 --test_swinir
+Running: python main_test_swinir.py --config dataset/testsets/urban100_lrx2/noise_sig_0.0_noise_80_quality_0.yaml --model 001_classicalSR_DIV2K_s48w8_SwinIR-M_x2.pth --gpu 2 --test_swinir
+Running: python main_test_swinir.py --config dataset/testsets/urban100_lrx2/noise_sig_0.0_noise_90_quality_0.yaml --model 001_classicalSR_DIV2K_s48w8_SwinIR-M_x2.pth --gpu 3 --test_swinir
+Running: python main_test_swinir.py --config dataset/testsets/urban100_lrx2/dataset/testsets/urban100_lrx2/noise_sig_0.0_noise_60_quality_0.yaml --model 001_classicalSR_DIV2K_s48w8_SwinIR-M_x2.pth --gpu 0 --test_swinir
+Running: python main_test_swinir.py --config dataset/testsets/urban100_lrx2/dataset/testsets/urban100_lrx2/noise_sig_0.0_noise_100_quality_0.yaml --model 001_classicalSR_DIV2K_s48w8_SwinIR-M_x2.pth --gpu 0 --test_swinir
+Running: python main_test_swinir.py --config dataset/testsets/urban100_lrx2/dataset/testsets/urban100_lrx2/noise_sig_0.0_noise_70_quality_0.yaml --model 001_classicalSR_DIV2K_s48w8_SwinIR-M_x2.pth --gpu 1 --test_swinir
+Running: python main_test_swinir.py --config dataset/testsets/urban100_lrx2/dataset/testsets/urban100_lrx2/noise_sig_0.0_noise_80_quality_0.yaml --model 001_classicalSR_DIV2K_s48w8_SwinIR-M_x2.pth --gpu 2 --test_swinir
+Running: python main_test_swinir.py --config dataset/testsets/urban100_lrx2/dataset/testsets/urban100_lrx2/noise_sig_0.0_noise_90_quality_0.yaml --model 001_classicalSR_DIV2K_s48w8_SwinIR-M_x2.pth --gpu 3 --test_swinir
+Running: python main_test_swinir.py --config dataset/testsets/urban100_lrx2/dataset/testsets/urban100_lrx2/noise_sig_0.0_noise_60_quality_0.yaml --model 001_classicalSR_DIV2K_s48w8_SwinIR-M_x2.pth --gpu 0 --test_swinir
+Running: python main_test_swinir.py --config dataset/testsets/urban100_lrx2/dataset/testsets/urban100_lrx2/noise_sig_0.0_noise_100_quality_0.yaml --model 001_classicalSR_DIV2K_s48w8_SwinIR-M_x2.pth --gpu 0 --test_swinir
+Running: python main_test_swinir.py --config dataset/testsets/urban100_lrx2/dataset/testsets/urban100_lrx2/noise_sig_0.0_noise_70_quality_0.yaml --model 001_classicalSR_DIV2K_s48w8_SwinIR-M_x2.pth --gpu 1 --test_swinir
+Running: python main_test_swinir.py --config dataset/testsets/urban100_lrx2/dataset/testsets/urban100_lrx2/noise_sig_0.0_noise_80_quality_0.yaml --model 001_classicalSR_DIV2K_s48w8_SwinIR-M_x2.pth --gpu 2 --test_swinir
+Running: python main_test_swinir.py --config dataset/testsets/urban100_lrx2/dataset/testsets/urban100_lrx2/noise_sig_0.0_noise_90_quality_0.yaml --model 001_classicalSR_DIV2K_s48w8_SwinIR-M_x2.pth --gpu 3 --test_swinir
+Running: python main_test_swinir.py --config dataset/testsets/urban100_lrx2/noise_sig_0.0_noise_60_quality_0.yaml --model 001_classicalSR_DIV2K_s48w8_SwinIR-M_x2.pth --gpu 0 --test_swinir
+-- Average PSNR_Y/SSIM_Y: 15.35 dB; 0.2038
+Running: python main_test_swinir.py --config dataset/testsets/urban100_lrx2/noise_sig_0.0_noise_100_quality_0.yaml --model 001_classicalSR_DIV2K_s48w8_SwinIR-M_x2.pth --gpu 0 --test_swinir
+-- Average PSNR_Y/SSIM_Y: 13.02 dB; 0.1272
+Running: python main_test_swinir.py --config dataset/testsets/urban100_lrx2/noise_sig_0.0_noise_70_quality_0.yaml --model 001_classicalSR_DIV2K_s48w8_SwinIR-M_x2.pth --gpu 1 --test_swinir
+-- Average PSNR_Y/SSIM_Y: 14.57 dB; 0.1773
+Running: python main_test_swinir.py --config dataset/testsets/urban100_lrx2/noise_sig_0.0_noise_80_quality_0.yaml --model 001_classicalSR_DIV2K_s48w8_SwinIR-M_x2.pth --gpu 2 --test_swinir
+-- Average PSNR_Y/SSIM_Y: 13.95 dB; 0.1571
+Running: python main_test_swinir.py --config dataset/testsets/urban100_lrx2/noise_sig_0.0_noise_90_quality_0.yaml --model 001_classicalSR_DIV2K_s48w8_SwinIR-M_x2.pth --gpu 3 --test_swinir
+-- Average PSNR_Y/SSIM_Y: 13.44 dB; 0.1407

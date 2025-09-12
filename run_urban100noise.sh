@@ -1,14 +1,15 @@
 # config_dir="config/manga109_test/noise"
 # config_dir='dataset/testsets/Set14/LRbicx2'
-config_dir='config/urban100_test/noise'
+# config_dir='/home/mayanze/PycharmProjects/SwinTF/dataset/testsets/urban100_lrx2'
 # config_dir='dataset/testsets/urban100_lrx2'
 # config_dir='config/manga109_test/noise'
+# config_dir='/home/mayanze/PycharmProjects/SwinTF/config/urban100_test/noise'
 
-
+config_dir='dataset/testsets/urban100_lrx2'
 # swinir_mode='pixelshuffle'
 # model_path='experiments/SwinIR_20250106143929/500000_model.pth'
 
-swinir_mode='strongnorm'
+# swinir_mode='strongnorm'
 # model_path='experiments/SwinIR_20250115064406/500000_model.pth'
 # model_path='experiments/SwinIR_20250124161945/500000_model.pth'
 
@@ -18,21 +19,70 @@ swinir_mode='strongnorm'
 # swinir_mode='newfeature'
 # model_path='experiments/SwinIR_20250117044926/500000_model.pth'
 
-swinir_mode='psnorm'
-model_path='experiments/SwinIR_20250218160256/500000_model.pth'
+# swinir_mode='psnorm'
+# model_path='experiments/SwinIR_20250218160256/500000_model.pth'
 
+# swinir_mode='sam'
+# model_path='experiments/SwinIR_20250426080929/450000_model.pth'
 
+swinir_mode='sam'
+model_path='experiments/SwinIR_20250531035209/500000_model.pth'
 # Set up a mode for different commands
 mode="adapter"
 # mode="swinir"
 
-
+# Set a custom text for txt_file naming
+custom_text="noise60-100增强"
 swinir_path="001_classicalSR_DIV2K_s48w8_SwinIR-M_x2.pth"
 yaml_files=($(find "$config_dir" -type f -name "*.yaml" | sort))
 # Assign 8 GPUs, split into four groups
 gpu_ids=('4' '5' '6' '7')
 
-txt_file="$(basename $(dirname $config_dir))_$(basename $config_dir)_noise_${swinir_mode}.txt"
+# Function to filter yaml files with pattern noise_sigma_X_XXX_general where XXX >= 200
+# filter_yaml_files() {
+#     local files=("$@")
+#     local filtered=()
+#     for file in "${files[@]}"; do
+#         # Extract the filename
+#         fname=$(basename "$file")
+#         # Use regex to match noise_sigma_X_XXX_general
+#         if [[ $fname =~ noise_sigma_([0-9]+)_([0-9]+)_general\.yaml ]]; then
+#             # Compose the number from the two groups (e.g., 0_250 -> 0.250)
+#             major="${BASH_REMATCH[1]}"
+#             minor="${BASH_REMATCH[2]}"
+#             # Convert to integer for comparison (e.g., 0_250 -> 250)
+#             number=$((10#$minor))
+#             if (( number >= 200 )); then
+#                 filtered+=("$file")
+#             fi
+#         fi
+#     done
+#     echo "${filtered[@]}"
+# }
+
+# # Filter yaml_files array
+# yaml_files=($(filter_yaml_files "${yaml_files[@]}"))
+
+read_yaml_files_from_txt() {
+    local txt_path="$1"
+    local yaml_list=()
+    while IFS= read -r line || [ -n "$line" ]; do
+        # Skip empty lines and lines starting with #
+        [[ -z "$line" || "$line" =~ ^# ]] && continue
+        # If the path is not absolute, prepend config_dir
+        if [[ "$line" = /* ]]; then
+            yaml_list+=("$line")
+        else
+            yaml_list+=("$config_dir/$line")
+        fi
+    done < "$txt_path"
+    echo "${yaml_list[@]}"
+}
+
+# Example usage:
+yaml_files=($(read_yaml_files_from_txt "config_hard_name_list.txt"))
+
+txt_file="SAM2_${custom_text}_${swinir_mode}_$(basename $(dirname $config_dir))_noise.txt"
 
 # Function to run the command and save the last two lines of output
 run_command() {

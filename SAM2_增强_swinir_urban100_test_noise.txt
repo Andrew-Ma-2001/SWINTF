@@ -1,0 +1,6 @@
+Running: python main_test_swinir.py --config /home/mayanze/PycharmProjects/SwinTF/config/urban100_test/noise/noise_sigma_0_200_general.yaml --model 001_classicalSR_DIV2K_s48w8_SwinIR-M_x2.pth --gpu 4 --test_swinir
+-- Average PSNR_Y/SSIM_Y: 14.92 dB; 0.1932
+Running: python main_test_swinir.py --config /home/mayanze/PycharmProjects/SwinTF/config/urban100_test/noise/noise_sigma_0_250_general.yaml --model 001_classicalSR_DIV2K_s48w8_SwinIR-M_x2.pth --gpu 5 --test_swinir
+-- Average PSNR_Y/SSIM_Y: 13.31 dB; 0.1437
+Running: python main_test_swinir.py --config /home/mayanze/PycharmProjects/SwinTF/config/urban100_test/noise/noise_sigma_0_300_general.yaml --model 001_classicalSR_DIV2K_s48w8_SwinIR-M_x2.pth --gpu 6 --test_swinir
+-- Average PSNR_Y/SSIM_Y: 12.65 dB; 0.1209

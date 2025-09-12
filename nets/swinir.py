@@ -111,38 +111,60 @@ class WindowAttention(nn.Module):
         trunc_normal_(self.relative_position_bias_table, std=.02)
         self.softmax = nn.Softmax(dim=-1)
 
-    def forward(self, x, mask=None):
+    def forward(self, x, y=None, mask=None):
         """
         Args:
             x: input features with shape of (num_windows*B, N, C)
             mask: (0/-inf) mask with shape of (num_windows, Wh*Ww, Wh*Ww) or None
         """
-        B_, N, C = x.shape
-        qkv = self.qkv(x).reshape(B_, N, 3, self.num_heads, C // self.num_heads).permute(2, 0, 3, 1, 4)
-        q, k, v = qkv[0], qkv[1], qkv[2]  # make torchscript happy (cannot use tensor as tuple)
+        if y is None:
+            B_, N, C = x.shape
+            qkv = self.qkv(x).reshape(B_, N, 3, self.num_heads, C // self.num_heads).permute(2, 0, 3, 1, 4)
+            q, k, v = qkv[0], qkv[1], qkv[2]  # make torchscript happy (cannot use tensor as tuple)
 
-        q = q * self.scale
-        attn = (q @ k.transpose(-2, -1))
+            q = q * self.scale
+            attn = (q @ k.transpose(-2, -1))
 
-        relative_position_bias = self.relative_position_bias_table[self.relative_position_index.view(-1)].view(
-            self.window_size[0] * self.window_size[1], self.window_size[0] * self.window_size[1], -1)  # Wh*Ww,Wh*Ww,nH
-        relative_position_bias = relative_position_bias.permute(2, 0, 1).contiguous()  # nH, Wh*Ww, Wh*Ww
-        # attn = attn + relative_position_bias.unsqueeze(0)     # eliminate relative position bias 25
+            relative_position_bias = self.relative_position_bias_table[self.relative_position_index.view(-1)].view(
+                self.window_size[0] * self.window_size[1], self.window_size[0] * self.window_size[1],
+                -1)  # Wh*Ww,Wh*Ww,nH
+            relative_position_bias = relative_position_bias.permute(2, 0, 1).contiguous()  # nH, Wh*Ww, Wh*Ww
+            attn[..., -relative_position_bias.shape[1]:,
+            -relative_position_bias.shape[2]:] += relative_position_bias.unsqueeze(
+                0)  # eliminate relative position bias 25
 
-        if mask is not None:
-            nW = mask.shape[0]
-            attn = attn.view(B_ // nW, nW, self.num_heads, N, N) + mask.unsqueeze(1).unsqueeze(0)
-            attn = attn.view(-1, self.num_heads, N, N)
-            attn = self.softmax(attn)
+            if mask is not None:
+                nW = mask.shape[0]
+                # breakpoint()
+                attn = attn.view(B_ // nW, nW, self.num_heads, N, N) + mask.unsqueeze(1).unsqueeze(0)
+                attn = attn.view(-1, self.num_heads, N, N)
+                attn = self.softmax(attn)
+            else:
+                attn = self.softmax(attn)
+
+            attn = self.attn_drop(attn)
+
+            x = (attn @ v).transpose(1, 2).reshape(B_, N, C)
+            x = self.proj(x)
+            x = self.proj_drop(x)
+            return x
         else:
+            B_, N, C = x.shape
+            qkv = self.qkv(x).reshape(B_, N, 3, self.num_heads, C // self.num_heads).permute(2, 0, 3, 1, 4)
+            q, _, _ = qkv[0], qkv[1], qkv[2]  # make torchscript happy (cannot use tensor as tuple)
+            qkv = self.qkv(y).reshape(B_, -1, 3, self.num_heads, C // self.num_heads).permute(2, 0, 3, 1, 4)
+            _, k, v = qkv[0], qkv[1], qkv[2]  # make torchscript happy (cannot use tensor as tuple)
+
+            q = q * self.scale
+            attn = (q @ k.transpose(-2, -1))
+
             attn = self.softmax(attn)
+            attn = self.attn_drop(attn)
 
-        attn = self.attn_drop(attn)
-
-        x = (attn @ v).transpose(1, 2).reshape(B_, N, C)
-        x = self.proj(x)
-        x = self.proj_drop(x)
-        return x
+            x = (attn @ v).transpose(1, 2).reshape(B_, N, C)
+            x = self.proj(x)
+            x = self.proj_drop(x)
+            return x
 
     def extra_repr(self) -> str:
         return f'dim={self.dim}, window_size={self.window_size}, num_heads={self.num_heads}'
@@ -236,7 +258,7 @@ class SwinTransformerBlock(nn.Module):
 
         return attn_mask
 
-    def forward(self, x, x_size, feats_sam):    # x: B, H*W, C   |   feats_sam: B, H/16*W/16*16, C
+    def forward(self, x, x_size, feats_sam):  # x: B, H*W, C   |   feats_sam: B, H/16*W/16*16, C
         H, W = x_size
         B, L, C = x.shape
         # assert L == H * W, "input feature has wrong size"
@@ -255,23 +277,22 @@ class SwinTransformerBlock(nn.Module):
         x_windows = window_partition(shifted_x, self.window_size)  # nW*B, window_size, window_size, C
         x_windows = x_windows.view(-1, self.window_size * self.window_size, C)  # nW*B, window_size*window_size, C
         if feats_sam is not None:
-            feats_sam = feats_sam.permute(0, 2, 3, 1).reshape(B, H//16, 1, W//16, 1, 16, -1).repeat(1, 1, 2, 1, 2, 1, 1).reshape(-1, 16, C)
-            x_windows = torch.cat([feats_sam, x_windows], 1)
+            feats_sam = feats_sam.permute(0, 2, 3, 1).reshape(B, H // 16, 1, W // 16, 1, 16, -1).repeat(1, 1, 2, 1, 2,  1, 1).reshape( -1, 16, C)
         # W-MSA/SW-MSA (to be compatible for testing on images whose shapes are the multiple of window size
         if self.input_resolution == x_size:
             if self.attn_mask is not None and feats_sam is not None:
                 attn_mask = F.pad(self.attn_mask, [16, 0])
             else:
                 attn_mask = self.attn_mask
-            attn_windows = self.attn(x_windows, mask=attn_mask)  # nW*B, window_size*window_size, C
+            attn_windows = self.attn(x_windows, feats_sam, mask=attn_mask)  # nW*B, window_size*window_size, C
         else:
             if feats_sam is not None:
-                attn_windows = self.attn(x_windows, mask=F.pad(self.calculate_mask(x_size).to(x.device), [16, 0]))
+                # attn_windows = self.attn(x_windows, mask=F.pad(self.calculate_mask(x_size).to(x.device), [16, 0]))
+                attn_windows = self.attn(x_windows, feats_sam, mask=self.attn_mask)
             else:
                 attn_windows = self.attn(x_windows, mask=self.calculate_mask(x_size).to(x.device))
 
         # merge windows
-        attn_windows = attn_windows[:, 16:, :]
         attn_windows = attn_windows.reshape(-1, self.window_size, self.window_size, C)
         shifted_x = window_reverse(attn_windows, self.window_size, H, W)  # B H' W' C
 
@@ -280,7 +301,6 @@ class SwinTransformerBlock(nn.Module):
             x = torch.roll(shifted_x, shifts=(self.shift_size, self.shift_size), dims=(1, 2))
         else:
             x = shifted_x
-        print(x.shape)
         x = x.view(B, H * W, C)
 
         # FFN
@@ -488,7 +508,7 @@ class RSTB(nn.Module):
         self.patch_unembed = PatchUnEmbed(
             img_size=img_size, patch_size=patch_size, in_chans=0, embed_dim=dim,
             norm_layer=None)
-        
+
     # def print_kernel_info(self):
     #     """Print kernel information for conv layers"""
     #     print("Conv layer kernel information:")
@@ -503,17 +523,17 @@ class RSTB(nn.Module):
     def forward(self, x, x_size, feats_sam):
         # return self.patch_embed(self.conv(self.patch_unembed(self.residual_group(x, x_size), x_size))) + x
         # Step 1: Apply residual group
-        residual = self.residual_group(x, x_size, feats_sam) # 这一步 std 变化不是特别大 0.3 上下
-        
+        residual = self.residual_group(x, x_size, feats_sam)  # 这一步 std 变化不是特别大 0.3 上下
+
         # Step 2: Convert from patches back to image
         residual_img = self.patch_unembed(residual, x_size)
-        
+
         # Step 3: Apply convolution
-        residual_conv = self.conv(residual_img) # 主要是这一步，std 变化很大
-        
+        residual_conv = self.conv(residual_img)  # 主要是这一步，std 变化很大
+
         # Step 4: Convert back to patches
         residual_patches = self.patch_embed(residual_conv)
-        
+
         # Step 5: Add residual connection
         return residual_patches + x
 
@@ -619,7 +639,7 @@ class SamFeatureUnembed(nn.Module):
     def __init__(self, img_size=224, patch_size=4, in_chans=3, embed_dim=96, norm_layer=None):
         super().__init__()
         self.in_chans = in_chans
-        self.embed_dim = embed_dim # 应该是 180
+        self.embed_dim = embed_dim  # 应该是 180
 
     def forward(self, x, x_size):
         B, HW, C = x.shape
@@ -683,7 +703,7 @@ class SelfAttention(nn.Module):
         self.norm1 = nn.LayerNorm(in_channels)
         self.norm2 = nn.LayerNorm(in_channels)
         self.q = nn.Linear(in_channels, in_channels)
-        self.kv = nn.Linear(in_channels, in_channels*2)
+        self.kv = nn.Linear(in_channels, in_channels * 2)
         self.proj = nn.Linear(in_channels, in_channels)
         self.tau = nn.Parameter(torch.zeros(1))
         # self.mlp = nn.Sequential(
@@ -699,7 +719,7 @@ class SelfAttention(nn.Module):
     def plot_attn(self, attn):
         import matplotlib.pyplot as plt
         # PLot attn
-        attn_avg = attn[0].detach().cpu().numpy() # Select the first exampl
+        attn_avg = attn[0].detach().cpu().numpy()  # Select the first exampl
         # Reshape the attention map to the original spatial dimensions
         # Assuming the original spatial dimensions are 48x48
         H, W = 48, 48
@@ -719,28 +739,27 @@ class SelfAttention(nn.Module):
         '''
         ################### 2024-03-23 ##########################
         batch_size, C, height, width = x.size()
-        y_adapt_flatten = y_adapt.flatten(2).transpose(1, 2)    # B, MN, C
-        x_flatten = x.flatten(2).transpose(1, 2)    # B, HW, C
+        y_adapt_flatten = y_adapt.flatten(2).transpose(1, 2)  # B, MN, C
+        x_flatten = x.flatten(2).transpose(1, 2)  # B, HW, C
 
-       ################### 2024-04-16 ##########################
+        ################### 2024-04-16 ##########################
         # q = self.q(self.norm1(x_flatten))  # B, HW, C
         # kv = self.kv(self.norm2(y_adapt_flatten)).view(batch_size, -1, 2, C)
 
-       #################### 2024-11-30 不用 norm ##########################
+        #################### 2024-11-30 不用 norm ##########################
         q = self.q(x_flatten)  # B, HW, C
         kv = self.kv(y_adapt_flatten).view(batch_size, -1, 2, C)
         k, v = kv.unbind(2)  # B, HW, C
 
-        attn = (q @ k.transpose(-2, -1)) / C #是C还是根号C看经验
+        attn = (q @ k.transpose(-2, -1)) / C  # 是C还是根号C看经验
         attn = attn.softmax(dim=-1)
 
         out = (attn @ v)  # bug here
 
-       ################### 2024-08-07 ##########################
+        ################### 2024-08-07 ##########################
         # mode 0: no hyperparameter exit
         # out = self.proj(out).transpose(-1, -2).reshape(batch_size, -1, height, width) + x
 
-        
         # mode 1: static hyperparameter
         out = self.tau * self.proj(out).transpose(-1, -2).reshape(batch_size, -1, height, width) + x
 
@@ -768,6 +787,7 @@ class SelfAttention(nn.Module):
         # out = out.view(batch_size, C, width, height)
 
         return out
+
 
 class SwinIR(nn.Module):
     r""" SwinIR
@@ -802,7 +822,8 @@ class SwinIR(nn.Module):
                  window_size=7, mlp_ratio=4., qkv_bias=True, qk_scale=None,
                  drop_rate=0., attn_drop_rate=0., drop_path_rate=0.1,
                  norm_layer=nn.LayerNorm, ape=False, patch_norm=True,
-                 use_checkpoint=False, upscale=2, img_range=1., upsampler='', resi_connection='1conv', y_adapt_feature=None,
+                 use_checkpoint=False, upscale=2, img_range=1., upsampler='', resi_connection='1conv',
+                 y_adapt_feature=None,
                  **kwargs):
         super(SwinIR, self).__init__()
         num_in_ch = in_chans
@@ -945,10 +966,9 @@ class SwinIR(nn.Module):
         if self.ape:
             x = x + self.absolute_pos_embed
         x = self.pos_drop(x)
-        
-        for i, layer in enumerate(self.layers):
-            x = layer(x, x_size, feats_sam_list[i]) # torch.Size([1, 4096, 256])
 
+        for i, layer in enumerate(self.layers):
+            x = layer(x, x_size, feats_sam_list[i])  # torch.Size([1, 4096, 256])
 
         x = self.norm(x)  # B L C
         x = self.patch_unembed(x, x_size)
@@ -989,7 +1009,7 @@ class SwinIR(nn.Module):
 
         x = x / self.img_range + self.mean
 
-        return x[:, :, :H*self.upscale, :W*self.upscale]
+        return x[:, :, :H * self.upscale, :W * self.upscale]
 
     def flops(self):
         flops = 0
